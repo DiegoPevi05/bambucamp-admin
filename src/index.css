@@ -34,3 +34,320 @@
     scroll-behavior: smooth;
   }
 }
+
+.no-scroll-bar::-webkit-scrollbar {
+  display: none;
+}
+
+
+.button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5em 1em;
+  overflow: hidden;
+  transition: color 0.3s ease;
+}
+
+.button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -145%;
+  bottom: 0;
+  width: 140%;
+  transform: skew(45deg);
+  transition: transform 0.4s cubic-bezier(0.3, 1, 0.8, 1), right 0.4s cubic-bezier(0.3, 1, 0.8, 1);
+  z-index: 0;
+}
+
+.button:hover {
+  color: var(--white-color);
+}
+
+.button:hover::before {
+  right: 0;
+}
+
+.button span {
+  position: relative;
+  z-index: 1;
+}
+
+.button-primary {
+  background-color: var(--white-color);
+  color: var(--primary-color);
+  border-color: var(--white-color);
+}
+
+.button-primary:hover {
+  color: var(--white-color);
+  background-color: var(--primary-color);
+  transition: background-color 0.3s ease;
+}
+
+.button.button-primary::before {
+  background-color: var(--primary-color);
+}
+
+.button-dark {
+  background-color: var(--primary-color-dark);
+  color: var(--white-color);
+  border-color: var(--primary-color-dark);
+}
+
+.button-dark:hover {
+  color: var(--primary-color-dark);
+  background-color: var(--white-color);
+  transition: background-color 0.3s ease;
+}
+
+.button.button-dark::before {
+  background-color: var(--white-color);
+}
+
+.button-light {
+  background-color: var(--primary-color-light);
+  color: var(--white-color);
+  border-color: var(--white-color);
+}
+
+.button-light:hover {
+  color: var(--primary-color-light);
+  background-color: var(--white-color);
+  transition: background-color 0.3s ease;
+}
+
+.button.button-light::before {
+  background-color: var(--white-color);
+}
+
+.button-ghost {
+  background-color: var(--white-color);
+  color: var(--primary-color-dark);
+  border-color: var(--white-color);
+}
+
+.button-ghost:hover {
+  color: var(--white-color);
+  background-color: var(--primary-color-dark);
+  transition: background-color 0.3s ease;
+}
+
+.button.button-ghost::before {
+  background-color: var(--primary-color-dark);
+}
+
+.button-ghost-light {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+  border-color: var(--primary-color);
+}
+
+.button-ghost-light:hover {
+  color: var(--primary-color);
+  background-color: var(--white-color);
+  transition: background-color 0.3s ease;
+}
+
+.button.button-ghost-light::before {
+  background-color: var(--white-color);
+}
+
+.button-danger {
+  background-color: var(--danger-color);
+  color: var(--white-color);
+  border-color: var(--danger-color);
+}
+
+.button-danger:hover {
+  color: var(--danger-color);
+  background-color: var(--white-color);
+  transition: background-color 0.3s ease;
+}
+
+.button.button-danger::before {
+  background-color: var(--white-color);
+}
+
+.input {
+  position: relative;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: color 0.3s ease;
+}
+
+.input::before {
+  content: ' ';
+  position: absolute;
+  top: 0;
+  right: -175%;
+  bottom: 0;
+  width: 140%;
+  transform: skew(45deg);
+  transition: transform 0.4s cubic-bezier(0.3, 1, 0.8, 1), right 0.4s cubic-bezier(0.3, 1, 0.8, 1);
+  z-index: 0;
+}
+
+.input span {
+  position: relative;
+  z-index: 1;
+}
+
+.input:has(input:checked)::before {
+  right: -134%;
+  z-index: 2;
+}
+
+.input .checkIcon {
+  display: none;
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: auto;
+  height: auto;
+  border: none;
+  background: transparent;
+  color: transparent;
+  z-index: 4;
+  transition: color 0.3s ease;
+}
+
+.input:has(input:checked) .checkIcon {
+  display: block;
+}
+
+
+.input-primary span {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+  border: 4px solid var(--primary-color);
+}
+
+.input-primary:hover span {
+  color: var(--primary-color);
+  background-color: var(--white-color);
+  transition: border 0.3s ease, background-color 0.3s ease;
+}
+
+
+.input-primary input:checked+span {
+  color: var(--primary-color);
+  background-color: var(--white-color);
+  transition: background-color 0.3s ease;
+}
+
+.input.input-primary::before {
+  background-color: var(--primary-color);
+}
+
+
+.input-primary:has(input:checked) .checkIcon {
+  color: var(--white-color);
+}
+
+
+.input-dark span {
+  background-color: var(--primary-color-dark);
+  color: var(--white-color);
+  border: 4px solid var(--primary-color-dark);
+}
+
+.input-dark:hover span {
+  color: var(--primary-color-dark);
+  background-color: var(--white-color);
+  transition: border 0.3s ease, background-color 0.3s ease;
+}
+
+
+.input-dark input:checked+span {
+  color: var(--primary-color-dark);
+  background-color: var(--white-color);
+  transition: background-color 0.3s ease;
+}
+
+.input.input-dark::before {
+  background-color: var(--primary-color-dark);
+}
+
+
+.input-dark:has(input:checked) .checkIcon {
+  color: var(--white-color);
+}
+
+
+.input-light span {
+  background-color: var(--primary-color-light);
+  color: var(--white-color);
+  border: 4px solid var(--primary-color-light);
+}
+
+.input-light:hover span {
+  color: var(--primary-color-light);
+  background-color: var(--white-color);
+  transition: border 0.3s ease, background-color 0.3s ease;
+}
+
+
+.input-light input:checked+span {
+  color: var(--primary-color-light);
+  background-color: var(--white-color);
+  transition: background-color 0.3s ease;
+}
+
+.input.input-light::before {
+  background-color: var(--primary-color-light);
+}
+
+
+.input-light:has(input:checked) .checkIcon {
+  color: var(--white-color);
+}
+
+
+
+.loader {
+  width: 124px;
+  aspect-ratio: 1.154;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  --c: no-repeat linear-gradient(var(--white-color) 0 0);
+  background: var(--c), var(--c), var(--c), var(--c), var(--c);
+  background-size: 100% calc(100%/5 + 1px);
+  animation: l15 3s infinite;
+}
+
+@keyframes l15 {
+  0% {
+    background-position: 0 calc(-2*100%/4), 0 calc(-2*100%/4), 0 calc(-2*100%/4), 0 calc(-2*100%/4), 0 calc(-2*100%/4)
+  }
+
+  20% {
+    background-position: 0 calc(4*100%/4), 0 calc(-2*100%/4), 0 calc(-2*100%/4), 0 calc(-2*100%/4), 0 calc(-2*100%/4)
+  }
+
+  40% {
+    background-position: 0 calc(4*100%/4), 0 calc(3*100%/4), 0 calc(-2*100%/4), 0 calc(-2*100%/4), 0 calc(-2*100%/4)
+  }
+
+  60% {
+    background-position: 0 calc(4*100%/4), 0 calc(3*100%/4), 0 calc(2*100%/4), 0 calc(-2*100%/4), 0 calc(-2*100%/4)
+  }
+
+  80% {
+    background-position: 0 calc(4*100%/4), 0 calc(3*100%/4), 0 calc(2*100%/4), 0 calc(1*100%/4), 0 calc(-2*100%/4)
+  }
+
+  100% {
+    background-position: 0 calc(4*100%/4), 0 calc(3*100%/4), 0 calc(2*100%/4), 0 calc(1*100%/4), 0 calc(0*100%/4)
+  }
+}
+
+
+table td {
+  padding: 0.3rem 0.5rem;
+}

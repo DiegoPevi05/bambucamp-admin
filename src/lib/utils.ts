@@ -6,6 +6,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export const formatFullName = (firstName:string|undefined, lastName:string|undefined) => {
+  let rtn_str = null;
+  if(firstName != undefined && firstName.length > 0 )  rtn_str = firstName; 
+  if(lastName != undefined && lastName.length > 0 ) rtn_str += ","+lastName;
+  return rtn_str;
+}
+
 export const getTentsNames = (reserve:ReserveIT) => {
   if(reserve.tents.length === 0) return "N/A";
   return reserve.tents.map((tent) => tent.title).join(", ");

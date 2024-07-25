@@ -2,7 +2,7 @@ import React from "react";
 import Button from "./Button";
 import { LOGO_PRIMARY } from "../../assets/images";
 import {  AnimatePresence } from "framer-motion";
-import { CalendarCheck, User, UserCog, DoorClosed  } from "lucide-react"
+import { CalendarCheck, User, UserCog, DoorClosed, Pizza, FlameKindling, Percent, Disc, Tent   } from "lucide-react"
 import {useAuth} from "../../contexts/AuthContext";
 import DropDownListAccount from "../DropDownListAccount";
 import {useNavigate} from "react-router-dom";
@@ -11,17 +11,42 @@ import {useNavigate} from "react-router-dom";
 
 const DashboardButtons: DashboardButtonDataProps[] = [
   {
-    "title": "Reserves",
-    "icon": <CalendarCheck/>,
+    "title": "Usuarios",
+    "icon": <User />,
+    "section": "users"
+  },
+  {
+    "title": "Glampings",
+    "icon": <Tent />,
+    "section": "tents"
+  },
+  {
+    "title": "Productos",
+    "icon": <Pizza />,
+    "section": "products"
+  },
+  {
+    "title": "Experiencias",
+    "icon": <FlameKindling />,
+    "section": "experiences"
+  },
+  {
+    "title":"Descuentos",
+    "icon": <Percent />,
+    "section": "discounts"
+  },
+  {
+    "title": "Promociones",
+    "icon": <Disc />,
+    "section": "promotions"
+  },
+  {
+    "title": "Reservas",
+    "icon": <CalendarCheck />,
     "section": "reserves"
   },
   {
-    "title": "Account",
-    "icon": <User />,
-    "section": "account"
-  },
-  {
-    "title": "Settings",
+    "title": "Configuraciones",
     "icon": <UserCog />,
     "section": "settings"
   }
@@ -62,7 +87,7 @@ const Dashboard = ({children}:{children:React.ReactNode}) => {
   const navigate = useNavigate();
 
   const goToSubRoute = (route:string) => {
-    navigate(`/dashboard/${route}`);
+    navigate(`/${route}`);
   };
 
   return (
@@ -98,7 +123,7 @@ const Dashboard = ({children}:{children:React.ReactNode}) => {
               <h1 className="text-lg text-secondary">{"Welcome"} {user?.firstName}{" "}{user?.lastName}</h1>
               <p className="font-secondary text-md text-tertiary">{"Here you can manage your reserves and acquire products"}</p>
             </div>
-            <DropDownListAccount user={user} variant="dark" isDashboard={true}/>
+            <DropDownListAccount user={user} variant="dark"/>
           </div>
           <AnimatePresence>
             {children}

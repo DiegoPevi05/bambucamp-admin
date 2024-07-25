@@ -1,9 +1,10 @@
 export interface User {
   token: string;
+  id:number;
   firstName?: string;
   lastName?: string;
   email?: string;
-  role?: string[]; // Add role or other attributes as needed
+  role?: string; // Add role or other attributes as needed
   phoneNumber?: string;
 }
 

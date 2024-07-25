@@ -6,6 +6,7 @@ import SignIn from './pages/signin';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import DashboardAdmin from './pages/home';
+import DashboardAdminUsers from './pages/users';
 
 
 const AppRoutes: React.FC = () => {
@@ -23,9 +24,20 @@ const AppRoutes: React.FC = () => {
         path="/"
         element={
           <ProtectedRoute
-            isAllowed={!!user && user.role && user.role.includes('ADMIN,SUPERVISOR')}
+            isAllowed={!!user && user.role != undefined &&  (user.role == "ADMIN" || user.role =="SUPERVISOR") }
           >
             <DashboardAdmin/>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute
+            isAllowed={!!user && user.role != undefined && user.role == "ADMIN"}
+          >
+            <DashboardAdminUsers/>
           </ProtectedRoute>
         }
       />
