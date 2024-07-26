@@ -3,9 +3,23 @@ export interface User {
   id:number;
   firstName?: string;
   lastName?: string;
+  password?:string;
   email?: string;
   role?: string; // Add role or other attributes as needed
   phoneNumber?: string;
+  isDisabled?:boolean;
+  lastLogin?:Date|null;
+  lastPasswordChanged?:Date|null;
+  emailVerified?:boolean;
+  createdAt?:Date|null;
+  updatedAt?:Date|null;
+}
+
+export interface UserFilters {
+  firstName?: string;
+  lastName?:string;
+  email?: string;
+  role?: string;
 }
 
 export interface ReserveIT{

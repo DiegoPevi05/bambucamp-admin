@@ -11,7 +11,10 @@ const createUserSchema = z.object({
   lastName: z.string().nonempty({ message: 'Apellido es requerido' }),
   phoneNumber: z.string().nonempty({ message: 'Numero de telefono es requerido' }),
   email: z.string().email({ message: 'Debe ser un Correo Electronico Valido' }),
-  role: z.enum(['SUPERVISOR', 'CLIENT'], { message: 'Rol tiene que ser Supervisor o Client' }),
+  role: z.string().refine(
+    (value) => value === 'SUPERVISOR' || value === 'CLIENT',
+    { message: 'Rol tiene que ser Supervisor o Cliente' }
+  ),
   password: z.string()
     .min(8, { message: 'La Contraseña debe tener almenos 8 caracteres.' })
     .regex(/[a-zA-Z]/, { message: 'La Contraseña debe tener almenos una letra.' })
@@ -19,6 +22,10 @@ const createUserSchema = z.object({
     .regex(/[^a-zA-Z0-9]/, { message: 'La Contraseña debe contener un caracter especial.' })
 });
 
+const editUserSchema = createUserSchema.omit({ password: true }).extend({
+  password: z.string().optional()  // Password is optional for editing
+});
 
 
-export { signInSchema, createUserSchema};
+
+export { signInSchema, createUserSchema, editUserSchema};

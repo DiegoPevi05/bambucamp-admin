@@ -315,7 +315,7 @@
   width: 124px;
   aspect-ratio: 1.154;
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
-  --c: no-repeat linear-gradient(var(--white-color) 0 0);
+  --c: no-repeat linear-gradient(var(--primary-color) 0 0);
   background: var(--c), var(--c), var(--c), var(--c), var(--c);
   background-size: 100% calc(100%/5 + 1px);
   animation: l15 3s infinite;

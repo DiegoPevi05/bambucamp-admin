@@ -36,3 +36,9 @@ export const formatDate = (date:Date) => {
   //format with time 
   return new Intl.DateTimeFormat("en-US", {dateStyle: "medium", timeStyle: "short"}).format(date);
 }
+
+export const convertStrToCurrentTimezoneDate = (utcDateString: string): Date => {
+  const date = new Date(utcDateString);
+  const localOffset = date.getTimezoneOffset(); // getTimezoneOffset() returns the difference in minutes
+  return new Date(date.getTime() + localOffset);
+};
