@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import DashboardAdmin from './pages/home';
 import DashboardAdminUsers from './pages/users';
+import DashboardAdminGlapings from './pages/tents';
 
 
 const AppRoutes: React.FC = () => {
@@ -35,9 +36,22 @@ const AppRoutes: React.FC = () => {
         path="/users"
         element={
           <ProtectedRoute
+            redirectPath="/"
             isAllowed={!!user && user.role != undefined && user.role == "ADMIN"}
           >
             <DashboardAdminUsers/>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/tents"
+        element={
+          <ProtectedRoute
+            redirectPath="/"
+            isAllowed={!!user && user.role != undefined && (user.role == "ADMIN" || user.role =="SUPERVISOR")}
+          >
+            <DashboardAdminGlapings/>
           </ProtectedRoute>
         }
       />

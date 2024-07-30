@@ -22,6 +22,40 @@ export interface UserFilters {
   role?: string;
 }
 
+interface CustomPrice {
+  dateFrom: Date;
+  dateTo: Date;
+  price: number;
+}
+
+export interface TentIT {
+  id: number;
+  header: string;
+  title: string;
+  description: string;
+  images: string[];
+  qtypeople:number;
+  qtykids:number;
+  price: number;
+  services: {
+    wifi: boolean;
+    parking: boolean;
+    pool: boolean;
+    breakfast: boolean;
+    lunch: boolean;
+    dinner: boolean;
+    spa: boolean;
+    bar: boolean;
+    hotwater: boolean;
+    airconditioning: boolean;
+    grill: boolean;
+  }
+  custom_price:CustomPrice[];
+  status:string;
+  createdAt:Date|null;
+  updatedAt:Date|null;
+}
+
 export interface ReserveIT{
   id: number;
   checkin: Date;
@@ -43,27 +77,7 @@ export interface PromotionIT {
   remaining: number;
 }
 
-export interface TentIT {
-  id: number;
-  header: string;
-  title: string;
-  description: string;
-  images: string[];
-  price: number;
-  services: {
-    wifi: boolean;
-    parking: boolean;
-    pool: boolean;
-    breakfast: boolean;
-    lunch: boolean;
-    dinner: boolean;
-    spa: boolean;
-    bar: boolean;
-    hotwater: boolean;
-    airconditioning: boolean;
-    grill: boolean;
-  }
-}
+
 
 export interface ExperienceIT {
   id: number;

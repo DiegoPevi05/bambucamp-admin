@@ -16,7 +16,7 @@ import { createUserSchema, editUserSchema } from "../db/schemas";
 import Modal from "../components/Modal";
 
 
-const DashboardAdminUsers = () => {
+const DashboardAdminGlapings = () => {
 
     const { user } = useAuth();
     const [datasetUsers,setDataSetUsers] = useState<{users:User[],totalPages:Number,currentPage:Number}>({users:[],totalPages:1,currentPage:1})
@@ -166,7 +166,7 @@ const DashboardAdminUsers = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserIcon/>Usuarios</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserIcon/>Glampings</h2>
                     <div className="w-full h-auto flex flex-row justify-between items-center gap-x-4">
                         <div className="w-auto h-auto flex flex-col md:flex-row justify-start items-start gap-y-4 gap-x-4">
                           <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
@@ -608,4 +608,4 @@ const DashboardAdminUsers = () => {
     )
 }
 
-export default DashboardAdminUsers;
+export default DashboardAdminGlapings;
