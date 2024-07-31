@@ -487,3 +487,34 @@ table td {
   white-space: pre-wrap;
   /* Allows the line break */
 }
+
+.image-selected {
+  width: 150px;
+  height: 150px;
+  border-radius: 12px;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  transition: transform 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.delete-image-selected {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: var(--white-color);
+}
+
+.image-selected:hover {
+  transform: scale(1.05);
+  /* Allow the pseudo-element to respond to the hover */
+  box-shadow: 0 0 0.04em,
+    0 0.06em 0.16em -0.03em transparent inset,
+    0 0 0 0.07em rgba(0, 0, 0, 0.1) inset,
+    0 0 0 3.3px rgba(0, 170, 169, 0.55),
+    0 0 0 5px rgba(0, 170, 169, 0.3);
+}
+
+.delete-image-selected:hover {
+  color: var(--primary-color);
+  transform: scale(1.05);
+}

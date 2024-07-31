@@ -1,10 +1,8 @@
 import {toast} from 'sonner';
 import { ZodError } from 'zod';
 import axios from 'axios';
-import { Tent, TentFilters } from '../../lib/interfaces';
+import { Tent, TentFilters, TentFormData } from '../../lib/interfaces';
 import { serializeTent } from '../serializer';
-import {z} from 'zod';
-import { TentSchema } from '../schemas';
 
 export const getAllTents = async( token: string, page:Number, filters?:TentFilters ): Promise<{tents:Tent[], totalPages:Number ,currentPage:Number}|null> => {
 
@@ -26,16 +24,16 @@ export const getAllTents = async( token: string, page:Number, filters?:TentFilte
     // Construct the URL with query parameters
     const url = `${import.meta.env.VITE_BACKEND_URL}/tents?${params.toString()}`;
 
-    const fetchUsers = await axios.get(url, {
+    const fetchTents = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
 
     data = {
-      tents: fetchUsers.data.tents.map((tent: any) => serializeTent(tent)),
-      currentPage: parseInt(fetchUsers.data.currentPage as string, 10),
-      totalPages:parseInt(fetchUsers.data.totalPages as string, 10)
+      tents: fetchTents.data.tents.map((tent: any) => serializeTent(tent)),
+      currentPage: parseInt(fetchTents.data.currentPage as string, 10),
+      totalPages:parseInt(fetchTents.data.totalPages as string, 10)
     }
 
   }catch(error){
@@ -53,13 +51,36 @@ export const getAllTents = async( token: string, page:Number, filters?:TentFilte
 }
 
 
-type TentFormValues = z.infer<typeof TentSchema>;
 
-export const createTent = async (tent: TentFormValues, token: string): Promise<void> => {
+export const createTent = async (tent: TentFormData, token: string): Promise<void> => {
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/tents`, tent, {
+
+    // Create a new FormData object
+    const formData = new FormData();
+
+    // Append basic fields
+    formData.append('title', tent.title);
+    formData.append('description', tent.description);
+    formData.append('header', tent.header);
+    formData.append('qtypeople', tent.qtypeople.toString());
+    formData.append('qtykids', tent.qtykids.toString());
+    formData.append('price', tent.price.toString());
+    formData.append('status', tent.status);
+
+    // Append custom prices as a JSON string
+    formData.append('custom_price', tent.custom_price);
+
+    // Append images
+    tent.images.forEach((image, index) => {
+      formData.append(`images[${index}]`, image);
+    });
+
+    // Append services as a JSON string
+    formData.append('services', tent.services);
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/tents`, formData, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
       }
     });
 
@@ -87,7 +108,7 @@ export const createTent = async (tent: TentFormValues, token: string): Promise<v
 };
 
 
-export const updateTent = async (userId:Number,user: TentFormValues, token: string): Promise<void> => {
+export const updateTent = async (userId:Number,user: TentFormData, token: string): Promise<void> => {
   try {
     const { password, ...userData } = user;
     const payload = password ? { ...userData, password } : userData;

@@ -32,12 +32,15 @@ const CustomPriceSchema = z.object({
   price: z.number().positive({ message: 'El precio debe ser un número positivo' })
 });
 
+const imageFileSchema = z.instanceof(File).refine((file) => file instanceof File, {
+  message: 'Debe ser un archivo válido',
+});
+
 const TentSchema = z.object({
-  id: z.number().positive({ message: 'El ID debe ser un número positivo' }),
   header: z.string().nonempty({ message: 'El encabezado es requerido' }),
   title: z.string().nonempty({ message: 'El título es requerido' }),
   description: z.string().nonempty({ message: 'La descripción es requerida' }),
-  images: z.array(z.string()).nonempty({ message: 'Debe haber al menos una imagen' }),
+  images: z.array(imageFileSchema).nonempty({ message: 'Debe haber al menos una imagen' }),
   qtypeople: z.number().nonnegative({ message: 'La cantidad de personas debe ser un número no negativo' }),
   qtykids: z.number().nonnegative({ message: 'La cantidad de niños debe ser un número no negativo' }),
   price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
@@ -56,8 +59,6 @@ const TentSchema = z.object({
   }),
   custom_price: z.array(CustomPriceSchema),
   status: z.string().nonempty({ message: 'El estado es requerido' }),
-  createdAt: z.date().nullable(),
-  updatedAt: z.date().nullable()
 });
 
 export { signInSchema, createUserSchema, editUserSchema, TentSchema};

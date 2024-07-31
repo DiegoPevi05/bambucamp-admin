@@ -22,7 +22,7 @@ export interface UserFilters {
   role?: string;
 }
 
-interface CustomPrice {
+export interface CustomPrice {
   dateFrom: Date;
   dateTo: Date;
   price: number;
@@ -61,13 +61,26 @@ export interface TentFilters {
   status?:string;
 }
 
+export interface TentFormData {
+  title: string;
+  description: string;
+  header: string;
+  images: File[];
+  services:string;
+  qtypeople:number;
+  qtykids:number;
+  price: number;
+  custom_price:string;
+  status:string;
+}
+
 export interface ReserveIT{
   id: number;
   checkin: Date;
   checkout: Date;
   status: string;
   total: number;
-  tents: TentIT[];
+  tents: Tent[];
   experiences: ExperienceIT[];
   products: ProductIT[];
 }

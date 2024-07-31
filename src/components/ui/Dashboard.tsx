@@ -117,7 +117,7 @@ const Dashboard = ({children}:{children:React.ReactNode}) => {
             <span>{"Cerrar Sesion"}</span>
           </Button>
         </div>
-        <div className="bg-white px-4 col-span-1 lg:col-span-5 grid grid-rows-8 gap-4 h-full overflow-hidden">
+        <div className="bg-white px-4 col-span-1 lg:col-span-5 grid grid-rows-8 gap-4 h-full overflow-y-scroll">
           <div className="bg-white p-4 rounded-lg shadow-lg border-2 border-gray-200 row-span-1 flex flex-row justify-between">
             <div className="flex flex-row gap-x-4 items-start flex-col ">
               <h1 className="text-lg text-secondary">{"Bienvenido"} {user?.firstName}{" "}{user?.lastName}</h1>

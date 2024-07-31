@@ -1,19 +1,23 @@
 import Dashboard from "../components/ui/Dashboard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { Eye, Pen, X, ChevronLeft, ChevronRight, Tent as TentIcon, EyeOff, CircleX, UserX, UserRoundCheck, User as UserIcon, MailCheck, UserPen } from "lucide-react";
 import Button from "../components/ui/Button";
 import { InputRadio } from "../components/ui/Input";
 import { formatServices, formatDate } from "../lib/utils";
 import { getAllTents, createTent, deleteTent,disableTent, enableTent, updateTent } from "../db/actions/tents";
 import { useAuth } from "../contexts/AuthContext";
-import { Tent, TentFilters } from "../lib/interfaces";
+import { Tent, TentFilters, TentFormData, CustomPrice } from "../lib/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
 import {fadeIn} from "../lib/motions";
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useForm } from "react-hook-form"
+import {  ZodError } from 'zod';
 import { TentSchema } from "../db/schemas";
 import Modal from "../components/Modal";
+import {toast} from "sonner";
+
+interface Image {
+  url: string;
+  file: File;
+}
 
 
 const DashboardAdminGlapings = () => {
@@ -32,30 +36,132 @@ const DashboardAdminGlapings = () => {
             const tents  = await getAllTents(user.token,page,filters);
             if(tents){
                 setDataSetTents(tents);
-                setCurrentView("A");
+                setCurrentView("L");
             }
         }
     }
 
     const [loadingForm, setLoadingForm] = useState<boolean>(false);
-    const [showPassword, setShowPassword] = useState<boolean>(false);
 
-    type TentFormValues = z.infer<typeof TentSchema>;
+    const [images, setImages] = useState<Image[]>([]);
 
-    const { register, handleSubmit, formState: { errors }, reset } = useForm<TentFormValues>({
-        resolver: zodResolver(TentSchema),
-    });
-
-    const onSubmitCreation = async (data: TentFormValues) => {
-        setLoadingForm(true);
-        if(user !== null){
-            await createTent(data, user.token);
-            reset();
-        }
-        getTentsHandler(1);
-        setLoadingForm(false);
-        setCurrentView("L")
+    const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      const newImages: Image[] = files.map(file => ({
+        url: URL.createObjectURL(file),
+        file
+      }));
+      setImages(prevImages => [...prevImages, ...newImages]);
+      e.target.value = ''; // Resetear el input file
+    }
     };
+
+    const handleRemoveImage = (url: string) => {
+      setImages(prevImages => prevImages.filter(image => image.url !== url));
+    };
+
+    const [customPrices, setCustomPrices] = useState<CustomPrice[]>([]);
+
+    const handleAddCustomPrice = () => {
+      const form = document.getElementById('form_create_tent') as HTMLFormElement;
+      const dateFromInput = form.querySelector('input[name="custom_price_date_from"]') as HTMLInputElement;
+      const dateToInput = form.querySelector('input[name="custom_price_date_to"]') as HTMLInputElement;
+      const priceInput = form.querySelector('input[name="custom_price_value"]') as HTMLInputElement;
+
+      const dateFrom = new Date(dateFromInput.value);
+      const dateTo = new Date(dateToInput.value);
+      const price = parseFloat(priceInput.value);
+
+      if (!isNaN(dateFrom.getTime()) && !isNaN(dateTo.getTime()) && !isNaN(price)) {
+        const newCustomPrice: CustomPrice = { dateFrom, dateTo, price };
+        setCustomPrices([...customPrices, newCustomPrice]);
+
+        // Clear input fields
+        dateFromInput.value = '';
+        dateToInput.value = '';
+        priceInput.value = '';
+      } else {
+        // Handle invalid input
+        toast.error("Ingresa una fecha valida por favor");
+      }
+    };
+
+    const handleRemoveCustomPrice = (index: number) => {
+      setCustomPrices(customPrices.filter((_, i) => i !== index));
+    };
+
+    const validateFields = (): boolean => {
+        const form = document.getElementById('form_create_tent') as HTMLFormElement;
+        const title = (form.querySelector('input[name="title"]') as HTMLInputElement).value;
+        const description = (form.querySelector('textarea[name="description"]') as HTMLTextAreaElement).value;
+        const header = (form.querySelector('input[name="header"]') as HTMLInputElement).value;
+        const qtypeople = Number((form.querySelector('input[name="qtypeople"]') as HTMLInputElement).value);
+        const qtykids = Number((form.querySelector('input[name="qtykids"]') as HTMLInputElement).value);
+        const price = Number((form.querySelector('input[name="price"]') as HTMLInputElement).value);
+        const status = (form.querySelector('select[name="status"]') as HTMLInputElement).value;
+
+        // Clear previous error messages
+        form.querySelectorAll('.error-message').forEach(errorElement => {
+          errorElement.textContent = '';
+        });
+
+        try {
+          TentSchema.parse({ title, description, header, images: images.map(image => image.file),  qtypeople, qtykids, price, services:getServices() , custom_price:customPrices, status });
+          return true;
+        } catch (error) {
+          if (error instanceof ZodError) {
+            error.errors.forEach(err => {
+              console.log(err);
+              const fieldName = err.path[0];
+              const errorElement = form.querySelector(`#create_tent_error_${fieldName}`) as HTMLLabelElement;
+              if (errorElement) {
+                errorElement.textContent = err.message;
+                errorElement.classList.remove('hidden');
+              }
+            });
+          }
+          return false;
+        }
+    };
+
+    const onSubmitCreation = async (e: FormEvent) => {
+        e.preventDefault();
+        setLoadingForm(true);
+        if (validateFields()) {
+          console.log("this is executed")
+          const form = document.getElementById('form_create_tent') as HTMLFormElement;
+          const title = (form.querySelector('input[name="title"]') as HTMLInputElement).value;
+          const description = (form.querySelector('textarea[name="description"]') as HTMLTextAreaElement).value;
+          const header = (form.querySelector('input[name="header"]') as HTMLInputElement).value;
+          const qtypeople = Number((form.querySelector('input[name="qtypeople"]') as HTMLInputElement).value);
+          const qtykids = Number((form.querySelector('input[name="qtykids"]') as HTMLInputElement).value);
+          const price = Number((form.querySelector('input[name="price"]') as HTMLInputElement).value);
+          const status = (form.querySelector('select[name="status"]') as HTMLInputElement).value;
+
+          const formData: TentFormData = {
+            title,
+            description,
+            header,
+            qtypeople,
+            qtykids,
+            price,
+            status,
+            custom_price:JSON.stringify(customPrices),
+            images: images.map(image => image.file),
+            services: JSON.stringify(getServices())
+          };
+
+          if(user !== null){
+            await createTent(formData, user.token);
+          }
+          getTentsHandler(1);
+          setLoadingForm(false);
+          setCurrentView("L")
+        }
+    };
+
+
 
     const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
 
@@ -106,32 +212,27 @@ const DashboardAdminGlapings = () => {
         getTentsHandler(1);
     }
 
-    const onSubmitUpdate = async (data: TentFormValues) => {
+    const onSubmitUpdate = async (data: TentFormData) => {
         setLoadingForm(true);
         if(user !== null && selectedTent != null){
             await updateTent(selectedTent.id,data, user.token);
-            reset();
         }
         getTentsHandler(1);
         setLoadingForm(false);
         setCurrentView("L")
     };
 
-    useEffect(() => {
-        if (selectedTent) {
-            reset({
-                header: selectedTent.header,
-                title: selectedTent.title,
-                description: selectedTent.description,
-                images: selectedTent.images,
-                qtypeople: selectedTent.qtykids,
-                price:selectedTent.price,
-                services:selectedTent.services,
-                custom_price:selectedTent.custom_price,
-                status:selectedTent.status
-            });
-        }
-    }, [selectedTent, reset]);
+    const getServices = (): { [key: string]: boolean } => {
+      const servicesDiv = document.getElementById('input_tent_create_services');
+      const checkboxes = servicesDiv?.querySelectorAll('input[type="checkbox"]') as NodeListOf<HTMLInputElement>;
+      const services: { [key: string]: boolean } = {};
+      
+      checkboxes?.forEach(checkbox => {
+        services[checkbox.name] = checkbox.checked;
+      });
+
+      return services;
+    };
 
 
     return (
@@ -352,202 +453,225 @@ const DashboardAdminGlapings = () => {
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
                     <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><TentIcon/>Agregar Glamping</h2>
 
-                    <form id="tent_creation_form" className="w-full h-auto grid grid-cols-2 gap-6 p-6" onSubmit={handleSubmit(onSubmitCreation)}>
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Encabezado"}</label>
-                        <input name="header" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Encabezado"}/>
-                        <div className="w-full h-6">
-                          {errors?.header && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.header.message ? errors.header.message : "Encabezado es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
+                  <form id="form_create_tent" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Titulo"}</label>
-                        <input name="title" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Titulo"}/>
-                        <div className="w-full h-6">
-                          {errors?.title && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.title.message ? errors.title.message : "Titulo es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
+                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
-                        <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}/>
-                        <div className="w-full h-6">
-                          {errors?.description && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.description.message ? errors.description.message : "Descripcion es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
-
-                      
-                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                            <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Numero de Personas"}</label>
-                            <input name="qtypeople" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero de Personas"}/>
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Encabezado"}</label>
+                            <input name="header" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Encabezado"}/>
                             <div className="w-full h-6">
-                              {errors?.qtypeople && 
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.qtypeople.message ? errors.qtypeople.message : "Numero Personas es requerido."}
-                                </motion.p>
-                              }
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                            <label htmlFor="qtykids" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Numero de niños"}</label>
-                            <input name="qtykids" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero de niños"}/>
-                            <div className="w-full h-6">
-                              {errors?.qtykids && 
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.qtykids.message ? errors.qtykids.message : "Cantidad de Niños es requerido."}
-                                </motion.p>
-                              }
-                            </div>
-                          </div>
-                      </div>
-
-                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                            <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Desde"}</label>
-                            <input name="custom_price_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Desde"}/>
-                            <div className="w-full h-6">
-                              {errors?.qtypeople && 
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.qtypeople.message ? errors.qtypeople.message : "Fecha desde es requerida."}
-                                </motion.p>
-                              }
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                            <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Hasta"}</label>
-                            <input name="custom_price_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
-                            <div className="w-full h-6">
-                              {errors?.qtykids && 
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.qtykids.message ? errors.qtykids.message : "Fecha hasta es requerida."}
-                                </motion.p>
-                              }
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                            <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio"}</label>
-                            <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
-                            <div className="w-full h-6">
-                              {errors?.qtykids && 
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.qtykids.message ? errors.qtykids.message : "Precio especifico es requerido "}
-                                </motion.p>
-                              }
-                            </div>
-                          </div>
-                          <Button size="sm" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
-                      </div>
-
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio Fijo"}</label>
-                        <input {...register("price")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"}/>
-                        <div className="w-full h-6">
-                          {errors?.price && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.price.message ? errors.price.message : "Precio Fijo es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
-                          <div className="flex flex-row justify-start items-start w-full h-auto p-4">
-                            <div className="file-select" id="src-tent-image" >
-                              <input type="file" name="src-tent-image" aria-label="Archivo"/>
-                            </div>
-                          </div>
-                      </div>
-
-
-
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="services" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Servicios"}</label>
-                          <div className="flex flex-row justify-start items-start w-full h-auto p-2">
-                            <div className="checkbox-wrapper-1">
-                              <input id="grill" className="substituted" type="checkbox" aria-hidden="true" />
-                              <label htmlFor="grill">Parrilla</label>
-                            </div>
-                          </div>
-                      </div>
-
-                        <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                          <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
-                          <select {...register("status")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                            <option value="ACTIVE">ACTIVO</option>
-                            <option value="INACTIVE">INACTIVO</option>
-                          </select>
-                          <div className="w-full h-6">
-                            {errors?.status && 
                               <motion.p 
+                                id="create_tent_error_header"
                                 initial="hidden"
                                 animate="show"
                                 exit="hidden"
                                 variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errors.status.message ? errors.status.message : "El Status es requerido."}
+                                className="hidden h-6 text-[10px] sm:text-xs text-primary font-tertiary">
                               </motion.p>
-                            }
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="flex flex-row justify-end gap-x-6 w-full col-span-2">
-                            <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                            <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Glamping </Button>
-                        </div>
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Titulo"}</label>
+                            <input name="title" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Titulo"}/>
+                            <div className="w-full h-6">
+                              <motion.p 
+                                id="create_tent_error_title"
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="hidden h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                              </motion.p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
+                            <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}/>
+                            <div className="w-full h-6">
+                              <motion.p 
+                                id="create_tent_error_description"
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="hidden h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                              </motion.p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio Fijo"}</label>
+                            <input name="price" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"}/>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
+                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precios Personalizados"}</label>
+                            <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
+                                  <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Desde"}</label>
+                                  <input name="custom_price_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Desde"}/>
+                                </div>
+
+                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
+                                  <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Hasta"}</label>
+                                  <input name="custom_price_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+                                </div>
+
+                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
+                                  <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio"}</label>
+                                  <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+                                </div>
+                                <Button onClick={handleAddCustomPrice} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
+                            </div>
+                            <div id="tent_create_container_custom_prices flex flex-col items-start justify-start"className="w-full h-auto">
+                              {customPrices.map((price, index) => (
+                                        <div
+                                          key={index}
+                                          className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
+                                        >
+                                          <span className="w-[30%]">
+                                            Desde: <label className="text-tertiary ml-2">{price.dateFrom.toLocaleDateString()}</label>
+                                          </span>
+                                          <span className="w-[30%]">
+                                            Hasta: <label className="text-tertiary ml-2">{price.dateTo.toLocaleDateString()}</label>
+                                          </span>
+                                          <span className="w-[30%]">
+                                            Precio: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
+                                          </span>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleRemoveCustomPrice(index)}
+                                            className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
+                                          >
+                                            Borrar
+                                          </button>
+                                        </div>
+                                      ))}
+                            </div>
+
+                          </div>
+                      </div>
+
+                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
+                            <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                              <option value="ACTIVE">ACTIVO</option>
+                              <option value="INACTIVE">INACTIVO</option>
+                            </select>
+                          </div>
+
+
+                          
+                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                              <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                                <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Numero de Personas"}</label>
+                                <input name="qtypeople" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero de Personas"}/>
+                              </div>
+
+                              <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                                <label htmlFor="qtykids" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Numero de niños"}</label>
+                                <input name="qtykids" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero de niños"}/>
+                              </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="services" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Servicios"}</label>
+                              <div id="input_tent_create_services" className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-2 gap-y-4 gap-x-6">
+                                <div className="checkbox-wrapper-1">
+                                  <input name="wifi" className="substituted" type="checkbox" aria-hidden="true"  />
+                                  <label htmlFor="wifi">Wi-fi</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-1">
+                                  <input name="parking" className="substituted" type="checkbox" aria-hidden="true" />
+                                  <label htmlFor="parking">Parking</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-1">
+                                  <input name="pool" className="substituted" type="checkbox" aria-hidden="true" />
+                                  <label htmlFor="pool">Piscina</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-1">
+                                  <input name="breakfast" className="substituted" type="checkbox" aria-hidden="true" />
+                                  <label htmlFor="breakfast">Desayuno</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-1">
+                                  <input name="lunch" className="substituted" type="checkbox" aria-hidden="true" />
+                                  <label htmlFor="lunch">Almuerzo</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-1">
+                                  <input name="dinner" className="substituted" type="checkbox" aria-hidden="true" />
+                                  <label htmlFor="dinner">Cena</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-1">
+                                  <input name="spa" className="substituted" type="checkbox" aria-hidden="true" />
+                                  <label htmlFor="spa">Spa</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-1">
+                                  <input name="bar" className="substituted" type="checkbox" aria-hidden="true" />
+                                  <label htmlFor="bar">Bar</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-1">
+                                  <input name="hotwater" className="substituted" type="checkbox" aria-hidden="true" />
+                                  <label htmlFor="hotwater">Agua Caliente</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-1">
+                                  <input name="airconditioning" className="substituted" type="checkbox" aria-hidden="true" />
+                                  <label htmlFor="airconditioning">Aire Acondicionado</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-1">
+                                  <input name="grill" className="substituted" type="checkbox" aria-hidden="true" />
+                                  <label htmlFor="grill">Aire Acondicionado</label>
+                                </div>
+                              </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
+                              <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
+                              {images.map((image, index) => (
+                                <div
+                                  key={index}
+                                  className="image-selected"
+                                  style={{
+                                    backgroundImage: `url(${image.url})`,
+                                    backgroundSize: 'cover',
+                                    position: 'relative'
+                                  }}
+                                >
+                                  <button
+                                    type="button"
+                                    className="delete-image-selected"
+                                    onClick={() => handleRemoveImage(image.url)}
+                                  >
+                                    X
+                                  </button>
+                                </div>
+                              ))}
+                                <div className="file-select" id="src-tent-image" >
+                                  <input type="file" name="src-tent-image" aria-label="Archivo" onChange={handleImageChange} multiple/>
+                                </div>
+                              </div>
+                          </div>
+
+                          <div className="flex flex-row justify-end gap-x-6 w-full">
+                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
+                              <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Glamping </Button>
+                          </div>
+
+                      </div>
                     </form>
                 </motion.div>
         )}
