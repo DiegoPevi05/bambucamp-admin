@@ -6,7 +6,7 @@ import { serializeUser } from '../serializer';
 import {z} from 'zod';
 import { createUserSchema, editUserSchema } from '../schemas';
 
-export const getAllUsers = async(user:User, page:Number, filters?:UserFilters): Promise<{users:User[], totalPages:Number ,currentPage:Number}|null> => {
+export const getAllUsers = async(token:string, page:Number, filters?:UserFilters): Promise<{users:User[], totalPages:Number ,currentPage:Number}|null> => {
 
   let data:{ users:User[],totalPages:Number,currentPage:Number } | null = null;
   try{
@@ -26,11 +26,10 @@ export const getAllUsers = async(user:User, page:Number, filters?:UserFilters): 
     // Construct the URL with query parameters
     const url = `${import.meta.env.VITE_BACKEND_URL}/users?${params.toString()}`;
 
-    console.log(url)
 
     const fetchUsers = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${user.token}`
+        Authorization: `Bearer ${token}`
       }
     });
 

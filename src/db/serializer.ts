@@ -1,4 +1,4 @@
-import { User } from "../lib/interfaces"
+import { User, Tent } from "../lib/interfaces"
 import { convertStrToCurrentTimezoneDate } from "../lib/utils";
 
 export const serializeUser = (data:any):User|null => {
@@ -22,4 +22,25 @@ export const serializeUser = (data:any):User|null => {
 
   return user;
 
+}
+
+export const serializeTent = (data:any):Tent|null => {
+  let tent:Tent|null = null;
+
+  tent = {
+    id: data.id,
+    header: data.header,
+    title:data.title,
+    description: data.description,
+    images: data.images,
+    qtypeople: data.qtypeople || 0,
+    qtykids: data.qtykids || 0,
+    price: data.price || 0,
+    services: data.services ? JSON.parse(data.services) : {},
+    custom_price: data.custom_price ? JSON.parse(data.custom_price) : [],
+    status : data.status,
+    createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
+    updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
+  };
+  return tent;
 }

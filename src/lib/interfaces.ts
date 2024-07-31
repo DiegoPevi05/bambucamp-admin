@@ -28,7 +28,7 @@ interface CustomPrice {
   price: number;
 }
 
-export interface TentIT {
+export interface Tent {
   id: number;
   header: string;
   title: string;
@@ -54,6 +54,11 @@ export interface TentIT {
   status:string;
   createdAt:Date|null;
   updatedAt:Date|null;
+}
+
+export interface TentFilters {
+  title?: string;
+  status?:string;
 }
 
 export interface ReserveIT{

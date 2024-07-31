@@ -1,6 +1,7 @@
 import {ClassValue,clsx} from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import {ReserveIT} from './interfaces'
+import { TentSchema } from '../db/schemas'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -41,4 +42,19 @@ export const convertStrToCurrentTimezoneDate = (utcDateString: string): Date => 
   const date = new Date(utcDateString);
   const localOffset = date.getTimezoneOffset(); // getTimezoneOffset() returns the difference in minutes
   return new Date(date.getTime() + localOffset);
+};
+
+type Services = typeof TentSchema._type.services;
+
+export const formatServices = (services: Services): string => {
+  const serviceEntries = Object.entries(services);
+
+  const serviceItems = serviceEntries.map(([key, value]) => {
+    if (value) {
+      return `<li>${key}</li>`;
+    }
+    return '';
+  }).filter(item => item !== '');
+
+  return `<ul>${serviceItems.join('')}</ul>`;
 };

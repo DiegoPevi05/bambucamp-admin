@@ -29,8 +29,7 @@ const DashboardAdminUsers = () => {
     const getUsersHandler = async (page:Number, filters?:UserFilters) => {
         setCurrentView("LOADING");
         if(user != null){
-            console.log(filters)
-            const users  = await getAllUsers(user,page,filters);
+            const users  = await getAllUsers(user.token,page,filters);
             if(users){
                 setDataSetUsers(users);
                 setCurrentView("L");
@@ -149,7 +148,7 @@ const DashboardAdminUsers = () => {
                 exit="hidden"
                 viewport={{ once: true }}
                 variants={fadeIn("up","",0.5,0.3)}
-                className="w-full min-h-[300px] flex flex-col justify-center items-center gap-y-4 bg-white">
+                className="w-full min-h-[300px] flex flex-col justify-center items-center gap-y-4 bg-white pointer-events-none">
                   <div className="loader"></div>
                   <h1 className="font-primary text-secondary mt-4">{"Cargando..."}</h1>
             </motion.div>

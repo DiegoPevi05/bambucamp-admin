@@ -26,6 +26,38 @@ const editUserSchema = createUserSchema.omit({ password: true }).extend({
   password: z.string().optional()  // Password is optional for editing
 });
 
+const CustomPriceSchema = z.object({
+  dateFrom: z.date(),
+  dateTo: z.date(),
+  price: z.number().positive({ message: 'El precio debe ser un número positivo' })
+});
 
+const TentSchema = z.object({
+  id: z.number().positive({ message: 'El ID debe ser un número positivo' }),
+  header: z.string().nonempty({ message: 'El encabezado es requerido' }),
+  title: z.string().nonempty({ message: 'El título es requerido' }),
+  description: z.string().nonempty({ message: 'La descripción es requerida' }),
+  images: z.array(z.string()).nonempty({ message: 'Debe haber al menos una imagen' }),
+  qtypeople: z.number().nonnegative({ message: 'La cantidad de personas debe ser un número no negativo' }),
+  qtykids: z.number().nonnegative({ message: 'La cantidad de niños debe ser un número no negativo' }),
+  price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
+  services: z.object({
+    wifi: z.boolean(),
+    parking: z.boolean(),
+    pool: z.boolean(),
+    breakfast: z.boolean(),
+    lunch: z.boolean(),
+    dinner: z.boolean(),
+    spa: z.boolean(),
+    bar: z.boolean(),
+    hotwater: z.boolean(),
+    airconditioning: z.boolean(),
+    grill: z.boolean()
+  }),
+  custom_price: z.array(CustomPriceSchema),
+  status: z.string().nonempty({ message: 'El estado es requerido' }),
+  createdAt: z.date().nullable(),
+  updatedAt: z.date().nullable()
+});
 
-export { signInSchema, createUserSchema, editUserSchema};
+export { signInSchema, createUserSchema, editUserSchema, TentSchema};
