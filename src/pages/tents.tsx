@@ -1,23 +1,18 @@
 import Dashboard from "../components/ui/Dashboard";
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
-import { Eye, Pen, X, ChevronLeft, ChevronRight, Tent as TentIcon, EyeOff, CircleX, UserX, UserRoundCheck, User as UserIcon, MailCheck, UserPen, Blocks, Image } from "lucide-react";
+import { Eye, Pen, X, ChevronLeft, ChevronRight, Tent as TentIcon, CircleX, User as UserIcon, Blocks, Image } from "lucide-react";
 import Button from "../components/ui/Button";
 import { InputRadio } from "../components/ui/Input";
-import {  formatDate } from "../lib/utils";
-import { getAllTents, createTent, deleteTent,disableTent, enableTent, updateTent } from "../db/actions/tents";
+import {  formatDate, getLabelService, createImagesArray } from "../lib/utils";
+import { getAllTents, createTent, deleteTent, updateTent } from "../db/actions/tents";
 import { useAuth } from "../contexts/AuthContext";
-import { Tent, TentFilters, TentFormData, CustomPrice } from "../lib/interfaces";
+import { Tent, TentFilters, TentFormData, CustomPrice, ImageInterface } from "../lib/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
 import {fadeIn, fadeOnly} from "../lib/motions";
 import {  ZodError } from 'zod';
 import { TentSchema } from "../db/schemas";
 import Modal from "../components/Modal";
 import {toast} from "sonner";
-
-interface Image {
-  url: string;
-  file: File;
-}
 
 
 const DashboardAdminGlapings = () => {
@@ -43,15 +38,12 @@ const DashboardAdminGlapings = () => {
 
     const [loadingForm, setLoadingForm] = useState<boolean>(false);
 
-    const [images, setImages] = useState<Image[]>([]);
+    const [images, setImages] = useState<ImageInterface[]>([]);
 
     const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      const newImages: Image[] = files.map(file => ({
-        url: URL.createObjectURL(file),
-        file
-      }));
+      const newImages: ImageInterface[] = createImagesArray(files);
       setImages(prevImages => [...prevImages, ...newImages]);
       e.target.value = ''; // Resetear el input file
     }
@@ -69,7 +61,7 @@ const DashboardAdminGlapings = () => {
 
       const serviceItems = serviceEntries.map(([key, value]) => {
         if (value) {
-          return key;
+          return getLabelService(key);
         }
         return null;
       }).filter(item => item !== null);
@@ -94,6 +86,12 @@ const DashboardAdminGlapings = () => {
       if (!isNaN(dateFrom.getTime()) && !isNaN(dateTo.getTime()) && !isNaN(price)) {
         dateFrom.setHours(12, 0, 0, 0);
         dateTo.setHours(12, 0, 0, 0);
+
+        if(dateFrom > dateTo){
+          toast.error("La fecha de inicio debe ser menor que la fecha de Fin");
+          return;
+        };   
+
         const newCustomPrice: CustomPrice = { dateFrom, dateTo, price };
         setCustomPrices([...customPrices, newCustomPrice]);
 
@@ -111,8 +109,10 @@ const DashboardAdminGlapings = () => {
       setCustomPrices(customPrices.filter((_, i) => i !== index));
     };
 
-    const validateFields = (): boolean => {
-        const form = document.getElementById('form_create_tent') as HTMLFormElement;
+    const [errorMessages, setErrorMessages] = useState<Record<string, string>>({});
+
+    const validateFields = (formname:string): TentFormData |null => {
+        const form = document.getElementById(formname) as HTMLFormElement;
         const title = (form.querySelector('input[name="title"]') as HTMLInputElement).value;
         const description = (form.querySelector('textarea[name="description"]') as HTMLTextAreaElement).value;
         const header = (form.querySelector('input[name="header"]') as HTMLInputElement).value;
@@ -121,45 +121,12 @@ const DashboardAdminGlapings = () => {
         const price = Number((form.querySelector('input[name="price"]') as HTMLInputElement).value);
         const status = (form.querySelector('select[name="status"]') as HTMLInputElement).value;
 
-        // Clear previous error messages
-        form.querySelectorAll('.error-message').forEach(errorElement => {
-          errorElement.textContent = '';
-        });
+        setErrorMessages({});
 
         try {
           TentSchema.parse({ title, description, header, images: images.map(image => image.file),  qtypeople, qtykids, price, services: getServices(), custom_price:customPrices, status });
-          return true;
-        } catch (error) {
-          if (error instanceof ZodError) {
-            error.errors.forEach(err => {
-              console.log(err);
-              const fieldName = err.path[0];
-              const errorElement = form.querySelector(`#create_tent_error_${fieldName}`) as HTMLLabelElement;
-              if (errorElement) {
-                errorElement.textContent = err.message;
-                errorElement.classList.remove('hidden');
-              }
-            });
-          }
-          return false;
-        }
-    };
 
-    const onSubmitCreation = async (e: FormEvent) => {
-        e.preventDefault();
-        setLoadingForm(true);
-        if (validateFields()) {
-          console.log("this is executed")
-          const form = document.getElementById('form_create_tent') as HTMLFormElement;
-          const title = (form.querySelector('input[name="title"]') as HTMLInputElement).value;
-          const description = (form.querySelector('textarea[name="description"]') as HTMLTextAreaElement).value;
-          const header = (form.querySelector('input[name="header"]') as HTMLInputElement).value;
-          const qtypeople = Number((form.querySelector('input[name="qtypeople"]') as HTMLInputElement).value);
-          const qtykids = Number((form.querySelector('input[name="qtykids"]') as HTMLInputElement).value);
-          const price = Number((form.querySelector('input[name="price"]') as HTMLInputElement).value);
-          const status = (form.querySelector('select[name="status"]') as HTMLInputElement).value;
-
-          const formData: TentFormData = {
+          return {
             title,
             description,
             header,
@@ -171,18 +138,34 @@ const DashboardAdminGlapings = () => {
             images: images.map(image => image.file),
             services: JSON.stringify(getServices())
           };
+        } catch (error) {
+          if (error instanceof ZodError) {
+            const newErrorMessages: Record<string, string> = {};
+            error.errors.forEach(err => {
+              const fieldName = err.path[0] as string;
+              newErrorMessages[fieldName] = err.message;
+            });
+            setErrorMessages(newErrorMessages);
+          }
+          return null;
+        }
+    };
 
+    const onSubmitCreation = async (e: FormEvent) => {
+        e.preventDefault();
+        setLoadingForm(true);
+        const fieldsValidated = validateFields('form_create_tent');
+        if(fieldsValidated != null){
           if(user !== null){
-            await createTent(formData, user.token);
+            await createTent(fieldsValidated, user.token);
           }
           getTentsHandler(1);
-          setLoadingForm(false);
           setImages([]);
           setCustomPrices([]);
           setCurrentView("L")
         }
+        setLoadingForm(false);
     };
-
 
 
     const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
@@ -221,27 +204,42 @@ const DashboardAdminGlapings = () => {
         setOpenDeleteModal(false);
     }
 
-    const disabledTentHandler = async( userId:Number ) => {
-        if(user != null){
-            await disableTent(userId,user.token);
-        }
-        getTentsHandler(1);
-    }
-    const enabledTentHandler = async(userId:Number) => {
-        if(user != null){
-            await enableTent(userId,user.token);
-        }
-        getTentsHandler(1);
-    }
+    const onChangeSelectedTent = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, type, checked, value } = e.target;
+        const fieldValue = type === 'checkbox' ? checked : value;
 
-    const onSubmitUpdate = async (data: TentFormData) => {
+        setSelectedTent(prevSelectedTent => {
+            // Check if the field is part of the services
+            if (prevSelectedTent.services.hasOwnProperty(name)) {
+                return {
+                    ...prevSelectedTent,
+                    services: {
+                        ...prevSelectedTent.services,
+                        [name]: fieldValue,
+                    },
+                };
+            } else {
+                // Handle other fields
+                return {
+                    ...prevSelectedTent,
+                    [name]: fieldValue,
+                };
+            }
+        });
+    };
+
+    const onSubmitUpdate = async (e: FormEvent) => {
+        e.preventDefault();
         setLoadingForm(true);
-        if(user !== null && selectedTent != null){
-            await updateTent(selectedTent.id,data, user.token);
+        const fieldsValidated = validateFields('form_update_tent');
+        if(fieldsValidated != null){
+          if(user !== null && selectedTent != null){
+              await updateTent(selectedTent.id,fieldsValidated, user.token);
+          }
+          getTentsHandler(1);
+          setCurrentView("L")
         }
-        getTentsHandler(1);
         setLoadingForm(false);
-        setCurrentView("L")
     };
 
     const getServices = (): { [key: string]: boolean } => {
@@ -350,19 +348,15 @@ const DashboardAdminGlapings = () => {
                                             </a>
                                           ))}
                                         </td>
-                                        <td className="">{tentItem.status != "ACTIVE" ? "INACTIVO" : "ACTIVO" }</td>
-                                        <td className="">{tentItem.updatedAt != undefined && tentItem.updatedAt != null ? formatDate(tentItem.updatedAt) : "None"}</td>
-                                        <td className="">{tentItem.createdAt != undefined && tentItem.createdAt != null ? formatDate(tentItem.createdAt) : "None"}</td>
-                                        <td className="flex flex-row flex-wrap gap-x-2">
+                                        <td className="h-full">{tentItem.status != "ACTIVE" ? "INACTIVO" : "ACTIVO" }</td>
+                                        <td className="h-full">{tentItem.updatedAt != undefined && tentItem.updatedAt != null ? formatDate(tentItem.updatedAt) : "None"}</td>
+                                        <td className="h-full">{tentItem.createdAt != undefined && tentItem.createdAt != null ? formatDate(tentItem.createdAt) : "None"}</td>
+                                        <td className="h-full flex flex-col items-center justify-center">
+                                          <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
                                             <button onClick={()=>{setSelectedTent(tentItem); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
-                                            <button  onClick={()=>{setSelectedTent(tentItem); setCurrentView("E")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Pen className="h-5 w-5"/></button>
+                                            <button  onClick={()=>{setSelectedTent(tentItem); setCustomPrices(tentItem.custom_price) ; setCurrentView("E")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Pen className="h-5 w-5"/></button>
                                             <button onClick={()=>{setOpenDeleteModal(true),setSelectedTent(tentItem)}} className="border rounded-md hover:bg-red-400 hover:text-white duration-300 active:scale-75 p-1"><X className="h-5 w-5"/></button>
-                                            {tentItem.status == "INACTIVe" ?
-                                            <button onClick={()=>{enabledTentHandler(tentItem.id)}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><UserRoundCheck className="h-5 w-5"/></button>
-                                            :
-                                            <button onClick={()=>{disabledTentHandler(tentItem.id)}} className="border rounded-md hover:bg-red-400 hover:text-white duration-300 active:scale-75 p-1"><UserX className="h-5 w-5"/></button>
-
-                                            }
+                                          </div>
                                         </td>
                                     </tr>
                                     )
@@ -376,8 +370,8 @@ const DashboardAdminGlapings = () => {
                 </motion.div>
 
                 <Modal isOpen={openDeleteModal} onClose={()=>setOpenDeleteModal(false)}>
-                    <div className="w-full h-auto flex flex-col items-center justify-center text-secondary pb-6 px-6 pt-12">
-                      <CircleX className="h-[60px] w-[60px] text-red-400"/>
+                    <div className="w-[400px] h-auto flex flex-col items-center justify-center text-secondary pb-6 px-6 pt-12 text-center">
+                        <CircleX className="h-[60px] w-[60px] text-red-400 "/>
                         <p className="text-primary">Estas seguro de eliminar esta tienda?</p>
                         <p className="text-sm mt-6 text-secondary">La tienda se eliminara si haces click en aceptar, las reservas no se perderan, pero no podran hacer mas reservas en la pagina</p>
                         <div className="flex flex-row justify-around w-full mt-6">
@@ -392,84 +386,184 @@ const DashboardAdminGlapings = () => {
 
         {currentView == "V" && selectedTent && (
                 <motion.div 
-                    key={"User-View"}
+                    key={"New-View"}
                     initial="hidden"
                     animate="show"
                     exit="hidden"
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserIcon/> Ver Usuario</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><TentIcon/>Agregar Glamping</h2>
 
-                    <div className="w-full h-auto grid grid-cols-2 gap-6 p-6">
+                  <form id="form_create_tent" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
 
+                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
-                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1 gap-x-6">
-                          <div className="flex flex-col justify-start items-start w-[50%] h-auto">
-                            <label htmlFor="isDisabled" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estado de Usuario"}</label>
-                              <div className={`w-full flex flex-row justify-start items-center h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 gap-x-4 ${ selectedTent?.isDisabled ? "text-tertiary" : "text-primary" }`}> <UserIcon className="h-5 w-5"/> { selectedTent?.isDisabled ? "Inhabilitado" : "Habilitado" }</div>
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Encabezado"}</label>
+                            <input name="header" value={selectedTent.header} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Encabezado"} disabled/>
                           </div>
-                          <div className="flex flex-col justify-start items-start w-[50%] h-auto">
-                            <label htmlFor="EmailVerified" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estado de Email"}</label>
-                              <div className={`w-full flex flex-row justify-start items-center h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 gap-x-4 ${ selectedTent?.emailVerified ? "text-primary" : "text-tertiary" }`} > <MailCheck className="h-5 w-5"/> { selectedTent?.emailVerified ? "Verificado" : "No Verificado" }</div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Titulo"}</label>
+                            <input name="title" value={selectedTent.title} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Titulo"} disabled/>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
+                            <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}>{ selectedTent.description }</textarea>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio Fijo"}</label>
+                            <input name="price" value={selectedTent.price} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"} disabled/>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
+                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precios Personalizados"}</label>
+                            <div className="w-full h-auto flex flex-col items-start justify-start">
+                              <AnimatePresence>
+                                {selectedTent.custom_price.map((price, index) => (
+                                          <motion.div
+                                            key={index}
+                                            initial="hidden"
+                                            animate="show"
+                                            exit="hidden"
+                                            viewport={{ once: true }}
+                                            variants={fadeIn("up","",0,0.3)}
+                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
+                                          >
+                                            <span className="w-[30%]">
+                                              Desde: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
+                                            </span>
+                                            <span className="w-[30%]">
+                                              Hasta: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
+                                            </span>
+                                            <span className="w-[30%]">
+                                              Precio: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
+                                            </span>
+                                          </motion.div>
+                                        ))}
+                              </AnimatePresence>
+                            </div>
+
                           </div>
                       </div>
 
+                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
+                            <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                              <option value={selectedTent.status}>{selectedTent.status == "ACTIVE" ? "ACTIVO" : "INACTIVO"}</option>
+                            </select>
+                          </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Correo Electronico"}</label>
-                        <input  name="email" value={selectedTent?.email} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"} disabled/>
+
+                          
+                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                              <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                                <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Numero de Personas"}</label>
+                                <input name="qtypeople" value={selectedTent.qtypeople} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero de Personas"} disabled/>
+                              </div>
+
+                              <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                                <label htmlFor="qtykids" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Numero de niños"}</label>
+                                <input name="qtykids" value={selectedTent.qtykids} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero de niños"} disabled/>
+                              </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="services" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Servicios"}</label>
+                              <div id="input_tent_create_services" className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-2 gap-y-4 gap-x-6">
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="wifi" type="checkbox" aria-hidden="true" checked={selectedTent.services.wifi}/>
+                                  <label htmlFor="wifi">Wi-fi</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="parking"  type="checkbox" aria-hidden="true" checked={selectedTent.services.parking} />
+                                  <label htmlFor="parking">Parking</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="pool"  type="checkbox" aria-hidden="true" checked={selectedTent.services.pool}/>
+                                  <label htmlFor="pool">Piscina</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="breakfast"  type="checkbox" aria-hidden="true" checked={selectedTent.services.breakfast} />
+                                  <label htmlFor="breakfast">Desayuno</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="lunch"  type="checkbox" aria-hidden="true" checked={selectedTent.services.lunch}/>
+                                  <label htmlFor="lunch">Almuerzo</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="dinner"  type="checkbox" aria-hidden="true" checked={selectedTent.services.dinner}/>
+                                  <label htmlFor="dinner">Cena</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="spa"  type="checkbox" aria-hidden="true" checked={selectedTent.services.spa}/>
+                                  <label htmlFor="spa">Spa</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="bar"  type="checkbox" aria-hidden="true" checked={selectedTent.services.bar}/>
+                                  <label htmlFor="bar">Bar</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="hotwater"  type="checkbox" aria-hidden="true" checked={selectedTent.services.hotwater}/>
+                                  <label htmlFor="hotwater">Agua Caliente</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="airconditioning" type="checkbox" aria-hidden="true" checked={selectedTent.services.airconditioning}/>
+                                  <label htmlFor="airconditioning">Aire Acondicionado</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="grill" type="checkbox" aria-hidden="true" checked={selectedTent.services.grill}/>
+                                  <label htmlFor="grill">Parrilla</label>
+                                </div>
+                              </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
+                              <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
+                                <AnimatePresence>
+                                  {selectedTent.images.map((image, index) => (
+                                    <motion.div
+                                      key={index}
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      viewport={{ once: true }}
+                                      variants={fadeOnly("",0,0.3)}
+                                      className="image-selected"
+                                      style={{
+                                        backgroundImage: `url(${import.meta.env.VITE_BACKEND_URL}/${image})`,
+                                        backgroundSize: 'cover',
+                                        position: 'relative'
+                                      }}
+                                    >
+                                    </motion.div>
+                                  ))}
+                                </AnimatePresence>
+                              </div>
+                          </div>
+
+                          <div className="flex flex-row justify-end gap-x-6 w-full">
+                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Volver a lista de Glampings</Button>
+                          </div>
+
                       </div>
-
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Primer Nombre"}</label>
-                        <input name="firstName" value={selectedTent?.firstName} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"} disabled/>
-                      </div>
-
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Apellido"}</label>
-                        <input name="lastName" value={selectedTent?.lastName} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"} disabled/>
-                      </div>
-
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Celular"}</label>
-                        <input name="phoneNumber" value={selectedTent?.phoneNumber} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"} disabled/>
-                      </div>
-
-
-
-                    <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                      <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Rol"}</label>
-                      <select name="role" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                        <option value={selectedTent?.role} selected>{selectedTent?.role != "SUPERVISOR" ? (selectedTent?.role  != "CLIENT" ? "ADMIN" :"CLIENTE" ) : "SUPERVISOR" }</option>
-                      </select>
-                    </div>
-
-                  <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                    <label htmlFor="createdAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Ultimo Cambio de Contraseña"}</label>
-                      <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedTent?.lastPasswordChanged ? formatDate(selectedTent?.lastPasswordChanged) : "None"}</div>
-                  </div>
-
-                  <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                    <label htmlFor="createdAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Ultimo Inicio de Sesion"}</label>
-                      <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedTent?.lastLogin ? formatDate(selectedTent?.lastLogin) : "None"}</div>
-                  </div>
-
-                  <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                    <label htmlFor="createdAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Creado"}</label>
-                      <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedTent?.createdAt ? formatDate(selectedTent?.createdAt) : "None"}</div>
-                  </div>
-
-                  <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                    <label htmlFor="updatedAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Actualizado"}</label>
-
-                    <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedTent?.updatedAt ? formatDate(selectedTent?.updatedAt) : "None"}</div>
-                  </div>
-
-                    <div className="flex flex-row justify-end gap-x-6 w-full col-span-2">
-                        <Button type="button" onClick={()=>{setSelectedUser(null); setCurrentView("L")}} size="sm" variant="dark" effect="default" isRound={true}>Voler a la lista de Usuarios</Button>
-                    </div>
-                    </div>
+                    </form>
                 </motion.div>
         )}
 
@@ -494,30 +588,34 @@ const DashboardAdminGlapings = () => {
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Encabezado"}</label>
                             <input name="header" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Encabezado"}/>
-                            <div className="w-full h-6">
-                              <motion.p 
-                                id="create_tent_error_header"
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="hidden h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              </motion.p>
-                            </div>
+                              <div className="w-full h-6">
+                                {errorMessages.header && (
+                                  <motion.p 
+                                    initial="hidden"
+                                    animate="show"
+                                    exit="hidden"
+                                    variants={fadeIn("up","", 0, 1)}
+                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {errorMessages.header}
+                                  </motion.p>
+                                )}
+                              </div>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Titulo"}</label>
                             <input name="title" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Titulo"}/>
                             <div className="w-full h-6">
-                              <motion.p 
-                                id="create_tent_error_title"
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="hidden h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              </motion.p>
+                              {errorMessages.title && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.title}
+                                </motion.p>
+                              )}
                             </div>
                           </div>
 
@@ -525,20 +623,35 @@ const DashboardAdminGlapings = () => {
                             <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
                             <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}/>
                             <div className="w-full h-6">
-                              <motion.p 
-                                id="create_tent_error_description"
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="hidden h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              </motion.p>
+                              {errorMessages.description && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.description}
+                                </motion.p>
+                              )}
                             </div>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio Fijo"}</label>
                             <input name="price" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"}/>
+
+                            <div className="w-full h-6">
+                              {errorMessages.price && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.price}
+                                </motion.p>
+                              )}
+                            </div>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
@@ -593,6 +706,19 @@ const DashboardAdminGlapings = () => {
                               </AnimatePresence>
                             </div>
 
+                            <div className="w-full h-6">
+                              {errorMessages.customPrices && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.customPrices}
+                                </motion.p>
+                              )}
+                            </div>
+
                           </div>
                       </div>
 
@@ -603,6 +729,19 @@ const DashboardAdminGlapings = () => {
                               <option value="ACTIVE">ACTIVO</option>
                               <option value="INACTIVE">INACTIVO</option>
                             </select>
+
+                            <div className="w-full h-6">
+                              {errorMessages.status && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.status}
+                                </motion.p>
+                              )}
+                            </div>
                           </div>
 
 
@@ -611,11 +750,36 @@ const DashboardAdminGlapings = () => {
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                                 <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Numero de Personas"}</label>
                                 <input name="qtypeople" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero de Personas"}/>
+
+                                <div className="w-full h-6">
+                                  {errorMessages.qtypeople && (
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                      {errorMessages.qtypeople}
+                                    </motion.p>
+                                  )}
+                                </div>
                               </div>
 
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                                 <label htmlFor="qtykids" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Numero de niños"}</label>
                                 <input name="qtykids" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero de niños"}/>
+                                <div className="w-full h-6">
+                                  {errorMessages.qtykids && (
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                      {errorMessages.qtykids}
+                                    </motion.p>
+                                  )}
+                                </div>
                               </div>
                           </div>
 
@@ -624,7 +788,7 @@ const DashboardAdminGlapings = () => {
                               <div id="input_tent_create_services" className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-2 gap-y-4 gap-x-6">
 
                                 <div className="checkbox-wrapper-13">
-                                  <input name="wifi" type="checkbox" aria-hidden="true"  />
+                                  <input name="wifi" type="checkbox" aria-hidden="true" />
                                   <label htmlFor="wifi">Wi-fi</label>
                                 </div>
 
@@ -675,7 +839,7 @@ const DashboardAdminGlapings = () => {
 
                                 <div className="checkbox-wrapper-13">
                                   <input name="grill" type="checkbox" aria-hidden="true" />
-                                  <label htmlFor="grill">Aire Acondicionado</label>
+                                  <label htmlFor="grill">Parrilla</label>
                                 </div>
                               </div>
                           </div>
@@ -712,6 +876,20 @@ const DashboardAdminGlapings = () => {
                                 <div className="file-select" id="src-tent-image" >
                                   <input type="file" name="src-tent-image" aria-label="Archivo" onChange={handleImageChange} multiple/>
                                 </div>
+
+
+                              </div>
+                              <div className="w-full h-6">
+                                {errorMessages.images && (
+                                  <motion.p 
+                                    initial="hidden"
+                                    animate="show"
+                                    exit="hidden"
+                                    variants={fadeIn("up","", 0, 1)}
+                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {errorMessages.images}
+                                  </motion.p>
+                                )}
                               </div>
                           </div>
 
@@ -734,121 +912,323 @@ const DashboardAdminGlapings = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserPen/>Editar Usuario</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><TentIcon/>Editar Glamping</h2>
 
-                    <form className="w-full h-auto grid grid-cols-2 gap-6 p-6" onSubmit={handleSubmit(onSubmitUpdate)}>
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Correo Electronico"}</label>
-                        <input {...register("email")} 
-                          className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"}/>
-                        <div className="w-full h-6">
-                          {errors?.email && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.email.message ? errors.email.message : "Correo es requerido."}
-                            </motion.p>
-                          }
-                        </div>
+                  <form id="form_update_tent" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitUpdate(e)}>
+
+                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Encabezado"}</label>
+                            <input name="header" value={selectedTent.header}  onChange={(e)=>onChangeSelectedTent(e)}  className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Encabezado"}/>
+                            <div className="w-full h-6">
+                              {errorMessages.header && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.header}
+                                </motion.p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Titulo"}</label>
+                            <input name="title" value={selectedTent.title}  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Titulo"}/>
+                            <div className="w-full h-6">
+                              {errorMessages.title && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.title}
+                                </motion.p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
+                            <textarea name="description"  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}>{selectedTent.description}</textarea>
+                            <div className="w-full h-6">
+                              {errorMessages.description && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.description}
+                                </motion.p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio Fijo"}</label>
+                            <input name="price" value={selectedTent.price}  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"}/>
+
+                            <div className="w-full h-6">
+                              {errorMessages.price && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.price}
+                                </motion.p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
+                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precios Personalizados"}</label>
+                            <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
+                                  <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Desde"}</label>
+                                  <input name="custom_price_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Desde"}/>
+                                </div>
+
+                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
+                                  <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Hasta"}</label>
+                                  <input name="custom_price_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+                                </div>
+
+                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
+                                  <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio"}</label>
+                                  <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+                                </div>
+                                <Button onClick={handleAddCustomPrice} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
+                            </div>
+                            <div id="tent_create_container_custom_prices flex flex-col items-start justify-start"className="w-full h-auto">
+                              <AnimatePresence>
+                                {customPrices.map((price, index) => (
+                                          <motion.div
+                                            key={index}
+                                            initial="hidden"
+                                            animate="show"
+                                            exit="hidden"
+                                            viewport={{ once: true }}
+                                            variants={fadeIn("up","",0,0.3)}
+                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
+                                          >
+                                            <span className="w-[30%]">
+                                              Desde: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
+                                            </span>
+                                            <span className="w-[30%]">
+                                              Hasta: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
+                                            </span>
+                                            <span className="w-[30%]">
+                                              Precio: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
+                                            </span>
+                                            <button
+                                              type="button"
+                                              onClick={() => handleRemoveCustomPrice(index)}
+                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
+                                            >
+                                              Borrar
+                                            </button>
+                                          </motion.div>
+                                        ))}
+                              </AnimatePresence>
+                            </div>
+                            <div className="w-full h-6">
+                              {errorMessages.customPrices && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.customPrices}
+                                </motion.p>
+                              )}
+                            </div>
+                          </div>
                       </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="password" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Contraseña"}</label>
-                        <div className="h-auto w-full relative">
-                          <input {...register("password")} 
-                            defaultValue={selectedTent.password}
-                            type={showPassword ? "text" : "password"}  className="relative w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Contraseña"}/>
-                          <div onClick={()=>setShowPassword(!showPassword)} className="absolute top-0 right-2 h-full w-8 flex justify-center items-center cursor-pointer z-50">{ showPassword ? <EyeOff/> : <Eye />} </div>
-                        </div>
-                        <div className="w-full h-6">
-                          {errors?.password && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.password.message ? errors.password.message : "Contraseña es requerida."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
+                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
+                            <select name="status" onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                              <option value="ACTIVE" selected={selectedTent.status == "ACTIVE"}>ACTIVO</option>
+                              <option value="INACTIVE" selected={selectedTent.status == "INACTIVE"}>INACTIVO</option>
+                            </select>
+                            <div className="w-full h-6">
+                              {errorMessages.status && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.status}
+                                </motion.p>
+                              )}
+                            </div>
+                          </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Primer Nombre"}</label>
-                        <input {...register("firstName")} 
-                          className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"}/>
-                        <div className="w-full h-6">
-                          {errors?.firstName && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.firstName.message ? errors.firstName.message : "Nombre es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Apellido"}</label>
-                        <input {...register("lastName")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"}/>
-                        <div className="w-full h-6">
-                          {errors?.lastName && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.lastName.message ? errors.lastName.message : "Apellido es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
+                          
+                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                              <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                                <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Numero de Personas"}</label>
+                                <input name="qtypeople" value={selectedTent.qtypeople}  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero de Personas"}/>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Celular"}</label>
-                        <input {...register("phoneNumber")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"}/>
-                        <div className="w-full h-6">
-                          {errors?.phoneNumber && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.phoneNumber.message ? errors.phoneNumber.message : "Celular es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
+                                <div className="w-full h-6">
+                                  {errorMessages.qtypeople && (
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                      {errorMessages.qtypeople}
+                                    </motion.p>
+                                  )}
+                                </div>
+                              </div>
 
-                    <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                      <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Rol"}</label>
-                      <select {...register("role")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                        <option value="">Seleccionar Rol</option>
-                        <option value="SUPERVISOR">SUPERVISOR</option>
-                        <option value="CLIENT">CLIENTE</option>
-                      </select>
-                      <div className="w-full h-6">
-                        {errors?.role && 
-                          <motion.p 
-                            initial="hidden"
-                            animate="show"
-                            exit="hidden"
-                            variants={fadeIn("up","", 0, 1)}
-                            className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errors.role.message ? errors.role.message : "Rol es requerido."}
-                          </motion.p>
-                        }
-                      </div>
-                    </div>
+                              <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                                <label htmlFor="qtykids" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Numero de niños"}</label>
+                                <input name="qtykids" value={selectedTent.qtykids}  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero de niños"}/>
 
-                        <div className="flex flex-row justify-end gap-x-6 w-full col-span-2">
-                            <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                            <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Guardar </Button>
-                        </div>
+                                <div className="w-full h-6">
+                                  {errorMessages.qtykids && (
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                      {errorMessages.qtykids}
+                                    </motion.p>
+                                  )}
+                                </div>
+                              </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="services" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Servicios"}</label>
+                              <div id="input_tent_create_services" className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-2 gap-y-4 gap-x-6">
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="wifi" type="checkbox" aria-hidden="true" onChange={onChangeSelectedTent}  checked={selectedTent.services.wifi}/>
+                                  <label htmlFor="wifi">Wi-fi</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="parking"  type="checkbox" aria-hidden="true" onChange={onChangeSelectedTent}  checked={selectedTent.services.parking} />
+                                  <label htmlFor="parking">Parking</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="pool"  type="checkbox" aria-hidden="true" onChange={onChangeSelectedTent}  checked={selectedTent.services.pool}/>
+                                  <label htmlFor="pool">Piscina</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="breakfast"  type="checkbox" aria-hidden="true" onChange={onChangeSelectedTent}  checked={selectedTent.services.breakfast} />
+                                  <label htmlFor="breakfast">Desayuno</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="lunch"  type="checkbox" aria-hidden="true" onChange={onChangeSelectedTent}  checked={selectedTent.services.lunch}/>
+                                  <label htmlFor="lunch">Almuerzo</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="dinner"  type="checkbox" aria-hidden="true" onChange={onChangeSelectedTent}  checked={selectedTent.services.dinner}/>
+                                  <label htmlFor="dinner">Cena</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="spa"  type="checkbox" aria-hidden="true" onChange={onChangeSelectedTent}  checked={selectedTent.services.spa}/>
+                                  <label htmlFor="spa">Spa</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="bar"  type="checkbox" aria-hidden="true" onChange={onChangeSelectedTent}  checked={selectedTent.services.bar}/>
+                                  <label htmlFor="bar">Bar</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="hotwater"  type="checkbox" aria-hidden="true" onChange={onChangeSelectedTent}  checked={selectedTent.services.hotwater}/>
+                                  <label htmlFor="hotwater">Agua Caliente</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="airconditioning" type="checkbox" aria-hidden="true" onChange={onChangeSelectedTent}  checked={selectedTent.services.airconditioning} />
+                                  <label htmlFor="airconditioning">Aire Acondicionado</label>
+                                </div>
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="grill" type="checkbox" aria-hidden="true" onChange={onChangeSelectedTent}  checked={selectedTent.services.grill}/>
+                                  <label htmlFor="grill">Parrilla</label>
+                                </div>
+                              </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
+                              <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
+                                <AnimatePresence>
+                                  {images.map((image, index) => (
+                                    <motion.div
+                                      key={index}
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      viewport={{ once: true }}
+                                      variants={fadeOnly("",0,0.3)}
+                                      className="image-selected"
+                                      style={{
+                                        backgroundImage: `url(${image.url})`,
+                                        backgroundSize: 'cover',
+                                        position: 'relative'
+                                      }}
+                                    >
+                                      <button
+                                        type="button"
+                                        className="delete-image-selected"
+                                        onClick={() => handleRemoveImage(image.url)}
+                                      >
+                                        X
+                                      </button>
+                                    </motion.div>
+                                  ))}
+                                </AnimatePresence>
+                                <div className="file-select" id="src-tent-image" >
+                                  <input type="file" name="src-tent-image" aria-label="Archivo" onChange={handleImageChange} multiple/>
+                                </div>
+
+                              </div>
+                              <div className="w-full h-6">
+                                {errorMessages.images && (
+                                  <motion.p 
+                                    initial="hidden"
+                                    animate="show"
+                                    exit="hidden"
+                                    variants={fadeIn("up","", 0, 1)}
+                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {errorMessages.images}
+                                  </motion.p>
+                                )}
+                              </div>
+                          </div>
+
+                          <div className="flex flex-row justify-end gap-x-6 w-full">
+                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
+                              <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Guardar Cambios </Button>
+                          </div>
+
+                      </div>
                     </form>
                 </motion.div>
                 )}

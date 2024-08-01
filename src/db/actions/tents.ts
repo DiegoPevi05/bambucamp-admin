@@ -3,6 +3,7 @@ import { ZodError } from 'zod';
 import axios from 'axios';
 import { Tent, TentFilters, TentFormData } from '../../lib/interfaces';
 import { serializeTent } from '../serializer';
+import { serializeTentToDB } from '../serializer';
 
 export const getAllTents = async( token: string, page:Number, filters?:TentFilters ): Promise<{tents:Tent[], totalPages:Number ,currentPage:Number}|null> => {
 
@@ -57,31 +58,8 @@ export const createTent = async (tent: TentFormData, token: string): Promise<voi
   try {
 
     // Create a new FormData object
-    const formData = new FormData();
+    const formData = serializeTentToDB(tent);
 
-    // Append basic fields
-    formData.append('title', tent.title);
-    formData.append('description', tent.description);
-    formData.append('header', tent.header);
-    formData.append('qtypeople', tent.qtypeople.toString());
-    formData.append('qtykids', tent.qtykids.toString());
-    formData.append('price', tent.price.toString());
-    formData.append('status', tent.status);
-
-    // Append custom prices as a JSON string
-    formData.append('custom_price', tent.custom_price);
-
-    // Append images
-    tent.images.forEach((image) => {
-      formData.append('images', image);  // Ensure each image is appended with the correct key
-    });
-
-    console.log(tent.images);
-
-    // Append services as a JSON string
-    formData.append('services', tent.services);
-
-    console.log(formData)
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/tents`, formData, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -113,20 +91,22 @@ export const createTent = async (tent: TentFormData, token: string): Promise<voi
 };
 
 
-export const updateTent = async (userId:Number,user: TentFormData, token: string): Promise<void> => {
+export const updateTent = async (userId:Number,tent: TentFormData, token: string): Promise<void> => {
   try {
-    const { password, ...userData } = user;
-    const payload = password ? { ...userData, password } : userData;
-    const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/tents/${userId}`, payload, {
+    // Create a new FormData object
+    const formData = serializeTentToDB(tent);
+
+    const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/tents/${userId}`, formData, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data',
       }
     });
 
     if (response.status === 200) {
-      toast.success("Usuario actualizado exitosamente");
+      toast.success("Glamping actualizada exitosamente");
     } else {
-      toast.error("Algo salió mal al actualizar el usuario.");
+      toast.error("Algo salió mal al actualizar el glamping.");
     }
   } catch (error) {
     if (error instanceof ZodError) {
@@ -135,12 +115,12 @@ export const updateTent = async (userId:Number,user: TentFormData, token: string
       });
     } else if (axios.isAxiosError(error)) {
       if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error actualizando el usuario."}`);
+        toast.error(`Error: ${error.response.data.message || "Error actualizando el glamping."}`);
       } else {
         toast.error("No se pudo conectar con el servidor.");
       }
     } else {
-      toast.error("Error actualizando el usuario.");
+      toast.error("Error actualizando el glamping.");
       console.error(error);
     }
   }
@@ -148,20 +128,19 @@ export const updateTent = async (userId:Number,user: TentFormData, token: string
 
 
 
-
-export const deleteTent = async(idUser:Number, token:string ):Promise<void> => {
+export const deleteTent = async(idTent:Number, token:string ):Promise<void> => {
 
   try {
-    const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/tents/${idUser}`, {
+    const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/tents/${idTent}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
 
     if (response.status === 200) {
-      toast.success("Usuario borrado exitosamente");
+      toast.success("Glamping borrado exitosamente");
     } else {
-      toast.error("Algo salió mal al borrar el usuario.");
+      toast.error("Algo salió mal al borrar el glamping.");
     }
   } catch (error) {
     if (error instanceof ZodError) {
@@ -170,80 +149,15 @@ export const deleteTent = async(idUser:Number, token:string ):Promise<void> => {
       });
     } else if (axios.isAxiosError(error)) {
       if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error borrando el usuario."}`);
+        toast.error(`Error: ${error.response.data.message || "Error borrando el glamping."}`);
       } else {
         toast.error("No se pudo conectar con el servidor.");
       }
     } else {
-      toast.error("Error borrando el usuario.");
+      toast.error("Error borrando el glamping.");
       console.error(error);
     }
   }
 
 }
 
-export const disableTent = async(idUser:Number, token:string ):Promise<void> => {
-
-  try {
-    const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/tents/${idUser}/disable`,{}, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    if (response.status === 200) {
-      toast.success("Usuario Inhabilitado exitosamente");
-    } else {
-      toast.error("Algo salió mal al inhabilitar el usuario.");
-    }
-  } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error inhabilitando el usuario."}`);
-      } else {
-        toast.error("No se pudo conectar con el servidor.");
-      }
-    } else {
-      toast.error("Error inhabilitando el usuario.");
-      console.error(error);
-    }
-  }
-
-}
-
-export const enableTent = async(idUser:Number, token:string ):Promise<void> => {
-
-  try {
-    const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/users/${idUser}/enable`,{}, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    if (response.status === 200) {
-      toast.success("Usuario Habilitado exitosamente");
-    } else {
-      toast.error("Algo salió mal al habilitar el usuario.");
-    }
-  } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error habilitando el usuario."}`);
-      } else {
-        toast.error("No se pudo conectar con el servidor.");
-      }
-    } else {
-      toast.error("Error habilitando el usuario.");
-      console.error(error);
-    }
-  }
-
-}

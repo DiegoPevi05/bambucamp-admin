@@ -22,6 +22,11 @@ export interface UserFilters {
   role?: string;
 }
 
+export interface ImageInterface {
+  url: string;
+  file: File;
+}
+
 export interface CustomPrice {
   dateFrom: Date;
   dateTo: Date;

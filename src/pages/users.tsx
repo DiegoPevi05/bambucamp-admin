@@ -275,74 +275,73 @@ const DashboardAdminUsers = () => {
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
                     <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserIcon/> Ver Usuario</h2>
 
-                    <div className="w-full h-auto grid grid-cols-2 gap-6 p-6">
+                    <div className="w-full h-auto flex flex-col lg:flex-row">
+                        <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
+                              <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1 gap-x-6">
+                                  <div className="flex flex-col justify-start items-start w-[50%] h-auto">
+                                    <label htmlFor="isDisabled" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estado de Usuario"}</label>
+                                      <div className={`w-full flex flex-row justify-start items-center h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 gap-x-4 ${ selectedUser?.isDisabled ? "text-tertiary" : "text-primary" }`}> <UserIcon className="h-5 w-5"/> { selectedUser?.isDisabled ? "Inhabilitado" : "Habilitado" }</div>
+                                  </div>
+                                  <div className="flex flex-col justify-start items-start w-[50%] h-auto">
+                                    <label htmlFor="EmailVerified" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estado de Email"}</label>
+                                      <div className={`w-full flex flex-row justify-start items-center h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 gap-x-4 ${ selectedUser?.emailVerified ? "text-primary" : "text-tertiary" }`} > <MailCheck className="h-5 w-5"/> { selectedUser?.emailVerified ? "Verificado" : "No Verificado" }</div>
+                                  </div>
+                              </div>
 
 
-                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1 gap-x-6">
-                          <div className="flex flex-col justify-start items-start w-[50%] h-auto">
-                            <label htmlFor="isDisabled" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estado de Usuario"}</label>
-                              <div className={`w-full flex flex-row justify-start items-center h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 gap-x-4 ${ selectedUser?.isDisabled ? "text-tertiary" : "text-primary" }`}> <UserIcon className="h-5 w-5"/> { selectedUser?.isDisabled ? "Inhabilitado" : "Habilitado" }</div>
-                          </div>
-                          <div className="flex flex-col justify-start items-start w-[50%] h-auto">
-                            <label htmlFor="EmailVerified" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estado de Email"}</label>
-                              <div className={`w-full flex flex-row justify-start items-center h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 gap-x-4 ${ selectedUser?.emailVerified ? "text-primary" : "text-tertiary" }`} > <MailCheck className="h-5 w-5"/> { selectedUser?.emailVerified ? "Verificado" : "No Verificado" }</div>
-                          </div>
-                      </div>
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Correo Electronico"}</label>
+                                <input  name="email" value={selectedUser?.email} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"} disabled/>
+                              </div>
 
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Primer Nombre"}</label>
+                                <input name="firstName" value={selectedUser?.firstName} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"} disabled/>
+                              </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Correo Electronico"}</label>
-                        <input  name="email" value={selectedUser?.email} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"} disabled/>
-                      </div>
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Apellido"}</label>
+                                <input name="lastName" value={selectedUser?.lastName} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"} disabled/>
+                              </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Primer Nombre"}</label>
-                        <input name="firstName" value={selectedUser?.firstName} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"} disabled/>
-                      </div>
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Celular"}</label>
+                                <input name="phoneNumber" value={selectedUser?.phoneNumber} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"} disabled/>
+                              </div>
+                                <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                  <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Rol"}</label>
+                                  <select name="role" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                                    <option value={selectedUser?.role} selected>{selectedUser?.role != "SUPERVISOR" ? (selectedUser?.role  != "CLIENT" ? "ADMIN" :"CLIENTE" ) : "SUPERVISOR" }</option>
+                                  </select>
+                                </div>
+                        </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Apellido"}</label>
-                        <input name="lastName" value={selectedUser?.lastName} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"} disabled/>
-                      </div>
+                        <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="createdAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Ultimo Cambio de Contraseña"}</label>
+                                  <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.lastPasswordChanged ? formatDate(selectedUser?.lastPasswordChanged) : "None"}</div>
+                              </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Celular"}</label>
-                        <input name="phoneNumber" value={selectedUser?.phoneNumber} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"} disabled/>
-                      </div>
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="createdAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Ultimo Inicio de Sesion"}</label>
+                                  <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.lastLogin ? formatDate(selectedUser?.lastLogin) : "None"}</div>
+                              </div>
 
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="createdAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Creado"}</label>
+                                  <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.createdAt ? formatDate(selectedUser?.createdAt) : "None"}</div>
+                              </div>
 
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="updatedAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Actualizado"}</label>
 
-                    <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                      <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Rol"}</label>
-                      <select name="role" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                        <option value={selectedUser?.role} selected>{selectedUser?.role != "SUPERVISOR" ? (selectedUser?.role  != "CLIENT" ? "ADMIN" :"CLIENTE" ) : "SUPERVISOR" }</option>
-                      </select>
-                    </div>
+                                <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.updatedAt ? formatDate(selectedUser?.updatedAt) : "None"}</div>
+                              </div>
 
-                  <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                    <label htmlFor="createdAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Ultimo Cambio de Contraseña"}</label>
-                      <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.lastPasswordChanged ? formatDate(selectedUser?.lastPasswordChanged) : "None"}</div>
-                  </div>
-
-                  <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                    <label htmlFor="createdAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Ultimo Inicio de Sesion"}</label>
-                      <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.lastLogin ? formatDate(selectedUser?.lastLogin) : "None"}</div>
-                  </div>
-
-                  <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                    <label htmlFor="createdAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Creado"}</label>
-                      <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.createdAt ? formatDate(selectedUser?.createdAt) : "None"}</div>
-                  </div>
-
-                  <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                    <label htmlFor="updatedAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Actualizado"}</label>
-
-                    <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.updatedAt ? formatDate(selectedUser?.updatedAt) : "None"}</div>
-                  </div>
-
-                    <div className="flex flex-row justify-end gap-x-6 w-full col-span-2">
-                        <Button type="button" onClick={()=>{setSelectedUser(null); setCurrentView("L")}} size="sm" variant="dark" effect="default" isRound={true}>Voler a la lista de Usuarios</Button>
-                    </div>
+                            <div className="flex flex-row justify-end gap-x-6 w-full col-span-2">
+                                <Button type="button" onClick={()=>{setSelectedUser(null); setCurrentView("L")}} size="sm" variant="dark" effect="default" isRound={true}>Voler a la lista de Usuarios</Button>
+                            </div>
+                        </div>
                     </div>
                 </motion.div>
         )}
@@ -361,115 +360,129 @@ const DashboardAdminUsers = () => {
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
                     <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserPlus/>Agregar Usuario</h2>
 
-                    <form className="w-full h-auto grid grid-cols-2 gap-6 p-6" onSubmit={handleSubmit(onSubmitCreation)}>
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Correo Electronico"}</label>
-                        <input {...register("email")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"}/>
-                        <div className="w-full h-6">
-                          {errors?.email && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.email.message ? errors.email.message : "Correo es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
+                    <form className="w-full h-auto flex flex-col lg:flex-row" onSubmit={handleSubmit(onSubmitCreation)}>
+                        <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="password" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Contraseña"}</label>
-                        <div className="h-auto w-full relative">
-                          <input {...register("password")} type={showPassword ? "text" : "password"} className="relative w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Contraseña"}/>
-                          <div onClick={()=>setShowPassword(!showPassword)} className="absolute top-0 right-2 h-full w-8 flex justify-center items-center cursor-pointer z-50">{ showPassword ? <EyeOff/> : <Eye />} </div>
-                        </div>
-                        <div className="w-full h-6">
-                          {errors?.password && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.password.message ? errors.password.message : "Contraseña es requerida."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Primer Nombre"}</label>
-                        <input {...register("firstName")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"}/>
-                        <div className="w-full h-6">
-                          {errors?.firstName && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.firstName.message ? errors.firstName.message : "Nombre es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Correo Electronico"}</label>
+                                <input {...register("email")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"}/>
+                                <div className="w-full h-6">
+                                  {errors?.email && 
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.email.message ? errors.email.message : "Correo es requerido."}
+                                    </motion.p>
+                                  }
+                                </div>
+                              </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Apellido"}</label>
-                        <input {...register("lastName")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"}/>
-                        <div className="w-full h-6">
-                          {errors?.lastName && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.lastName.message ? errors.lastName.message : "Apellido es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="password" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Contraseña"}</label>
+                                <div className="h-auto w-full relative">
+                                  <input {...register("password")} type={showPassword ? "text" : "password"} className="relative w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Contraseña"}/>
+                                  <div onClick={()=>setShowPassword(!showPassword)} className="absolute top-0 right-2 h-full w-8 flex justify-center items-center cursor-pointer z-50">{ showPassword ? <EyeOff/> : <Eye />} </div>
+                                </div>
+                                <div className="w-full h-6">
+                                  {errors?.password && 
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.password.message ? errors.password.message : "Contraseña es requerida."}
+                                    </motion.p>
+                                  }
+                                </div>
+                              </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Celular"}</label>
-                        <input {...register("phoneNumber")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"}/>
-                        <div className="w-full h-6">
-                          {errors?.phoneNumber && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.phoneNumber.message ? errors.phoneNumber.message : "Celular es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Primer Nombre"}</label>
+                                <input {...register("firstName")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"}/>
+                                <div className="w-full h-6">
+                                  {errors?.firstName && 
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.firstName.message ? errors.firstName.message : "Nombre es requerido."}
+                                    </motion.p>
+                                  }
+                                </div>
+                              </div>
 
-                    <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                      <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Rol"}</label>
-                      <select {...register("role")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                        <option value="">Seleccionar Rol</option>
-                        <option value="SUPERVISOR">SUPERVISOR</option>
-                        <option value="CLIENT">CLIENTE</option>
-                      </select>
-                      <div className="w-full h-6">
-                        {errors?.role && 
-                          <motion.p 
-                            initial="hidden"
-                            animate="show"
-                            exit="hidden"
-                            variants={fadeIn("up","", 0, 1)}
-                            className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errors.role.message ? errors.role.message : "Rol es requerido."}
-                          </motion.p>
-                        }
-                      </div>
-                    </div>
 
-                        <div className="flex flex-row justify-end gap-x-6 w-full col-span-2">
-                            <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                            <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Usuario </Button>
                         </div>
+
+                        <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
+
+
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Apellido"}</label>
+                                <input {...register("lastName")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"}/>
+                                <div className="w-full h-6">
+                                  {errors?.lastName && 
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.lastName.message ? errors.lastName.message : "Apellido es requerido."}
+                                    </motion.p>
+                                  }
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Celular"}</label>
+                                <input {...register("phoneNumber")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"}/>
+                                <div className="w-full h-6">
+                                  {errors?.phoneNumber && 
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.phoneNumber.message ? errors.phoneNumber.message : "Celular es requerido."}
+                                    </motion.p>
+                                  }
+                                </div>
+                              </div>
+
+                            <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                              <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Rol"}</label>
+                              <select {...register("role")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                                <option value="">Seleccionar Rol</option>
+                                <option value="SUPERVISOR">SUPERVISOR</option>
+                                <option value="CLIENT">CLIENTE</option>
+                              </select>
+                              <div className="w-full h-6">
+                                {errors?.role && 
+                                  <motion.p 
+                                    initial="hidden"
+                                    animate="show"
+                                    exit="hidden"
+                                    variants={fadeIn("up","", 0, 1)}
+                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                      {errors.role.message ? errors.role.message : "Rol es requerido."}
+                                  </motion.p>
+                                }
+                              </div>
+                            </div>
+
+                            <div className="flex flex-row justify-end gap-x-6 w-full mt-auto">
+                                <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
+                                <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Usuario </Button>
+                            </div>
+
+                        </div>
+
+
+
                     </form>
                 </motion.div>
         )}
@@ -485,118 +498,123 @@ const DashboardAdminUsers = () => {
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
                     <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserPen/>Editar Usuario</h2>
 
-                    <form className="w-full h-auto grid grid-cols-2 gap-6 p-6" onSubmit={handleSubmit(onSubmitUpdate)}>
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Correo Electronico"}</label>
-                        <input {...register("email")} 
-                          className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"}/>
-                        <div className="w-full h-6">
-                          {errors?.email && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.email.message ? errors.email.message : "Correo es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
+                    <form className="w-full h-auto flex flex-col lg:flex-row" onSubmit={handleSubmit(onSubmitUpdate)}>
+                        <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="password" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Contraseña"}</label>
-                        <div className="h-auto w-full relative">
-                          <input {...register("password")} 
-                            defaultValue={selectedUser.password}
-                            type={showPassword ? "text" : "password"}  className="relative w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Contraseña"}/>
-                          <div onClick={()=>setShowPassword(!showPassword)} className="absolute top-0 right-2 h-full w-8 flex justify-center items-center cursor-pointer z-50">{ showPassword ? <EyeOff/> : <Eye />} </div>
-                        </div>
-                        <div className="w-full h-6">
-                          {errors?.password && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.password.message ? errors.password.message : "Contraseña es requerida."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Correo Electronico"}</label>
+                                <input {...register("email")} 
+                                  className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"}/>
+                                <div className="w-full h-6">
+                                  {errors?.email && 
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.email.message ? errors.email.message : "Correo es requerido."}
+                                    </motion.p>
+                                  }
+                                </div>
+                              </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Primer Nombre"}</label>
-                        <input {...register("firstName")} 
-                          className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"}/>
-                        <div className="w-full h-6">
-                          {errors?.firstName && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.firstName.message ? errors.firstName.message : "Nombre es requerido."}
-                            </motion.p>
-                          }
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="password" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Contraseña"}</label>
+                                <div className="h-auto w-full relative">
+                                  <input {...register("password")} 
+                                    defaultValue={selectedUser.password}
+                                    type={showPassword ? "text" : "password"}  className="relative w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Contraseña"}/>
+                                  <div onClick={()=>setShowPassword(!showPassword)} className="absolute top-0 right-2 h-full w-8 flex justify-center items-center cursor-pointer z-50">{ showPassword ? <EyeOff/> : <Eye />} </div>
+                                </div>
+                                <div className="w-full h-6">
+                                  {errors?.password && 
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.password.message ? errors.password.message : "Contraseña es requerida."}
+                                    </motion.p>
+                                  }
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Primer Nombre"}</label>
+                                <input {...register("firstName")} 
+                                  className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"}/>
+                                <div className="w-full h-6">
+                                  {errors?.firstName && 
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.firstName.message ? errors.firstName.message : "Nombre es requerido."}
+                                    </motion.p>
+                                  }
+                                </div>
+                              </div>
+
                         </div>
-                      </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Apellido"}</label>
-                        <input {...register("lastName")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"}/>
-                        <div className="w-full h-6">
-                          {errors?.lastName && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.lastName.message ? errors.lastName.message : "Apellido es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
+                        <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Apellido"}</label>
+                                <input {...register("lastName")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"}/>
+                                <div className="w-full h-6">
+                                  {errors?.lastName && 
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.lastName.message ? errors.lastName.message : "Apellido es requerido."}
+                                    </motion.p>
+                                  }
+                                </div>
+                              </div>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Celular"}</label>
-                        <input {...register("phoneNumber")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"}/>
-                        <div className="w-full h-6">
-                          {errors?.phoneNumber && 
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.phoneNumber.message ? errors.phoneNumber.message : "Celular es requerido."}
-                            </motion.p>
-                          }
-                        </div>
-                      </div>
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Celular"}</label>
+                                <input {...register("phoneNumber")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"}/>
+                                <div className="w-full h-6">
+                                  {errors?.phoneNumber && 
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.phoneNumber.message ? errors.phoneNumber.message : "Celular es requerido."}
+                                    </motion.p>
+                                  }
+                                </div>
+                              </div>
 
-                    <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                      <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Rol"}</label>
-                      <select {...register("role")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                        <option value="">Seleccionar Rol</option>
-                        <option value="SUPERVISOR">SUPERVISOR</option>
-                        <option value="CLIENT">CLIENTE</option>
-                      </select>
-                      <div className="w-full h-6">
-                        {errors?.role && 
-                          <motion.p 
-                            initial="hidden"
-                            animate="show"
-                            exit="hidden"
-                            variants={fadeIn("up","", 0, 1)}
-                            className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errors.role.message ? errors.role.message : "Rol es requerido."}
-                          </motion.p>
-                        }
-                      </div>
-                    </div>
-
-                        <div className="flex flex-row justify-end gap-x-6 w-full col-span-2">
-                            <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                            <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Guardar </Button>
+                            <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                              <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Rol"}</label>
+                              <select {...register("role")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                                <option value="">Seleccionar Rol</option>
+                                <option value="SUPERVISOR">SUPERVISOR</option>
+                                <option value="CLIENT">CLIENTE</option>
+                              </select>
+                              <div className="w-full h-6">
+                                {errors?.role && 
+                                  <motion.p 
+                                    initial="hidden"
+                                    animate="show"
+                                    exit="hidden"
+                                    variants={fadeIn("up","", 0, 1)}
+                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                      {errors.role.message ? errors.role.message : "Rol es requerido."}
+                                  </motion.p>
+                                }
+                              </div>
+                            </div>
+                            <div className="flex flex-row justify-end gap-x-6 w-full mt-auto">
+                                <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
+                                <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Guardar </Button>
+                            </div>
                         </div>
                     </form>
                 </motion.div>

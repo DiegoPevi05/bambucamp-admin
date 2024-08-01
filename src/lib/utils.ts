@@ -1,6 +1,6 @@
 import {ClassValue,clsx} from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import {ReserveIT} from './interfaces'
+import {ReserveIT, ImageInterface} from './interfaces'
 import { TentSchema } from '../db/schemas'
 
 export function cn(...inputs: ClassValue[]) {
@@ -43,6 +43,29 @@ export const convertStrToCurrentTimezoneDate = (utcDateString: string): Date => 
   const localOffset = date.getTimezoneOffset(); // getTimezoneOffset() returns the difference in minutes
   return new Date(date.getTime() + localOffset);
 };
+
+export const getLabelService = (key:string) => {
+    if(key == "wifi") return "Wi-Fi"
+    if(key == "parking") return "Estacionamiento"
+    if(key == "pool") return "Piscina"
+    if(key == "breakfast") return "Desayuno"
+    if(key == "lunch" ) return "Almuerzo"
+    if(key == "dinner") return "Cena"
+    if(key == "spa") return "Spa"
+    if(key == "bar") return "Bar"
+    if(key == "hotwater") return "Agua Caliente"
+    if(key == "airconditioning") return "Aire acondicionado"
+    if(key == "grill") return "Parrilla"
+    return key;
+}
+
+export const createImagesArray = (files:File[]) => {
+    const newImages: ImageInterface[] = files.map(file => ({
+      url: URL.createObjectURL(file),
+      file
+    }));
+    return newImages;
+}
 
 
 

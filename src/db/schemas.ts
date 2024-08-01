@@ -32,8 +32,12 @@ const CustomPriceSchema = z.object({
   price: z.number().positive({ message: 'El precio debe ser un número positivo' })
 });
 
-const imageFileSchema = z.instanceof(File).refine((file) => file instanceof File, {
-  message: 'Debe ser un archivo válido',
+const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+
+const imageFileSchema = z.instanceof(File).refine((file) => {
+  return allowedMimeTypes.includes(file.type) && file.size <= 2 * 1024 * 1024;
+}, {
+  message: 'Debe ser un archivo de imagen válido (JPEG, PNG, WEBP) y no mayor de 2MB',
 });
 
 const TentSchema = z.object({
@@ -41,7 +45,7 @@ const TentSchema = z.object({
   title: z.string().nonempty({ message: 'El título es requerido' }),
   description: z.string().nonempty({ message: 'La descripción es requerida' }),
   images: z.array(imageFileSchema).nonempty({ message: 'Debe haber al menos una imagen' }),
-  qtypeople: z.number().nonnegative({ message: 'La cantidad de personas debe ser un número no negativo' }),
+  qtypeople: z.number().gt(1, { message: 'La cantidad de personas debe ser mayor que 1' }),
   qtykids: z.number().nonnegative({ message: 'La cantidad de niños debe ser un número no negativo' }),
   price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
   services: z.object({

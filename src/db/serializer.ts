@@ -1,4 +1,4 @@
-import { User, Tent, CustomPrice } from "../lib/interfaces"
+import { User, Tent, TentFormData } from "../lib/interfaces"
 import { convertStrToCurrentTimezoneDate } from "../lib/utils";
 
 export const serializeUser = (data:any):User|null => {
@@ -46,4 +46,32 @@ export const serializeTent = (data:any):Tent|null => {
     updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
   };
   return tent;
+}
+
+export const serializeTentToDB = (tent: TentFormData) => {
+
+    // Create a new FormData object
+    const formData = new FormData();
+
+    // Append basic fields
+    formData.append('title', tent.title);
+    formData.append('description', tent.description);
+    formData.append('header', tent.header);
+    formData.append('qtypeople', tent.qtypeople.toString());
+    formData.append('qtykids', tent.qtykids.toString());
+    formData.append('price', tent.price.toString());
+    formData.append('status', tent.status);
+
+    // Append custom prices as a JSON string
+    formData.append('custom_price', tent.custom_price);
+
+    // Append images
+    tent.images.forEach((image) => {
+      formData.append('images', image);  // Ensure each image is appended with the correct key
+    });
+
+    // Append services as a JSON string
+    formData.append('services', tent.services);
+
+    return formData;
 }
