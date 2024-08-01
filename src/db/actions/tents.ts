@@ -36,6 +36,7 @@ export const getAllTents = async( token: string, page:Number, filters?:TentFilte
       totalPages:parseInt(fetchTents.data.totalPages as string, 10)
     }
 
+
   }catch(error){
     if (error instanceof ZodError) {
       error.errors.forEach((err) => {
@@ -71,12 +72,16 @@ export const createTent = async (tent: TentFormData, token: string): Promise<voi
     formData.append('custom_price', tent.custom_price);
 
     // Append images
-    tent.images.forEach((image, index) => {
-      formData.append(`images[${index}]`, image);
+    tent.images.forEach((image) => {
+      formData.append('images', image);  // Ensure each image is appended with the correct key
     });
+
+    console.log(tent.images);
 
     // Append services as a JSON string
     formData.append('services', tent.services);
+
+    console.log(formData)
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/tents`, formData, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -85,9 +90,9 @@ export const createTent = async (tent: TentFormData, token: string): Promise<voi
     });
 
     if (response.status === 201) {
-      toast.success("Usuario creado exitosamente");
+      toast.success("Glamping creado exitosamente");
     } else {
-      toast.error("Algo salió mal al crear el usuario.");
+      toast.error("Algo salió mal al crear el glapming.");
     }
   } catch (error) {
     if (error instanceof ZodError) {
@@ -96,12 +101,12 @@ export const createTent = async (tent: TentFormData, token: string): Promise<voi
       });
     } else if (axios.isAxiosError(error)) {
       if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error creando el usuario."}`);
+        toast.error(`Error: ${error.response.data.message || "Error creando el glamping."}`);
       } else {
         toast.error("No se pudo conectar con el servidor.");
       }
     } else {
-      toast.error("Error creando el usuario.");
+      toast.error("Error creando el glamping.");
       console.error(error);
     }
   }

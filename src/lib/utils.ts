@@ -44,19 +44,5 @@ export const convertStrToCurrentTimezoneDate = (utcDateString: string): Date => 
   return new Date(date.getTime() + localOffset);
 };
 
-type Services = typeof TentSchema._type.services;
-
-export const formatServices = (services: Services): string => {
-  const serviceEntries = Object.entries(services);
-
-  const serviceItems = serviceEntries.map(([key, value]) => {
-    if (value) {
-      return `<li>${key}</li>`;
-    }
-    return '';
-  }).filter(item => item !== '');
-
-  return `<ul>${serviceItems.join('')}</ul>`;
-};
 
 

@@ -1,14 +1,14 @@
 import Dashboard from "../components/ui/Dashboard";
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
-import { Eye, Pen, X, ChevronLeft, ChevronRight, Tent as TentIcon, EyeOff, CircleX, UserX, UserRoundCheck, User as UserIcon, MailCheck, UserPen } from "lucide-react";
+import { Eye, Pen, X, ChevronLeft, ChevronRight, Tent as TentIcon, EyeOff, CircleX, UserX, UserRoundCheck, User as UserIcon, MailCheck, UserPen, Blocks, Image } from "lucide-react";
 import Button from "../components/ui/Button";
 import { InputRadio } from "../components/ui/Input";
-import { formatServices, formatDate } from "../lib/utils";
+import {  formatDate } from "../lib/utils";
 import { getAllTents, createTent, deleteTent,disableTent, enableTent, updateTent } from "../db/actions/tents";
 import { useAuth } from "../contexts/AuthContext";
 import { Tent, TentFilters, TentFormData, CustomPrice } from "../lib/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
-import {fadeIn} from "../lib/motions";
+import {fadeIn, fadeOnly} from "../lib/motions";
 import {  ZodError } from 'zod';
 import { TentSchema } from "../db/schemas";
 import Modal from "../components/Modal";
@@ -61,6 +61,24 @@ const DashboardAdminGlapings = () => {
       setImages(prevImages => prevImages.filter(image => image.url !== url));
     };
 
+    
+    type Services = typeof TentSchema._type.services;
+
+    const formatServices = (services: Services) => {
+      const serviceEntries = Object.entries(services);
+
+      const serviceItems = serviceEntries.map(([key, value]) => {
+        if (value) {
+          return key;
+        }
+        return null;
+      }).filter(item => item !== null);
+
+      if(serviceItems.length > 0) return serviceItems.join(', ');
+
+      return 'No hay Servicios';
+    };
+
     const [customPrices, setCustomPrices] = useState<CustomPrice[]>([]);
 
     const handleAddCustomPrice = () => {
@@ -74,6 +92,8 @@ const DashboardAdminGlapings = () => {
       const price = parseFloat(priceInput.value);
 
       if (!isNaN(dateFrom.getTime()) && !isNaN(dateTo.getTime()) && !isNaN(price)) {
+        dateFrom.setHours(12, 0, 0, 0);
+        dateTo.setHours(12, 0, 0, 0);
         const newCustomPrice: CustomPrice = { dateFrom, dateTo, price };
         setCustomPrices([...customPrices, newCustomPrice]);
 
@@ -107,7 +127,7 @@ const DashboardAdminGlapings = () => {
         });
 
         try {
-          TentSchema.parse({ title, description, header, images: images.map(image => image.file),  qtypeople, qtykids, price, services:getServices() , custom_price:customPrices, status });
+          TentSchema.parse({ title, description, header, images: images.map(image => image.file),  qtypeople, qtykids, price, services: getServices(), custom_price:customPrices, status });
           return true;
         } catch (error) {
           if (error instanceof ZodError) {
@@ -157,6 +177,8 @@ const DashboardAdminGlapings = () => {
           }
           getTentsHandler(1);
           setLoadingForm(false);
+          setImages([]);
+          setCustomPrices([]);
           setCurrentView("L")
         }
     };
@@ -302,6 +324,7 @@ const DashboardAdminGlapings = () => {
                                 <th className="p-2">Personas</th>
                                 <th className="p-2">Precio</th>
                                 <th className="p-2">Servicios</th>
+                                <th className="p-2">Imagenes</th>
                                 <th className="p-2">Estatus</th>
                                 <th className="p-2">Creado</th>
                                 <th className="p-2">Actualizado</th>
@@ -314,8 +337,19 @@ const DashboardAdminGlapings = () => {
                                     <tr key={"user_key"+index} className="text-slate-400 hover:bg-secondary hover:text-white duration-300 cursor-pointer"> 
                                         <td className="">{tentItem.id}</td>
                                         <td className="">{tentItem.title}</td>
+                                        <td className="flex flex-row gap-x-4 justify-around">
+                                          <div className="flex flex-row gap-x-4"><UserIcon/>{tentItem.qtypeople}</div>
+                                          <div className="flex flex-row gap-x-4"><Blocks/>{tentItem.qtykids}</div>
+                                        </td>
                                         <td className="">{tentItem.price}</td>
-                                        <td className="">{formatServices(tentItem.services)}</td>
+                                        <td className="w-48">{formatServices(tentItem.services)}</td>
+                                        <td className="flex flex-row flex-wrap items-start justify-start gap-2">
+                                          {tentItem.images.map((img, index) => (
+                                            <a key={index} href={`${import.meta.env.VITE_BACKEND_URL}/${img}`} target="_blank">
+                                              <Image className="hover:text-tertiary duration-300"/>
+                                            </a>
+                                          ))}
+                                        </td>
                                         <td className="">{tentItem.status != "ACTIVE" ? "INACTIVO" : "ACTIVO" }</td>
                                         <td className="">{tentItem.updatedAt != undefined && tentItem.updatedAt != null ? formatDate(tentItem.updatedAt) : "None"}</td>
                                         <td className="">{tentItem.createdAt != undefined && tentItem.createdAt != null ? formatDate(tentItem.createdAt) : "None"}</td>
@@ -527,29 +561,36 @@ const DashboardAdminGlapings = () => {
                                 <Button onClick={handleAddCustomPrice} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                             </div>
                             <div id="tent_create_container_custom_prices flex flex-col items-start justify-start"className="w-full h-auto">
-                              {customPrices.map((price, index) => (
-                                        <div
-                                          key={index}
-                                          className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                        >
-                                          <span className="w-[30%]">
-                                            Desde: <label className="text-tertiary ml-2">{price.dateFrom.toLocaleDateString()}</label>
-                                          </span>
-                                          <span className="w-[30%]">
-                                            Hasta: <label className="text-tertiary ml-2">{price.dateTo.toLocaleDateString()}</label>
-                                          </span>
-                                          <span className="w-[30%]">
-                                            Precio: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
-                                          </span>
-                                          <button
-                                            type="button"
-                                            onClick={() => handleRemoveCustomPrice(index)}
-                                            className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
+                              <AnimatePresence>
+                                {customPrices.map((price, index) => (
+                                          <motion.div
+                                            key={index}
+                                            initial="hidden"
+                                            animate="show"
+                                            exit="hidden"
+                                            viewport={{ once: true }}
+                                            variants={fadeIn("up","",0,0.3)}
+                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
-                                            Borrar
-                                          </button>
-                                        </div>
-                                      ))}
+                                            <span className="w-[30%]">
+                                              Desde: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
+                                            </span>
+                                            <span className="w-[30%]">
+                                              Hasta: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
+                                            </span>
+                                            <span className="w-[30%]">
+                                              Precio: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
+                                            </span>
+                                            <button
+                                              type="button"
+                                              onClick={() => handleRemoveCustomPrice(index)}
+                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
+                                            >
+                                              Borrar
+                                            </button>
+                                          </motion.div>
+                                        ))}
+                              </AnimatePresence>
                             </div>
 
                           </div>
@@ -581,58 +622,59 @@ const DashboardAdminGlapings = () => {
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="services" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Servicios"}</label>
                               <div id="input_tent_create_services" className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-2 gap-y-4 gap-x-6">
-                                <div className="checkbox-wrapper-1">
-                                  <input name="wifi" className="substituted" type="checkbox" aria-hidden="true"  />
+
+                                <div className="checkbox-wrapper-13">
+                                  <input name="wifi" type="checkbox" aria-hidden="true"  />
                                   <label htmlFor="wifi">Wi-fi</label>
                                 </div>
 
-                                <div className="checkbox-wrapper-1">
-                                  <input name="parking" className="substituted" type="checkbox" aria-hidden="true" />
+                                <div className="checkbox-wrapper-13">
+                                  <input name="parking"  type="checkbox" aria-hidden="true" />
                                   <label htmlFor="parking">Parking</label>
                                 </div>
 
-                                <div className="checkbox-wrapper-1">
-                                  <input name="pool" className="substituted" type="checkbox" aria-hidden="true" />
+                                <div className="checkbox-wrapper-13">
+                                  <input name="pool"  type="checkbox" aria-hidden="true" />
                                   <label htmlFor="pool">Piscina</label>
                                 </div>
 
-                                <div className="checkbox-wrapper-1">
-                                  <input name="breakfast" className="substituted" type="checkbox" aria-hidden="true" />
+                                <div className="checkbox-wrapper-13">
+                                  <input name="breakfast"  type="checkbox" aria-hidden="true" />
                                   <label htmlFor="breakfast">Desayuno</label>
                                 </div>
 
-                                <div className="checkbox-wrapper-1">
-                                  <input name="lunch" className="substituted" type="checkbox" aria-hidden="true" />
+                                <div className="checkbox-wrapper-13">
+                                  <input name="lunch"  type="checkbox" aria-hidden="true" />
                                   <label htmlFor="lunch">Almuerzo</label>
                                 </div>
 
-                                <div className="checkbox-wrapper-1">
-                                  <input name="dinner" className="substituted" type="checkbox" aria-hidden="true" />
+                                <div className="checkbox-wrapper-13">
+                                  <input name="dinner"  type="checkbox" aria-hidden="true" />
                                   <label htmlFor="dinner">Cena</label>
                                 </div>
 
-                                <div className="checkbox-wrapper-1">
-                                  <input name="spa" className="substituted" type="checkbox" aria-hidden="true" />
+                                <div className="checkbox-wrapper-13">
+                                  <input name="spa"  type="checkbox" aria-hidden="true" />
                                   <label htmlFor="spa">Spa</label>
                                 </div>
 
-                                <div className="checkbox-wrapper-1">
-                                  <input name="bar" className="substituted" type="checkbox" aria-hidden="true" />
+                                <div className="checkbox-wrapper-13">
+                                  <input name="bar"  type="checkbox" aria-hidden="true" />
                                   <label htmlFor="bar">Bar</label>
                                 </div>
 
-                                <div className="checkbox-wrapper-1">
-                                  <input name="hotwater" className="substituted" type="checkbox" aria-hidden="true" />
+                                <div className="checkbox-wrapper-13">
+                                  <input name="hotwater"  type="checkbox" aria-hidden="true" />
                                   <label htmlFor="hotwater">Agua Caliente</label>
                                 </div>
 
-                                <div className="checkbox-wrapper-1">
-                                  <input name="airconditioning" className="substituted" type="checkbox" aria-hidden="true" />
+                                <div className="checkbox-wrapper-13">
+                                  <input name="airconditioning" type="checkbox" aria-hidden="true" />
                                   <label htmlFor="airconditioning">Aire Acondicionado</label>
                                 </div>
 
-                                <div className="checkbox-wrapper-1">
-                                  <input name="grill" className="substituted" type="checkbox" aria-hidden="true" />
+                                <div className="checkbox-wrapper-13">
+                                  <input name="grill" type="checkbox" aria-hidden="true" />
                                   <label htmlFor="grill">Aire Acondicionado</label>
                                 </div>
                               </div>
@@ -641,25 +683,32 @@ const DashboardAdminGlapings = () => {
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
                               <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
-                              {images.map((image, index) => (
-                                <div
-                                  key={index}
-                                  className="image-selected"
-                                  style={{
-                                    backgroundImage: `url(${image.url})`,
-                                    backgroundSize: 'cover',
-                                    position: 'relative'
-                                  }}
-                                >
-                                  <button
-                                    type="button"
-                                    className="delete-image-selected"
-                                    onClick={() => handleRemoveImage(image.url)}
-                                  >
-                                    X
-                                  </button>
-                                </div>
-                              ))}
+                                <AnimatePresence>
+                                  {images.map((image, index) => (
+                                    <motion.div
+                                      key={index}
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      viewport={{ once: true }}
+                                      variants={fadeOnly("",0,0.3)}
+                                      className="image-selected"
+                                      style={{
+                                        backgroundImage: `url(${image.url})`,
+                                        backgroundSize: 'cover',
+                                        position: 'relative'
+                                      }}
+                                    >
+                                      <button
+                                        type="button"
+                                        className="delete-image-selected"
+                                        onClick={() => handleRemoveImage(image.url)}
+                                      >
+                                        X
+                                      </button>
+                                    </motion.div>
+                                  ))}
+                                </AnimatePresence>
                                 <div className="file-select" id="src-tent-image" >
                                   <input type="file" name="src-tent-image" aria-label="Archivo" onChange={handleImageChange} multiple/>
                                 </div>
