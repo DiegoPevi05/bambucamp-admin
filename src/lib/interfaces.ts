@@ -80,28 +80,40 @@ export interface TentFormData {
   existing_images?:string;
 }
 
+export interface ProductCategory {
+  id:number;
+  name: string;
+  createdAt:Date|null;
+  updatedAt:Date|null;
+}
+
 export interface Product {
   id: number;
-  title: string;
+  name: string;
   description: string;
   price: number;
   images: string[];
-  quantity: number;
+  stock: number;
+  custom_price:CustomPrice[];
+  status:string;
   createdAt:Date|null;
   updatedAt:Date|null;
 }
 
 export interface ProductFilters {
-  title?: string;
+  name?: string;
+  status?:string;
 }
 
 
 export interface ProductFormData {
-  title: string;
+  name: string;
   description: string;
   images: File[];
   price: number;
-  quantity:number;
+  stock:number;
+  custom_price:string;
+  status:string;
   existing_images?:string;
 }
 

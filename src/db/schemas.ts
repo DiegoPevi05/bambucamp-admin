@@ -74,8 +74,10 @@ const ProductSchema = z.object({
   description: z.string().nonempty({ message: 'La descripción es requerida' }),
   existing_images: z.array(z.string()).default([]),
   images: z.array(imageFileSchema).default([]),
-  quantity: z.number().gt(1, { message: 'La cantidad de productos debe ser mayor que 1' }),
+  stock: z.number().gt(1, { message: 'La cantidad de productos debe ser mayor que 1' }),
   price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
+  custom_price: z.array(CustomPriceSchema),
+  status: z.string().nonempty({ message: 'El estado es requerido' }),
 }).refine(data => data.existing_images.length > 0 || data.images.length > 0, {
   message: 'Debe haber al menos una imagen',
   path: ['images'] // This can be any path to indicate where the error should appear

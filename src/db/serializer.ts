@@ -1,4 +1,4 @@
-import { User, Tent, Product, TentFormData, ProductFormData } from "../lib/interfaces"
+import { User, Tent, Product, TentFormData, ProductFormData, ProductCategory } from "../lib/interfaces"
 import { convertStrToCurrentTimezoneDate } from "../lib/utils";
 
 export const serializeUser = (data:any):User|null => {
@@ -83,13 +83,18 @@ export const serializeTentToDB = (tent: TentFormData, isEditable?:boolean) => {
 export const serializeProduct = (data:any):Product|null => {
   let product:Product|null = null;
 
+  const transformedCustomPrice = data.custom_price ? JSON.parse(data.custom_price).map((item:any) => ({  ...item, dateFrom: convertStrToCurrentTimezoneDate(item.dateFrom), dateTo: convertStrToCurrentTimezoneDate(item.dateTo) 
+})) : [];
+
   product = {
     id: data.id,
-    title:data.title,
+    name:data.name,
     description: data.description,
     images: data.images ? data.images.map((image:string) => image.replace(/\\/g, '/')) : [],
     price: data.price || 0,
-    quantity:data.quantity || 0,
+    stock:data.stock || 0,
+    custom_price: transformedCustomPrice,
+    status : data.status,
     createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
     updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
   };
@@ -103,10 +108,15 @@ export const serializeProductToDB = (product: ProductFormData, isEditable?:boole
     const formData = new FormData();
 
     // Append basic fields
-    formData.append('title', product.title);
+    formData.append('name', product.name);
     formData.append('description', product.description);
-    formData.append('quantity', product.quantity.toString());
+    formData.append('stock', product.stock.toString());
     formData.append('price', product.price.toString());
+
+    formData.append('status', product.status);
+
+    // Append custom prices as a JSON string
+    formData.append('custom_price', product.custom_price);
 
     if(isEditable && product.existing_images){
       formData.append('existing_images',product.existing_images)
@@ -120,3 +130,16 @@ export const serializeProductToDB = (product: ProductFormData, isEditable?:boole
     return formData;
 }
 
+
+export const serializeCategoryProduct = (data:any):ProductCategory|null => {
+  let ProductCategory:ProductCategory|null = null;
+
+  ProductCategory = {
+    id: data.id,
+    name:data.name,
+    createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
+    updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
+  };
+
+  return ProductCategory;
+}
