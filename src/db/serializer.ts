@@ -1,4 +1,4 @@
-import { User, Tent, TentFormData } from "../lib/interfaces"
+import { User, Tent, Product, TentFormData, ProductFormData } from "../lib/interfaces"
 import { convertStrToCurrentTimezoneDate } from "../lib/utils";
 
 export const serializeUser = (data:any):User|null => {
@@ -35,7 +35,7 @@ export const serializeTent = (data:any):Tent|null => {
     header: data.header,
     title:data.title,
     description: data.description,
-    images: data.images,
+    images: data.images ? data.images.map((image:string) => image.replace(/\\/g, '/')) : [],
     qtypeople: data.qtypeople || 0,
     qtykids: data.qtykids || 0,
     price: data.price || 0,
@@ -48,7 +48,7 @@ export const serializeTent = (data:any):Tent|null => {
   return tent;
 }
 
-export const serializeTentToDB = (tent: TentFormData) => {
+export const serializeTentToDB = (tent: TentFormData, isEditable?:boolean) => {
 
     // Create a new FormData object
     const formData = new FormData();
@@ -65,6 +65,10 @@ export const serializeTentToDB = (tent: TentFormData) => {
     // Append custom prices as a JSON string
     formData.append('custom_price', tent.custom_price);
 
+    if(isEditable && tent.existing_images){
+      formData.append('existing_images',tent.existing_images)
+    }
+
     // Append images
     tent.images.forEach((image) => {
       formData.append('images', image);  // Ensure each image is appended with the correct key
@@ -75,3 +79,44 @@ export const serializeTentToDB = (tent: TentFormData) => {
 
     return formData;
 }
+
+export const serializeProduct = (data:any):Product|null => {
+  let product:Product|null = null;
+
+  product = {
+    id: data.id,
+    title:data.title,
+    description: data.description,
+    images: data.images ? data.images.map((image:string) => image.replace(/\\/g, '/')) : [],
+    price: data.price || 0,
+    quantity:data.quantity || 0,
+    createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
+    updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
+  };
+  return product;
+}
+
+
+export const serializeProductToDB = (product: ProductFormData, isEditable?:boolean) => {
+
+    // Create a new FormData object
+    const formData = new FormData();
+
+    // Append basic fields
+    formData.append('title', product.title);
+    formData.append('description', product.description);
+    formData.append('quantity', product.quantity.toString());
+    formData.append('price', product.price.toString());
+
+    if(isEditable && product.existing_images){
+      formData.append('existing_images',product.existing_images)
+    }
+
+    // Append images
+    product.images.forEach((image) => {
+      formData.append('images', image);  // Ensure each image is appended with the correct key
+    });
+
+    return formData;
+}
+

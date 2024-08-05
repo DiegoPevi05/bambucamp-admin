@@ -44,7 +44,8 @@ const TentSchema = z.object({
   header: z.string().nonempty({ message: 'El encabezado es requerido' }),
   title: z.string().nonempty({ message: 'El título es requerido' }),
   description: z.string().nonempty({ message: 'La descripción es requerida' }),
-  images: z.array(imageFileSchema).nonempty({ message: 'Debe haber al menos una imagen' }),
+  existing_images: z.array(z.string()).default([]),
+  images: z.array(imageFileSchema).default([]),
   qtypeople: z.number().gt(1, { message: 'La cantidad de personas debe ser mayor que 1' }),
   qtykids: z.number().nonnegative({ message: 'La cantidad de niños debe ser un número no negativo' }),
   price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
@@ -63,6 +64,21 @@ const TentSchema = z.object({
   }),
   custom_price: z.array(CustomPriceSchema),
   status: z.string().nonempty({ message: 'El estado es requerido' }),
+}).refine(data => data.existing_images.length > 0 || data.images.length > 0, {
+  message: 'Debe haber al menos una imagen',
+  path: ['images'] // This can be any path to indicate where the error should appear
 });
 
-export { signInSchema, createUserSchema, editUserSchema, TentSchema};
+const ProductSchema = z.object({
+  title: z.string().nonempty({ message: 'El título es requerido' }),
+  description: z.string().nonempty({ message: 'La descripción es requerida' }),
+  existing_images: z.array(z.string()).default([]),
+  images: z.array(imageFileSchema).default([]),
+  quantity: z.number().gt(1, { message: 'La cantidad de productos debe ser mayor que 1' }),
+  price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
+}).refine(data => data.existing_images.length > 0 || data.images.length > 0, {
+  message: 'Debe haber al menos una imagen',
+  path: ['images'] // This can be any path to indicate where the error should appear
+});
+
+export { signInSchema, createUserSchema, editUserSchema, TentSchema, ProductSchema};

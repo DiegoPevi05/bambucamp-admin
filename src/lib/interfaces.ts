@@ -77,7 +77,34 @@ export interface TentFormData {
   price: number;
   custom_price:string;
   status:string;
+  existing_images?:string;
 }
+
+export interface Product {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  images: string[];
+  quantity: number;
+  createdAt:Date|null;
+  updatedAt:Date|null;
+}
+
+export interface ProductFilters {
+  title?: string;
+}
+
+
+export interface ProductFormData {
+  title: string;
+  description: string;
+  images: File[];
+  price: number;
+  quantity:number;
+  existing_images?:string;
+}
+
 
 export interface ReserveIT{
   id: number;
@@ -87,7 +114,7 @@ export interface ReserveIT{
   total: number;
   tents: Tent[];
   experiences: ExperienceIT[];
-  products: ProductIT[];
+  products: Product[];
 }
 
 export interface PromotionIT {
@@ -116,14 +143,7 @@ export interface ExperienceIT {
   date?: Date;
 }
 
-export interface ProductIT {
-  id: number;
-  title: string;
-  description: string;
-  price: number;
-  images: string[];
-  quantity?: number;
-}
+
 
 export interface ReviewIT {
   id: number;

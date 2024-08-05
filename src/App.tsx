@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import DashboardAdmin from './pages/home';
 import DashboardAdminUsers from './pages/users';
 import DashboardAdminGlapings from './pages/tents';
+import DashboardAdminProducts from './pages/products';
 
 
 const AppRoutes: React.FC = () => {
@@ -55,6 +56,19 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/products"
+        element={
+          <ProtectedRoute
+            redirectPath="/"
+            isAllowed={!!user && user.role != undefined && (user.role == "ADMIN" || user.role =="SUPERVISOR")}
+          >
+            <DashboardAdminProducts/>
+          </ProtectedRoute>
+        }
+      />
+
 
       <Route path="/signin" element={<ProtectedRoute  redirectPath="/" isAllowed={user == null || user == undefined}><SignIn /></ProtectedRoute>} />
     </Routes>

@@ -39,6 +39,7 @@ const DashboardAdminGlapings = () => {
     const [loadingForm, setLoadingForm] = useState<boolean>(false);
 
     const [images, setImages] = useState<ImageInterface[]>([]);
+    const [existingImages,setExistingImages] = useState<string[]>([]);
 
     const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -47,6 +48,10 @@ const DashboardAdminGlapings = () => {
       setImages(prevImages => [...prevImages, ...newImages]);
       e.target.value = ''; // Resetear el input file
     }
+    };
+
+    const handleRemoveExistingImage = (url: string) => {
+      setExistingImages(prevExistantImages => prevExistantImages.filter(existantImage => existantImage !== url));
     };
 
     const handleRemoveImage = (url: string) => {
@@ -73,8 +78,8 @@ const DashboardAdminGlapings = () => {
 
     const [customPrices, setCustomPrices] = useState<CustomPrice[]>([]);
 
-    const handleAddCustomPrice = () => {
-      const form = document.getElementById('form_create_tent') as HTMLFormElement;
+    const handleAddCustomPrice = (formName:string) => {
+      const form = document.getElementById(formName) as HTMLFormElement;
       const dateFromInput = form.querySelector('input[name="custom_price_date_from"]') as HTMLInputElement;
       const dateToInput = form.querySelector('input[name="custom_price_date_to"]') as HTMLInputElement;
       const priceInput = form.querySelector('input[name="custom_price_value"]') as HTMLInputElement;
@@ -124,7 +129,7 @@ const DashboardAdminGlapings = () => {
         setErrorMessages({});
 
         try {
-          TentSchema.parse({ title, description, header, images: images.map(image => image.file),  qtypeople, qtykids, price, services: getServices(), custom_price:customPrices, status });
+          TentSchema.parse({ title, description, header, existing_images:existingImages,images: images.map(image => image.file),  qtypeople, qtykids, price, services: getServices(), custom_price:customPrices, status });
 
           return {
             title,
@@ -233,9 +238,11 @@ const DashboardAdminGlapings = () => {
         setLoadingForm(true);
         const fieldsValidated = validateFields('form_update_tent');
         if(fieldsValidated != null){
+          fieldsValidated.existing_images = JSON.stringify(existingImages);
           if(user !== null && selectedTent != null){
               await updateTent(selectedTent.id,fieldsValidated, user.token);
           }
+          setImages([]);
           getTentsHandler(1);
           setCurrentView("L")
         }
@@ -253,6 +260,8 @@ const DashboardAdminGlapings = () => {
 
       return services;
     };
+
+    console.log(images)
 
 
     return (
@@ -290,7 +299,7 @@ const DashboardAdminGlapings = () => {
                             <input 
                               type="text" 
                               name="criteria_search_value"
-                              placeholder="Buscar usuario" 
+                              placeholder="Buscar Glapming" 
                               className="w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
                             <InputRadio name="criteria_search" variant="dark" value="title" placeholder="Nombre"/>
@@ -310,7 +319,7 @@ const DashboardAdminGlapings = () => {
                           </div>
                         </div>
                         <div className="w-auto h-auto flex flex-row justify-end items-start gap-y-4">
-                            <Button onClick={()=>setCurrentView("A")} size="sm" variant="dark" effect="default" isRound={true}>Agregar Glamping <TentIcon/></Button>
+                            <Button onClick={()=>{setCurrentView("A"); setImages([]); setExistingImages([])}} size="sm" variant="dark" effect="default" isRound={true}>Agregar Glamping <TentIcon/></Button>
                         </div>
 
                     </div>
@@ -354,7 +363,7 @@ const DashboardAdminGlapings = () => {
                                         <td className="h-full flex flex-col items-center justify-center">
                                           <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
                                             <button onClick={()=>{setSelectedTent(tentItem); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
-                                            <button  onClick={()=>{setSelectedTent(tentItem); setCustomPrices(tentItem.custom_price) ; setCurrentView("E")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Pen className="h-5 w-5"/></button>
+                                            <button  onClick={()=>{setSelectedTent(tentItem); setCustomPrices(tentItem.custom_price); setExistingImages(tentItem.images) ; setImages([]); setCurrentView("E")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Pen className="h-5 w-5"/></button>
                                             <button onClick={()=>{setOpenDeleteModal(true),setSelectedTent(tentItem)}} className="border rounded-md hover:bg-red-400 hover:text-white duration-300 active:scale-75 p-1"><X className="h-5 w-5"/></button>
                                           </div>
                                         </td>
@@ -393,9 +402,9 @@ const DashboardAdminGlapings = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><TentIcon/>Agregar Glamping</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><TentIcon/>Ver Glamping</h2>
 
-                  <form id="form_create_tent" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
+                  <div id="form_create_tent" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6">
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
@@ -563,7 +572,7 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                       </div>
-                    </form>
+                    </div>
                 </motion.div>
         )}
 
@@ -671,7 +680,7 @@ const DashboardAdminGlapings = () => {
                                   <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio"}</label>
                                   <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
                                 </div>
-                                <Button onClick={handleAddCustomPrice} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
+                              <Button onClick={()=>handleAddCustomPrice("form_create_tent")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                             </div>
                             <div id="tent_create_container_custom_prices flex flex-col items-start justify-start"className="w-full h-auto">
                               <AnimatePresence>
@@ -1004,7 +1013,7 @@ const DashboardAdminGlapings = () => {
                                   <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio"}</label>
                                   <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
                                 </div>
-                                <Button onClick={handleAddCustomPrice} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
+                                <Button onClick={()=>handleAddCustomPrice("form_update_tent")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                             </div>
                             <div id="tent_create_container_custom_prices flex flex-col items-start justify-start"className="w-full h-auto">
                               <AnimatePresence>
@@ -1179,9 +1188,33 @@ const DashboardAdminGlapings = () => {
                             <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
                               <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
                                 <AnimatePresence>
+                                  {existingImages.map((image, index) => (
+                                    <motion.div
+                                      key={"ExistantImage"+index}
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      viewport={{ once: true }}
+                                      variants={fadeOnly("",0,0.3)}
+                                      className="image-selected"
+                                      style={{
+                                        backgroundImage: `url(${import.meta.env.VITE_BACKEND_URL}/${image})`,
+                                        backgroundSize: 'cover',
+                                        position: 'relative'
+                                      }}
+                                    >
+                                      <button
+                                        type="button"
+                                        className="delete-image-selected"
+                                        onClick={() => handleRemoveExistingImage(image)}
+                                      >
+                                        X
+                                      </button>
+                                    </motion.div>
+                                  ))}
                                   {images.map((image, index) => (
                                     <motion.div
-                                      key={index}
+                                      key={"FilesImages"+index}
                                       initial="hidden"
                                       animate="show"
                                       exit="hidden"

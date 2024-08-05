@@ -44,7 +44,7 @@ export const getAllTents = async( token: string, page:Number, filters?:TentFilte
         toast.error((err.message));
       });
     } else {
-      toast.error("Error trayendo los usuarios.");
+      toast.error("Error trayendo los glampings.");
       console.error(error);
     }
   }
@@ -94,7 +94,7 @@ export const createTent = async (tent: TentFormData, token: string): Promise<voi
 export const updateTent = async (userId:Number,tent: TentFormData, token: string): Promise<void> => {
   try {
     // Create a new FormData object
-    const formData = serializeTentToDB(tent);
+    const formData = serializeTentToDB(tent,true);
 
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/tents/${userId}`, formData, {
       headers: {
