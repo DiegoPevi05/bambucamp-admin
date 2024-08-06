@@ -89,6 +89,8 @@ export interface ProductCategory {
 
 export interface Product {
   id: number;
+  categoryId:number;
+  category:ProductCategory;
   name: string;
   description: string;
   price: number;
@@ -107,6 +109,7 @@ export interface ProductFilters {
 
 
 export interface ProductFormData {
+  categoryId:number;
   name: string;
   description: string;
   images: File[];

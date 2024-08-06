@@ -113,6 +113,7 @@ const DashboardAdminProducts = () => {
 
     const validateFields = (formname:string): ProductFormData |null => {
         const form = document.getElementById(formname) as HTMLFormElement;
+        const categoryId  = Number((form.querySelector('select[name="categoryId"]') as HTMLInputElement).value); 
         const name = (form.querySelector('input[name="name"]') as HTMLInputElement).value;
         const description = (form.querySelector('textarea[name="description"]') as HTMLTextAreaElement).value;
         const price = Number((form.querySelector('input[name="price"]') as HTMLInputElement).value);
@@ -122,9 +123,10 @@ const DashboardAdminProducts = () => {
         setErrorMessages({});
 
         try {
-          ProductSchema.parse({ name, description, existing_images:existingImages,images: images.map(image => image.file),  status, stock, price });
+          ProductSchema.parse({categoryId, name, description, existing_images:existingImages,images: images.map(image => image.file),  status, stock, price, custom_price:customPrices });
 
           return {
+            categoryId,
             name,
             description,
             price,
@@ -231,6 +233,7 @@ const DashboardAdminProducts = () => {
 
     const [openModalCategories, setOpenModalCategories] = useState<boolean>(false);
     const [selectedCategory,setSelectedCategory] = useState<ProductCategory|null>(null);
+    const [loadingCategory,setLoadingCategory] = useState<boolean>(false);
 
     const onChangeSelectedCategory = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -243,6 +246,45 @@ const DashboardAdminProducts = () => {
             };
         });
     };
+
+
+
+    const onSubmitCreationCategory = async(e:FormEvent) => {
+        e.preventDefault();
+        setLoadingCategory(true);
+        const form = document.getElementById("form_create_product_category") as HTMLFormElement;
+        const category = (form.querySelector('input[name="category"]') as HTMLInputElement).value;
+
+        if(category.length == 0){
+          toast.error("La categoria debe tener un nombre");
+          return;
+        };
+
+        if(user !== null){
+            await createProductCategory(category, user.token);
+            getProductsCategory();
+        }
+        setLoadingCategory(false);
+    }
+
+    const onSubmitUpdateCategory = async () => {
+        setLoadingCategory(true);
+        if(user !== null && selectedCategory != null){
+            await updateProductCategory(selectedCategory.id,selectedCategory, user.token);
+            getProductsCategory();
+        }
+        setLoadingCategory(false);
+        setSelectedCategory(null);
+    };
+
+    const deleteProductCategoryHandler = async(idCategory:number) => {
+        setLoadingCategory(true);
+        if(user != null){
+            await deleteProductCategory(idCategory,user.token)
+            getProductsCategory();
+        }
+        setLoadingCategory(false);
+    }
 
 
 
@@ -302,20 +344,29 @@ const DashboardAdminProducts = () => {
                             </Button>
                           </div>
                         </div>
-                        <div className="w-auto h-auto flex flex-row justify-end items-start gap-y-4">
-                            <Button onClick={()=>{setCurrentView("A"); setImages([]); setExistingImages([])}} size="sm" variant="dark" effect="default" isRound={true}>Agregar Producto <Pizza/></Button>
+                        <div className="w-auto h-auto flex flex-row justify-end items-start gap-y-4 gap-x-4">
+                            <div className="w-full h-10 flex justify-end">
+                              <button
+                                type="button"
+                                onClick={()=>setOpenModalCategories(true)}
+                                className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-primary hover:text-white rounded-xl duration-300 hover:border-primary"
+                              >
+                                Categorias
+                              </button>
+                            </div>
+                            <Button onClick={()=>{setCurrentView("A"); setImages([]); setExistingImages([])}} size="sm" variant="dark" effect="default" className="min-w-[200px]" isRound={true}>Agregar Producto <Pizza/></Button>
                         </div>
-
                     </div>
                     <table className="h-full w-full shadow-xl rounded-xl text-center p-4">
                         <thead className="font-primary text-md bg-primary text-white">
                             <tr className="">
                                 <th className="rounded-tl-xl p-2">#</th>
+                                <th className="p-2">Categoria</th>
                                 <th className="p-2">Nombre</th>
                                 <th className="p-2">Precio</th>
-                                <th className="p-2">Descripcion</th>
                                 <th className="p-2">Imagenes</th>
                                 <th className="p-2">Stock</th>
+                                <th className="p-2">Estado</th>
                                 <th className="p-2">Creado</th>
                                 <th className="p-2">Actualizado</th>
                                 <th className="rounded-tr-xl p-2">Acciones</th>
@@ -326,9 +377,9 @@ const DashboardAdminProducts = () => {
                                     return(
                                     <tr key={"user_key"+index} className="text-slate-400 hover:bg-secondary hover:text-white duration-300 cursor-pointer"> 
                                         <td className="">{productItem.id}</td>
+                                        <td className="">{productItem.category.name}</td>
                                         <td className="">{productItem.name}</td>
                                         <td className="">{productItem.price}</td>
-                                        <td className="w-48">{productItem.description}</td>
                                         <td className="flex flex-row flex-wrap items-start justify-start gap-2">
                                           {productItem.images.map((img, index) => (
                                             <a key={index} href={`${import.meta.env.VITE_BACKEND_URL}/${img}`} target="_blank">
@@ -337,6 +388,7 @@ const DashboardAdminProducts = () => {
                                           ))}
                                         </td>
                                         <td className="">{productItem.stock}</td>
+                                        <td className="h-full">{productItem.status != "ACTIVE" ? "INACTIVO" : "ACTIVO" }</td>
                                         <td className="h-full">{productItem.updatedAt != undefined && productItem.updatedAt != null ? formatDate(productItem.updatedAt) : "None"}</td>
                                         <td className="h-full">{productItem.createdAt != undefined && productItem.createdAt != null ? formatDate(productItem.createdAt) : "None"}</td>
                                         <td className="h-full flex flex-col items-center justify-center">
@@ -368,6 +420,77 @@ const DashboardAdminProducts = () => {
                         </div>
                     </div>
                 </Modal>
+
+              <Modal isOpen={openModalCategories} onClose={()=>setOpenModalCategories(false)}>
+                  <div className="w-[600px] h-auto flex flex-col items-center justify-center text-secondary pb-6 px-6 pt-12 text-center">
+                    {loadingCategory ? 
+                      <>
+                        <div className="loader"></div>
+                        <h1 className="font-primary text-white mt-4">{"Cargando..."}</h1>
+                      </>
+                    :
+                    <>
+                      <form id="form_create_product_category" className="h-auto w-full flex flex-row items-end justify-between gap-x-2" onSubmit={(e)=>onSubmitCreationCategory(e)}>
+                        <div className="flex flex-col items-start justify-start w-full">
+                          <label htmlFor="category" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nueva Categoria"}</label>
+                            <input name="category" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de Categoria"}/>
+                        </div>
+                        <div className="flex flex-col items-center justify-center w-auto h-auto">
+                          <button
+                            type="submit"
+                            className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-primary hover:text-white rounded-md duration-300 hover:border-primary h-8 w-8 flex items-center justify-center"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </form>
+                      <div className="mt-12 h-[200px] w-full flex flex-col justify-start items-start overflow-y-scroll gap-y-2">
+                        <label htmlFor="category" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Categorias"}</label>
+                        { datasetProductsCategory.map((category,index)=>{
+                          return(
+                            <div key={"category_product"+index} className="w-[90%] h-auto flex flex-row items-center justify-center border border-2 border-slate-200 rounded-md p-2 mx-auto">
+                              <div className="flex flex-col items-center justify-center w-full">
+                                {selectedCategory?.id == category.id ?
+                                  <input name="name" value={selectedCategory.name} onChange={(e)=>onChangeSelectedCategory(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de Categoria"}/>
+                                :
+                                <label className="w-full text-left text-sm">{category.name}</label>
+                                }
+                              </div>
+                              <div className="flex flex-row items-center justify-center w-auto gap-x-2">
+                                {selectedCategory?.id == category.id ? 
+                                  <button
+                                    onClick={()=>{onSubmitUpdateCategory()}}
+                                    type="button"
+                                    className="border-2 border-slate-200 active:scale-95 hover:bg-primary hover:text-white rounded-md duration-300 hover:border-primary h-8 w-8 flex items-center justify-center"
+                                  >
+                                    <RefreshCw className="w-4 h-4"/>
+                                  </button>
+                                :
+                                  <button
+                                    onClick={()=>setSelectedCategory(category)}
+                                    type="button"
+                                    className="border-2 border-slate-200 active:scale-95 hover:bg-primary hover:text-white rounded-md duration-300 hover:border-primary h-8 w-8 flex items-center justify-center"
+                                  >
+                                    <Pen className="w-4 h-4"/>
+                                  </button>
+                                }
+                                <button
+                                  type="button"
+                                  onClick={()=>deleteProductCategoryHandler(category.id)}
+                                  className="border-2 border-slate-200 active:scale-95 hover:bg-primary hover:text-white rounded-md duration-300 hover:border-primary h-8 w-8 flex items-center justify-center"
+                                >
+                                  <X className="w-4 h-4"/>
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </>
+
+                    }
+                  </div>
+              </Modal>
             </>
 
         )}
@@ -386,6 +509,14 @@ const DashboardAdminProducts = () => {
                   <div className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" >
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Categoria"}</label>
+
+                                <select name="categoryId" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                                  <option value={selectedProduct.category.id}>{selectedProduct.category.name}</option>
+                                </select>
+                          </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre"}</label>
@@ -489,337 +620,268 @@ const DashboardAdminProducts = () => {
 
 
         {currentView == "A" && (
-          <>
-                <Modal isOpen={openModalCategories} onClose={()=>setOpenModalCategories(false)}>
-                    <div className="w-[600px] h-auto flex flex-col items-center justify-center text-secondary pb-6 px-6 pt-12 text-center">
-                      <div className="h-auto w-full flex flex-row items-end justify-between gap-x-2">
-                        <div className="flex flex-col items-start justify-start w-full">
-                          <label htmlFor="category" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nueva Categoria"}</label>
-                            <input name="name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de Categoria"}/>
-                        </div>
-                        <div className="flex flex-col items-center justify-center w-auto h-auto">
-                          <button
-                            type="button"
-                            className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-primary hover:text-white rounded-md duration-300 hover:border-primary h-8 w-8 flex items-center justify-center"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                      <div className="mt-12 h-[200px] w-full flex flex-col justify-start items-start overflow-y-scroll gap-y-2">
-                        <label htmlFor="category" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Categorias"}</label>
-                        { datasetProductsCategory.map((category,index)=>{
-                          return(
-                            <div key={"category_product"+index} className="w-[90%] h-auto flex flex-row items-center justify-center border border-2 border-slate-200 rounded-md p-2 mx-auto">
-                              <div className="flex flex-col items-center justify-center w-full">
-                                {selectedCategory?.id == category.id ?
-                                  <input name="name" value={selectedCategory.name} onChange={(e)=>onChangeSelectedCategory(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de Categoria"}/>
-                                :
-                                <label className="w-full text-left text-sm">{category.name}</label>
-                                }
-                              </div>
-                              <div className="flex flex-row items-center justify-center w-auto gap-x-2">
-                                {selectedCategory?.id == category.id ? 
-                                  <button
-                                    onClick={()=>setSelectedCategory(null)}
-                                    type="button"
-                                    className="border-2 border-slate-200 active:scale-95 hover:bg-primary hover:text-white rounded-md duration-300 hover:border-primary h-8 w-8 flex items-center justify-center"
-                                  >
-                                    <RefreshCw className="w-4 h-4"/>
-                                  </button>
-                                :
-                                  <button
-                                    onClick={()=>setSelectedCategory(category)}
-                                    type="button"
-                                    className="border-2 border-slate-200 active:scale-95 hover:bg-primary hover:text-white rounded-md duration-300 hover:border-primary h-8 w-8 flex items-center justify-center"
-                                  >
-                                    <Pen className="w-4 h-4"/>
-                                  </button>
-                                }
-                                <button
-                                  type="button"
-                                  className="border-2 border-slate-200 active:scale-95 hover:bg-primary hover:text-white rounded-md duration-300 hover:border-primary h-8 w-8 flex items-center justify-center"
-                                >
-                                  <X className="w-4 h-4"/>
-                                </button>
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                </Modal>
-                <motion.div 
-                    key={"New-View"}
-                    initial="hidden"
-                    animate="show"
-                    exit="hidden"
-                    viewport={{ once: true }}
-                    variants={fadeIn("up","",0.5,0.3)}
-                    className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Pizza/>Agregar Producto</h2>
+            <motion.div 
+                key={"New-View"}
+                initial="hidden"
+                animate="show"
+                exit="hidden"
+                viewport={{ once: true }}
+                variants={fadeIn("up","",0.5,0.3)}
+                className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
+                <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Pizza/>Agregar Producto</h2>
 
-                  <form id="form_create_product" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
+              <form id="form_create_product" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
 
-                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
+                <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
+
+                  <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                        <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Categoria"}</label>
+
+                        <select name="categoryId" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                          { datasetProductsCategory.map((category,index)=>{
+                            return(
+                              <option key={index} value={category.id}>{category.name}</option>
+                            )
+                          })}
+                        </select>
+
+                        <div className="w-full h-6">
+                          {errorMessages.categoryId && (
+                            <motion.p 
+                              initial="hidden"
+                              animate="show"
+                              exit="hidden"
+                              variants={fadeIn("up","", 0, 1)}
+                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                              {errorMessages.categoryId}
+                            </motion.p>
+                          )}
+                        </div>
+                  </div>
+
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
-                            <div className="w-full h-10 flex justify-end">
-                              <button
-                                type="button"
-                                onClick={()=>setOpenModalCategories(true)}
-                                className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-primary hover:text-white rounded-xl duration-300 hover:border-primary"
-                              >
-                                Agregar Categoria
-                              </button>
-                            </div>
-                            <select name="categoryId" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              { datasetProductsCategory.map((category,index)=>{
-                                return(
-                                  <option key={index} value={category.id}>{category.name}</option>
-                                )
-                              })}
-                            </select>
-
-                            <div className="w-full h-6">
-                              {errorMessages.status && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.status}
-                                </motion.p>
-                              )}
-                            </div>
+                        <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre del Producto"}</label>
+                        <input name="name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre del Producto"}/>
+                        <div className="w-full h-6">
+                          {errorMessages.name && (
+                            <motion.p 
+                              initial="hidden"
+                              animate="show"
+                              exit="hidden"
+                              variants={fadeIn("up","", 0, 1)}
+                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                              {errorMessages.name}
+                            </motion.p>
+                          )}
+                        </div>
                       </div>
 
+                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                        <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
+                        <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}/>
+                        <div className="w-full h-6">
+                          {errorMessages.description && (
+                            <motion.p 
+                              initial="hidden"
+                              animate="show"
+                              exit="hidden"
+                              variants={fadeIn("up","", 0, 1)}
+                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                              {errorMessages.description}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
 
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre del Producto"}</label>
-                            <input name="name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre del Producto"}/>
-                            <div className="w-full h-6">
-                              {errorMessages.name && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.name}
-                                </motion.p>
-                              )}
-                            </div>
+                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                          <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio Fijo"}</label>
+                          <input name="price" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"}/>
+
+                          <div className="w-full h-6">
+                            {errorMessages.price && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {errorMessages.price}
+                              </motion.p>
+                            )}
                           </div>
+                        </div>
 
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
-                            <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}/>
-                            <div className="w-full h-6">
-                              {errorMessages.description && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.description}
-                                </motion.p>
-                              )}
-                            </div>
+                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                          <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Stock"}</label>
+                          <input name="stock" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Stock"}/>
+
+                          <div className="w-full h-6">
+                            {errorMessages.stock && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {errorMessages.stock}
+                              </motion.p>
+                            )}
                           </div>
-
-                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio Fijo"}</label>
-                              <input name="price" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"}/>
-
-                              <div className="w-full h-6">
-                                {errorMessages.price && (
-                                  <motion.p 
-                                    initial="hidden"
-                                    animate="show"
-                                    exit="hidden"
-                                    variants={fadeIn("up","", 0, 1)}
-                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.price}
-                                  </motion.p>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Stock"}</label>
-                              <input name="stock" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Stock"}/>
-
-                              <div className="w-full h-6">
-                                {errorMessages.stock && (
-                                  <motion.p 
-                                    initial="hidden"
-                                    animate="show"
-                                    exit="hidden"
-                                    variants={fadeIn("up","", 0, 1)}
-                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.stock}
-                                  </motion.p>
-                                )}
-                              </div>
-                            </div>
-
-                          </div>
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precios Personalizados"}</label>
-                            <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Desde"}</label>
-                                  <input name="custom_price_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Desde"}/>
-                                </div>
-
-                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Hasta"}</label>
-                                  <input name="custom_price_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
-                                </div>
-
-                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio"}</label>
-                                  <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
-                                </div>
-                              <Button onClick={()=>handleAddCustomPrice("form_create_tent")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
-                            </div>
-                            <div id="tent_create_container_custom_prices flex flex-col items-start justify-start"className="w-full h-auto">
-                              <AnimatePresence>
-                                {customPrices.map((price, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Desde: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Hasta: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
-                                            </span>
-                                            <button
-                                              type="button"
-                                              onClick={() => handleRemoveCustomPrice(index)}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              Borrar
-                                            </button>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-
-                            <div className="w-full h-6">
-                              {errorMessages.customPrices && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.customPrices}
-                                </motion.p>
-                              )}
-                            </div>
-
-                          </div>
+                        </div>
 
                       </div>
 
-                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
-                            <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              <option value="ACTIVE">ACTIVO</option>
-                              <option value="INACTIVE">INACTIVO</option>
-                            </select>
-
-                            <div className="w-full h-6">
-                              {errorMessages.status && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.status}
-                                </motion.p>
-                              )}
+                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
+                        <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precios Personalizados"}</label>
+                        <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
+                              <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Desde"}</label>
+                              <input name="custom_price_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Desde"}/>
                             </div>
-                          </div>
 
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
-                              <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
-                                <AnimatePresence>
-                                  {images.map((image, index) => (
-                                    <motion.div
-                                      key={index}
-                                      initial="hidden"
-                                      animate="show"
-                                      exit="hidden"
-                                      viewport={{ once: true }}
-                                      variants={fadeOnly("",0,0.3)}
-                                      className="image-selected"
-                                      style={{
-                                        backgroundImage: `url(${image.url})`,
-                                        backgroundSize: 'cover',
-                                        position: 'relative'
-                                      }}
-                                    >
-                                      <button
-                                        type="button"
-                                        className="delete-image-selected"
-                                        onClick={() => handleRemoveImage(image.url)}
+                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
+                              <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Hasta"}</label>
+                              <input name="custom_price_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+                            </div>
+
+                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
+                              <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio"}</label>
+                              <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+                            </div>
+                          <Button onClick={()=>handleAddCustomPrice("form_create_tent")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
+                        </div>
+                        <div id="tent_create_container_custom_prices flex flex-col items-start justify-start"className="w-full h-auto">
+                          <AnimatePresence>
+                            {customPrices.map((price, index) => (
+                                      <motion.div
+                                        key={index}
+                                        initial="hidden"
+                                        animate="show"
+                                        exit="hidden"
+                                        viewport={{ once: true }}
+                                        variants={fadeIn("up","",0,0.3)}
+                                        className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                       >
-                                        X
-                                      </button>
-                                    </motion.div>
-                                  ))}
-                                </AnimatePresence>
-                                <div className="file-select" id="src-tent-image" >
-                                  <input type="file" name="src-tent-image" aria-label="Archivo" onChange={handleImageChange} multiple/>
-                                </div>
+                                        <span className="w-[30%]">
+                                          Desde: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
+                                        </span>
+                                        <span className="w-[30%]">
+                                          Hasta: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
+                                        </span>
+                                        <span className="w-[30%]">
+                                          Precio: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRemoveCustomPrice(index)}
+                                          className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
+                                        >
+                                          Borrar
+                                        </button>
+                                      </motion.div>
+                                    ))}
+                          </AnimatePresence>
+                        </div>
 
-
-                              </div>
-                              <div className="w-full h-6">
-                                {errorMessages.images && (
-                                  <motion.p 
-                                    initial="hidden"
-                                    animate="show"
-                                    exit="hidden"
-                                    variants={fadeIn("up","", 0, 1)}
-                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.images}
-                                  </motion.p>
-                                )}
-                              </div>
-                          </div>
-
-                          <div className="flex flex-row justify-end gap-x-6 w-full">
-                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                              <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Producto </Button>
-                          </div>
+                        <div className="w-full h-6">
+                          {errorMessages.customPrices && (
+                            <motion.p 
+                              initial="hidden"
+                              animate="show"
+                              exit="hidden"
+                              variants={fadeIn("up","", 0, 1)}
+                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                              {errorMessages.customPrices}
+                            </motion.p>
+                          )}
+                        </div>
 
                       </div>
-                    </form>
-                </motion.div>
-          </>
+
+                  </div>
+
+                <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
+
+                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                        <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
+                        <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                          <option value="ACTIVE">ACTIVO</option>
+                          <option value="INACTIVE">INACTIVO</option>
+                        </select>
+
+                        <div className="w-full h-6">
+                          {errorMessages.status && (
+                            <motion.p 
+                              initial="hidden"
+                              animate="show"
+                              exit="hidden"
+                              variants={fadeIn("up","", 0, 1)}
+                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                              {errorMessages.status}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                        <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
+                          <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
+                            <AnimatePresence>
+                              {images.map((image, index) => (
+                                <motion.div
+                                  key={index}
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  viewport={{ once: true }}
+                                  variants={fadeOnly("",0,0.3)}
+                                  className="image-selected"
+                                  style={{
+                                    backgroundImage: `url(${image.url})`,
+                                    backgroundSize: 'cover',
+                                    position: 'relative'
+                                  }}
+                                >
+                                  <button
+                                    type="button"
+                                    className="delete-image-selected"
+                                    onClick={() => handleRemoveImage(image.url)}
+                                  >
+                                    X
+                                  </button>
+                                </motion.div>
+                              ))}
+                            </AnimatePresence>
+                            <div className="file-select" id="src-tent-image" >
+                              <input type="file" name="src-tent-image" aria-label="Archivo" onChange={handleImageChange} multiple/>
+                            </div>
+
+
+                          </div>
+                          <div className="w-full h-6">
+                            {errorMessages.images && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {errorMessages.images}
+                              </motion.p>
+                            )}
+                          </div>
+                      </div>
+
+                      <div className="flex flex-row justify-end gap-x-6 w-full">
+                          <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
+                          <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Producto </Button>
+                      </div>
+
+                  </div>
+                </form>
+            </motion.div>
         )}
 
         {currentView === "E" && selectedProduct && (
@@ -836,6 +898,29 @@ const DashboardAdminProducts = () => {
                   <form id="form_update_product" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitUpdate(e)}>
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Categoria"}</label>
+                                <select name="categoryId" onChange={(e)=>onChangeSelectedProduct(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                                  { datasetProductsCategory.map((category,index)=>{
+                                    return(
+                                      <option key={index} value={category.id} selected={category.id == selectedProduct.category.id}>{category.name}</option>
+                                    )
+                                  })}
+                                </select>
+                                <div className="w-full h-6">
+                                  {errorMessages.categoryId && (
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                      {errorMessages.categoryId}
+                                    </motion.p>
+                                  )}
+                                </div>
+                          </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre del Producto"}</label>

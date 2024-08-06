@@ -87,6 +87,8 @@ export const serializeProduct = (data:any):Product|null => {
 })) : [];
 
   product = {
+    categoryId:data.categoryId,
+    category:data.category,
     id: data.id,
     name:data.name,
     description: data.description,
@@ -108,6 +110,7 @@ export const serializeProductToDB = (product: ProductFormData, isEditable?:boole
     const formData = new FormData();
 
     // Append basic fields
+    formData.append('categoryId', product.categoryId.toString());
     formData.append('name', product.name);
     formData.append('description', product.description);
     formData.append('stock', product.stock.toString());

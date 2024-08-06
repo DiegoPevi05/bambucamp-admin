@@ -37,10 +37,10 @@ export const getAllProductsCategory = async( token: string ): Promise<ProductCat
 
 
 
-export const createProductCategory = async (productCategory: ProductCategory, token: string): Promise<void> => {
+export const createProductCategory = async (nameCategory: string, token: string): Promise<void> => {
   try {
 
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/categories/product`, productCategory, {
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/categories/product`, { name:nameCategory }, {
       headers: {
         'Authorization': `Bearer ${token}`,
       }

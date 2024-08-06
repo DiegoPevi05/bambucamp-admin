@@ -70,7 +70,8 @@ const TentSchema = z.object({
 });
 
 const ProductSchema = z.object({
-  title: z.string().nonempty({ message: 'El título es requerido' }),
+  categoryId:z.number().positive({ message:'El producto debe tener una categoria' }),
+  name: z.string().nonempty({ message: 'El título es requerido' }),
   description: z.string().nonempty({ message: 'La descripción es requerida' }),
   existing_images: z.array(z.string()).default([]),
   images: z.array(imageFileSchema).default([]),
