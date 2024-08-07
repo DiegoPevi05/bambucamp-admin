@@ -161,6 +161,9 @@ export interface Experience {
   duration: number;
   images: string[];
   status:string;
+  limit_age:number;
+  qtypeople:number;
+  suggestions:string[];
   custom_price:CustomPrice[];
   createdAt:Date|null;
   updatedAt:Date|null;
@@ -180,6 +183,9 @@ export interface ExperienceFormData {
   images: File[];
   price: number;
   duration:number;
+  limit_age:number;
+  qtypeople:number;
+  suggestions:string;
   custom_price:string;
   status:string;
   existing_images?:string;

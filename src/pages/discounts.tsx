@@ -16,7 +16,7 @@ import Modal from "../components/Modal";
 import { toast } from "sonner";
 
 
-const DashboardAdminExperiences = () => {
+const DashboardAdminDiscounts = () => {
 
     const { user } = useAuth();
     const [datasetExperiences,setDataSetExperiences] = useState<{experiences:Experience[],totalPages:Number,currentPage:Number}>({experiences:[],totalPages:1,currentPage:1});
@@ -1476,4 +1476,4 @@ const DashboardAdminExperiences = () => {
     )
 }
 
-export default DashboardAdminExperiences;
+export default DashboardAdminDiscounts;

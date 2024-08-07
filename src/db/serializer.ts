@@ -176,6 +176,9 @@ export const serializeExperience = (data:any):Experience|null => {
     images: data.images ? data.images.map((image:string) => image.replace(/\\/g, '/')) : [],
     price: data.price || 0,
     duration:data.duration || 0,
+    qtypeople:data.qtypeople || 0,
+    limit_age:data.limit_age || 0,
+    suggestions: data.suggestions ? JSON.parse(data.suggestions) : [],
     custom_price: transformedCustomPrice,
     status : data.status,
     createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
@@ -197,6 +200,9 @@ export const serializeExperienceToDB = (experience: ExperienceFormData, isEditab
     formData.append('description', experience.description);
     formData.append('price', experience.price.toString());
     formData.append('duration', experience.duration.toString());
+    formData.append('qtypeople', experience.qtypeople.toString());
+    formData.append('limit_age', experience.limit_age.toString());
+    formData.append('suggestions', experience.suggestions);
 
     formData.append('status', experience.status);
 
