@@ -84,4 +84,20 @@ const ProductSchema = z.object({
   path: ['images'] // This can be any path to indicate where the error should appear
 });
 
-export { signInSchema, createUserSchema, editUserSchema, TentSchema, ProductSchema};
+const ExperienceSchema = z.object({
+  categoryId:z.number().positive({ message:'El producto debe tener una categoria' }),
+  header: z.string().nonempty({ message: 'El encabezado es requerido' }),
+  name: z.string().nonempty({ message: 'El título es requerido' }),
+  description: z.string().nonempty({ message: 'La descripción es requerida' }),
+  existing_images: z.array(z.string()).default([]),
+  images: z.array(imageFileSchema).default([]),
+  duration: z.number().gt(1, { message: 'La duracion de la experiencia debe ser mayor que 1 min' }),
+  price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
+  custom_price: z.array(CustomPriceSchema),
+  status: z.string().nonempty({ message: 'El estado es requerido' }),
+}).refine(data => data.existing_images.length > 0 || data.images.length > 0, {
+  message: 'Debe haber al menos una imagen',
+  path: ['images'] // This can be any path to indicate where the error should appear
+});
+
+export { signInSchema, createUserSchema, editUserSchema, TentSchema, ProductSchema, ExperienceSchema};

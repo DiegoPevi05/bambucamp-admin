@@ -1,48 +1,48 @@
 import Dashboard from "../components/ui/Dashboard";
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
-import { Eye, Pen, X, ChevronLeft, ChevronRight, Pizza, CircleX, Image, RefreshCw } from "lucide-react";
+import { Eye, Pen, X, ChevronLeft, ChevronRight, FlameKindlingIcon, CircleX, Image, RefreshCw } from "lucide-react";
 import Button from "../components/ui/Button";
 import { InputRadio } from "../components/ui/Input";
 import {  formatDate, createImagesArray } from "../lib/utils";
-import { getAllProducts, createProduct, deleteProduct, updateProduct } from "../db/actions/products";
-import { getAllProductsCategory , createProductCategory, deleteProductCategory, updateProductCategory} from "../db/actions/categories";
+import { getAllExperiences, createExperience, updateExperience, deleteExperience } from "../db/actions/experiences";
+import { getAllExperiencesCategory , createExperienceCategory, deleteExperienceCategory, updateExperienceCategory} from "../db/actions/categories";
 import { useAuth } from "../contexts/AuthContext";
-import { Product, ProductFilters, ProductFormData, ImageInterface, CustomPrice, ProductCategory } from "../lib/interfaces";
+import { Experience, ExperienceFilters, ExperienceFormData, ImageInterface, CustomPrice, ExperienceCategory } from "../lib/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
 import {fadeIn, fadeOnly} from "../lib/motions";
 import {  ZodError } from 'zod';
-import { ProductSchema } from "../db/schemas";
+import { ExperienceSchema } from "../db/schemas";
 import Modal from "../components/Modal";
 import { toast } from "sonner";
 
 
-const DashboardAdminProducts = () => {
+const DashboardAdminExperiences = () => {
 
     const { user } = useAuth();
-    const [datasetProducts,setDataSetProducts] = useState<{products:Product[],totalPages:Number,currentPage:Number}>({products:[],totalPages:1,currentPage:1});
-    const [datasetProductsCategory, setDatasetProductsCategory] = useState<ProductCategory[]>([]);
+    const [datasetExperiences,setDataSetExperiences] = useState<{experiences:Experience[],totalPages:Number,currentPage:Number}>({experiences:[],totalPages:1,currentPage:1});
+    const [datasetExperiencesCategory, setDatasetExperiencesCategory] = useState<ExperienceCategory[]>([]);
     const [currentView,setCurrentView] = useState<string>("LOADING");
 
     useEffect(()=>{
-        getProductsHandler(1);
-        getProductsCategory();
+        getExperiencesHandler(1);
+        getExperiencesCategory();
     },[])
 
-    const getProductsCategory = async() => {
+    const getExperiencesCategory = async() => {
       if(user != null){
-          const categories  = await getAllProductsCategory(user.token);
+          const categories  = await getAllExperiencesCategory(user.token);
           if(categories){
-              setDatasetProductsCategory(categories);
+              setDatasetExperiencesCategory(categories);
           }
       }
     }
 
-    const getProductsHandler = async (page:Number, filters?:ProductFilters) => {
+    const getExperiencesHandler = async (page:Number, filters?:ExperienceFilters) => {
         setCurrentView("LOADING");
         if(user != null){
-            const products  = await getAllProducts(user.token,page,filters);
-            if(products){
-                setDataSetProducts(products);
+            const experiences  = await getAllExperiences(user.token,page,filters);
+            if(experiences){
+                setDataSetExperiences(experiences);
                 setCurrentView("L");
             }
         }
@@ -111,26 +111,28 @@ const DashboardAdminProducts = () => {
 
     const [errorMessages, setErrorMessages] = useState<Record<string, string>>({});
 
-    const validateFields = (formname:string): ProductFormData |null => {
+    const validateFields = (formname:string): ExperienceFormData |null => {
         const form = document.getElementById(formname) as HTMLFormElement;
         const categoryId  = Number((form.querySelector('select[name="categoryId"]') as HTMLInputElement).value); 
+        const header = (form.querySelector('input[name="header"]') as HTMLInputElement).value;
         const name = (form.querySelector('input[name="name"]') as HTMLInputElement).value;
         const description = (form.querySelector('textarea[name="description"]') as HTMLTextAreaElement).value;
         const price = Number((form.querySelector('input[name="price"]') as HTMLInputElement).value);
-        const stock = Number((form.querySelector('input[name="stock"]') as HTMLInputElement).value);
+        const duration = Number((form.querySelector('input[name="duration"]') as HTMLInputElement).value);
         const status = (form.querySelector('select[name="status"]') as HTMLInputElement).value;
 
         setErrorMessages({});
 
         try {
-          ProductSchema.parse({categoryId, name, description, existing_images:existingImages,images: images.map(image => image.file),  status, stock, price, custom_price:customPrices });
+          ExperienceSchema.parse({categoryId, header, name, description, existing_images:existingImages,images: images.map(image => image.file),  status, duration, price, custom_price:customPrices });
 
           return {
             categoryId,
+            header,
             name,
             description,
             price,
-            stock,
+            duration,
             status,
             custom_price:JSON.stringify(customPrices),
             images: images.map(image => image.file)
@@ -151,12 +153,12 @@ const DashboardAdminProducts = () => {
     const onSubmitCreation = async (e: FormEvent) => {
         e.preventDefault();
         setLoadingForm(true);
-        const fieldsValidated = validateFields('form_create_product');
+        const fieldsValidated = validateFields('form_create_experience');
         if(fieldsValidated != null){
           if(user !== null){
-            await createProduct(fieldsValidated, user.token);
+            await createExperience(fieldsValidated, user.token);
           }
-          getProductsHandler(1);
+          getExperiencesHandler(1);
           setImages([]);
           setCurrentView("L")
         }
@@ -166,9 +168,9 @@ const DashboardAdminProducts = () => {
 
     const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
 
-    const [selectedProduct, setSelectedProduct] = useState<Product|null>(null);
+    const [selectedExperience, setSelectedExperience] = useState<Experience|null>(null);
 
-    const searchProductHandler = async() => {
+    const searchExperienceHandler = async() => {
         // Get the input value
         const searchValue = (document.querySelector('input[name="criteria_search_value"]') as HTMLInputElement).value.trim();
 
@@ -182,33 +184,33 @@ const DashboardAdminProducts = () => {
 
 
         // Construct filters based on input values and selected criteria
-        const filters: ProductFilters = {};
+        const filters: ExperienceFilters = {};
         if (selectedCriteria && searchValue) {
-            filters[selectedCriteria as keyof ProductFilters] = searchValue;
+            filters[selectedCriteria as keyof ExperienceFilters] = searchValue;
         }
 
         if (selectedStatus) {
             filters.status = selectedStatus;
         }
 
-        getProductsHandler(1,filters);
+        getExperiencesHandler(1,filters);
     }
 
-    const deleteProductHandler = async() => {
-        if(user != null && selectedProduct != null){
-            await deleteProduct(selectedProduct.id,user.token)
+    const deleteExperienceHandler = async() => {
+        if(user != null && selectedExperience != null){
+            await deleteExperience(selectedExperience.id,user.token)
         }
-        getProductsHandler(1);
+        getExperiencesHandler(1);
         setOpenDeleteModal(false);
     }
 
-    const onChangeSelectedProduct = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const onChangeSelectedExperience = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, type, value } = e.target;
         const fieldValue = value;
 
-        setSelectedProduct(prevSelectedProduct => {
+        setSelectedExperience(prevSelectedExperience => {
             return {
-                ...prevSelectedProduct,
+                ...prevSelectedExperience,
                 [name]: fieldValue,
             };
         });
@@ -217,14 +219,14 @@ const DashboardAdminProducts = () => {
     const onSubmitUpdate = async (e: FormEvent) => {
         e.preventDefault();
         setLoadingForm(true);
-        const fieldsValidated = validateFields('form_update_product');
+        const fieldsValidated = validateFields('form_update_experience');
         if(fieldsValidated != null){
           fieldsValidated.existing_images = JSON.stringify(existingImages);
-          if(user !== null && selectedProduct != null){
-              await updateProduct(selectedProduct.id,fieldsValidated, user.token);
+          if(user !== null && selectedExperience != null){
+              await updateExperience(selectedExperience.id,fieldsValidated, user.token);
           }
           setImages([]);
-          getProductsHandler(1);
+          getExperiencesHandler(1);
           setCurrentView("L")
         }
         setLoadingForm(false);
@@ -232,7 +234,7 @@ const DashboardAdminProducts = () => {
 
 
     const [openModalCategories, setOpenModalCategories] = useState<boolean>(false);
-    const [selectedCategory,setSelectedCategory] = useState<ProductCategory|null>(null);
+    const [selectedCategory,setSelectedCategory] = useState<ExperienceCategory|null>(null);
     const [loadingCategory,setLoadingCategory] = useState<boolean>(false);
 
     const onChangeSelectedCategory = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -252,7 +254,7 @@ const DashboardAdminProducts = () => {
     const onSubmitCreationCategory = async(e:FormEvent) => {
         e.preventDefault();
         setLoadingCategory(true);
-        const form = document.getElementById("form_create_product_category") as HTMLFormElement;
+        const form = document.getElementById("form_create_experience_category") as HTMLFormElement;
         const category = (form.querySelector('input[name="category"]') as HTMLInputElement).value;
 
         if(category.length == 0){
@@ -261,8 +263,8 @@ const DashboardAdminProducts = () => {
         };
 
         if(user !== null){
-            await createProductCategory(category, user.token);
-            getProductsCategory();
+            await createExperienceCategory(category, user.token);
+            getExperiencesCategory();
         }
         setLoadingCategory(false);
     }
@@ -270,18 +272,18 @@ const DashboardAdminProducts = () => {
     const onSubmitUpdateCategory = async () => {
         setLoadingCategory(true);
         if(user !== null && selectedCategory != null){
-            await updateProductCategory(selectedCategory.id,selectedCategory, user.token);
-            getProductsCategory();
+            await updateExperienceCategory(selectedCategory.id,selectedCategory, user.token);
+            getExperiencesCategory();
         }
         setLoadingCategory(false);
         setSelectedCategory(null);
     };
 
-    const deleteProductCategoryHandler = async(idCategory:number) => {
+    const deleteExperienceCategoryHandler = async(idCategory:number) => {
         setLoadingCategory(true);
         if(user != null){
-            await deleteProductCategory(idCategory,user.token)
-            getProductsCategory();
+            await deleteExperienceCategory(idCategory,user.token)
+            getExperiencesCategory();
         }
         setLoadingCategory(false);
     }
@@ -318,14 +320,14 @@ const DashboardAdminProducts = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Pizza/>Productos</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>Experiencias</h2>
                     <div className="w-full h-auto flex flex-row justify-between items-center gap-x-4">
                         <div className="w-auto h-auto flex flex-col md:flex-row justify-start items-start gap-y-4 gap-x-4">
                           <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
                             <input 
                               type="text" 
                               name="criteria_search_value"
-                              placeholder="Buscar Producto" 
+                              placeholder="Buscar Experiencia" 
                               className="w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
                             <InputRadio name="criteria_search" variant="dark" value="title" placeholder="Nombre"/>
@@ -339,7 +341,7 @@ const DashboardAdminProducts = () => {
                                   <option value="INACTIVE">INACTIVO</option>
                                 </select>
                               </label>
-                              <Button size="sm" variant="dark" effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchProductHandler()}>
+                              <Button size="sm" variant="dark" effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchExperienceHandler()}>
                               Buscar
                             </Button>
                           </div>
@@ -354,7 +356,7 @@ const DashboardAdminProducts = () => {
                                 Categorias
                               </button>
                             </div>
-                            <Button onClick={()=>{setCurrentView("A"); setImages([]); setExistingImages([])}} size="sm" variant="dark" effect="default" className="min-w-[200px]" isRound={true}>Agregar Producto <Pizza/></Button>
+                            <Button onClick={()=>{setCurrentView("A"); setImages([]); setExistingImages([])}} size="sm" variant="dark" effect="default" className="min-w-[200px]" isRound={true}>Agregar Experiencia <FlameKindlingIcon/></Button>
                         </div>
                     </div>
                     <table className="h-full w-full shadow-xl rounded-xl text-center p-4">
@@ -365,7 +367,7 @@ const DashboardAdminProducts = () => {
                                 <th className="p-2">Nombre</th>
                                 <th className="p-2">Precio</th>
                                 <th className="p-2">Imagenes</th>
-                                <th className="p-2">Stock</th>
+                                <th className="p-2">Duracion</th>
                                 <th className="p-2">Estado</th>
                                 <th className="p-2">Creado</th>
                                 <th className="p-2">Actualizado</th>
@@ -373,29 +375,29 @@ const DashboardAdminProducts = () => {
                             </tr>
                         </thead>
                         <tbody className="font-secondary text-sm">
-                                {datasetProducts.products.map((productItem,index)=>{
+                                {datasetExperiences.experiences.map((experienceItem,index)=>{
                                     return(
                                     <tr key={"user_key"+index} className="text-slate-400 hover:bg-secondary hover:text-white duration-300 cursor-pointer"> 
-                                        <td className="">{productItem.id}</td>
-                                        <td className="">{productItem.category.name}</td>
-                                        <td className="">{productItem.name}</td>
-                                        <td className="">{productItem.price}</td>
+                                        <td className="">{experienceItem.id}</td>
+                                        <td className="">{experienceItem.category.name}</td>
+                                        <td className="">{experienceItem.name}</td>
+                                        <td className="">{experienceItem.price}</td>
                                         <td className="flex flex-row flex-wrap items-start justify-start gap-2">
-                                          {productItem.images.map((img, index) => (
+                                          {experienceItem.images.map((img, index) => (
                                             <a key={index} href={`${import.meta.env.VITE_BACKEND_URL}/${img}`} target="_blank">
                                               <Image className="hover:text-tertiary duration-300"/>
                                             </a>
                                           ))}
                                         </td>
-                                        <td className="">{productItem.stock}</td>
-                                        <td className="h-full">{productItem.status != "ACTIVE" ? "INACTIVO" : "ACTIVO" }</td>
-                                        <td className="h-full">{productItem.updatedAt != undefined && productItem.updatedAt != null ? formatDate(productItem.updatedAt) : "None"}</td>
-                                        <td className="h-full">{productItem.createdAt != undefined && productItem.createdAt != null ? formatDate(productItem.createdAt) : "None"}</td>
+                                        <td className="">{experienceItem.duration}</td>
+                                        <td className="h-full">{experienceItem.status != "ACTIVE" ? "INACTIVO" : "ACTIVO" }</td>
+                                        <td className="h-full">{experienceItem.updatedAt != undefined && experienceItem.updatedAt != null ? formatDate(experienceItem.updatedAt) : "None"}</td>
+                                        <td className="h-full">{experienceItem.createdAt != undefined && experienceItem.createdAt != null ? formatDate(experienceItem.createdAt) : "None"}</td>
                                         <td className="h-full flex flex-col items-center justify-center">
                                           <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
-                                            <button onClick={()=>{setSelectedProduct(productItem); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
-                                            <button  onClick={()=>{setSelectedProduct(productItem);  setExistingImages(productItem.images) ; setImages([]); setCurrentView("E")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Pen className="h-5 w-5"/></button>
-                                            <button onClick={()=>{setOpenDeleteModal(true),setSelectedProduct(productItem)}} className="border rounded-md hover:bg-red-400 hover:text-white duration-300 active:scale-75 p-1"><X className="h-5 w-5"/></button>
+                                            <button onClick={()=>{setSelectedExperience(experienceItem); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
+                                            <button  onClick={()=>{setSelectedExperience(experienceItem);  setExistingImages(experienceItem.images) ; setImages([]); setCurrentView("E")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Pen className="h-5 w-5"/></button>
+                                            <button onClick={()=>{setOpenDeleteModal(true),setSelectedExperience(experienceItem)}} className="border rounded-md hover:bg-red-400 hover:text-white duration-300 active:scale-75 p-1"><X className="h-5 w-5"/></button>
                                           </div>
                                         </td>
                                     </tr>
@@ -404,19 +406,19 @@ const DashboardAdminProducts = () => {
                         </tbody>
                     </table>
                     <div className="flex flex-row justify-between w-full">
-                        <Button onClick={ () => getProductsHandler( Number(datasetProducts.currentPage) - 1)} size="sm" variant="dark" effect="default" isRound={true} disabled={datasetProducts.currentPage == 1}> <ChevronLeft/>  </Button>
-                        <Button onClick={ () => getProductsHandler( Number(datasetProducts.currentPage) + 1)} size="sm" variant="dark" effect="default" isRound={true} disabled={datasetProducts.currentPage >= datasetProducts.totalPages}> <ChevronRight/> </Button>
+                        <Button onClick={ () => getExperiencesHandler( Number(datasetExperiences.currentPage) - 1)} size="sm" variant="dark" effect="default" isRound={true} disabled={datasetExperiences.currentPage == 1}> <ChevronLeft/>  </Button>
+                        <Button onClick={ () => getExperiencesHandler( Number(datasetExperiences.currentPage) + 1)} size="sm" variant="dark" effect="default" isRound={true} disabled={datasetExperiences.currentPage >= datasetExperiences.totalPages}> <ChevronRight/> </Button>
                     </div>
                 </motion.div>
 
                 <Modal isOpen={openDeleteModal} onClose={()=>setOpenDeleteModal(false)}>
                     <div className="w-[400px] h-auto flex flex-col items-center justify-center text-secondary pb-6 px-6 pt-12 text-center">
                         <CircleX className="h-[60px] w-[60px] text-red-400 "/>
-                        <p className="text-primary">Estas seguro de eliminar este producto?</p>
-                        <p className="text-sm mt-6 text-secondary">El producto se eliminara si haces click en aceptar, las reservas no se perderan, pero no se podra mas comprar el producto en la pagina</p>
+                        <p className="text-primary">Estas seguro de eliminar esta experiencia?</p>
+                        <p className="text-sm mt-6 text-secondary">La experiencia se eliminara si haces click en aceptar, las reservas no se perderan, pero no se podra reservar mas la experiencia</p>
                         <div className="flex flex-row justify-around w-full mt-6">
                             <Button size="sm" variant="dark" effect="default" isRound={true} onClick={()=>setOpenDeleteModal(false)}> Cancelar  </Button>
-                            <Button size="sm" variant="danger" effect="default" isRound={true} onClick={()=>{deleteProductHandler()}}> Aceptar </Button>
+                            <Button size="sm" variant="danger" effect="default" isRound={true} onClick={()=>{deleteExperienceHandler()}}> Aceptar </Button>
                         </div>
                     </div>
                 </Modal>
@@ -430,7 +432,7 @@ const DashboardAdminProducts = () => {
                       </>
                     :
                     <>
-                      <form id="form_create_product_category" className="h-auto w-full flex flex-row items-end justify-between gap-x-2" onSubmit={(e)=>onSubmitCreationCategory(e)}>
+                      <form id="form_create_experience_category" className="h-auto w-full flex flex-row items-end justify-between gap-x-2" onSubmit={(e)=>onSubmitCreationCategory(e)}>
                         <div className="flex flex-col items-start justify-start w-full">
                           <label htmlFor="category" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nueva Categoria"}</label>
                             <input name="category" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de Categoria"}/>
@@ -446,9 +448,9 @@ const DashboardAdminProducts = () => {
                       </form>
                       <div className="mt-12 h-[200px] w-full flex flex-col justify-start items-start overflow-y-scroll gap-y-2">
                         <label htmlFor="category" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Categorias"}</label>
-                        { datasetProductsCategory.map((category,index)=>{
+                        { datasetExperiencesCategory.map((category,index)=>{
                           return(
-                            <div key={"category_product"+index} className="w-[90%] h-auto flex flex-row items-center justify-center border border-2 border-slate-200 rounded-md p-2 mx-auto">
+                            <div key={"category_experience"+index} className="w-[90%] h-auto flex flex-row items-center justify-center border border-2 border-slate-200 rounded-md p-2 mx-auto">
                               <div className="flex flex-col items-center justify-center w-full">
                                 {selectedCategory?.id == category.id ?
                                   <input name="name" value={selectedCategory.name} onChange={(e)=>onChangeSelectedCategory(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de Categoria"}/>
@@ -476,7 +478,7 @@ const DashboardAdminProducts = () => {
                                 }
                                 <button
                                   type="button"
-                                  onClick={()=>deleteProductCategoryHandler(category.id)}
+                                  onClick={()=>deleteExperienceCategoryHandler(category.id)}
                                   className="border-2 border-slate-200 active:scale-95 hover:bg-primary hover:text-white rounded-md duration-300 hover:border-primary h-8 w-8 flex items-center justify-center"
                                 >
                                   <X className="w-4 h-4"/>
@@ -495,7 +497,7 @@ const DashboardAdminProducts = () => {
 
         )}
 
-        {currentView == "V" && selectedProduct && (
+        {currentView == "V" && selectedExperience && (
                 <motion.div 
                     key={"New-View"}
                     initial="hidden"
@@ -504,7 +506,7 @@ const DashboardAdminProducts = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Pizza/>Ver Producto</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>Ver Experiencia</h2>
 
                   <div className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" >
 
@@ -514,30 +516,35 @@ const DashboardAdminProducts = () => {
                                 <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Categoria"}</label>
 
                                 <select name="categoryId" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                  <option value={selectedProduct.category.id}>{selectedProduct.category.name}</option>
+                                  <option value={selectedExperience.category.id}>{selectedExperience.category.name}</option>
                                 </select>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Encabezado"}</label>
+                            <input name="header" value={selectedExperience.header} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Encabezado"} disabled/>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre"}</label>
-                            <input name="name" value={selectedProduct.name} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre"} disabled/>
+                            <input name="name" value={selectedExperience.name} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre"} disabled/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
-                            <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}>{ selectedProduct.description }</textarea>
+                            <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}>{ selectedExperience.description }</textarea>
                           </div>
 
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                               <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio Fijo"}</label>
-                              <input name="price" value={selectedProduct.price} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"} disabled/>
+                              <input name="price" value={selectedExperience.price} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"} disabled/>
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Stock"}</label>
-                              <input name="stock" value={selectedProduct.stock} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Stock"} disabled/>
+                              <label htmlFor="duration" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Duracion en minutos"}</label>
+                              <input name="duration" value={selectedExperience.duration} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Duracion"} disabled/>
                             </div>
                           </div>
 
@@ -546,7 +553,7 @@ const DashboardAdminProducts = () => {
                             <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precios Personalizados"}</label>
                             <div className="w-full h-auto flex flex-col items-start justify-start">
                               <AnimatePresence>
-                                {selectedProduct.custom_price.map((price, index) => (
+                                {selectedExperience.custom_price.map((price, index) => (
                                           <motion.div
                                             key={index}
                                             initial="hidden"
@@ -578,7 +585,7 @@ const DashboardAdminProducts = () => {
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
                             <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              <option value={selectedProduct.status}>{selectedProduct.status == "ACTIVE" ? "ACTIVO" : "INACTIVO"}</option>
+                              <option value={selectedExperience.status}>{selectedExperience.status == "ACTIVE" ? "ACTIVO" : "INACTIVO"}</option>
                             </select>
                           </div>
                           
@@ -586,7 +593,7 @@ const DashboardAdminProducts = () => {
                             <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
                               <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
                                 <AnimatePresence>
-                                  {selectedProduct.images.map((image, index) => (
+                                  {selectedExperience.images.map((image, index) => (
                                     <motion.div
                                       key={index}
                                       initial="hidden"
@@ -628,9 +635,9 @@ const DashboardAdminProducts = () => {
                 viewport={{ once: true }}
                 variants={fadeIn("up","",0.5,0.3)}
                 className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Pizza/>Agregar Producto</h2>
+                <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>Agregar Experiencia</h2>
 
-              <form id="form_create_product" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
+              <form id="form_create_experience" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
 
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
@@ -638,7 +645,7 @@ const DashboardAdminProducts = () => {
                         <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Categoria"}</label>
 
                         <select name="categoryId" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                          { datasetProductsCategory.map((category,index)=>{
+                          { datasetExperiencesCategory.map((category,index)=>{
                             return(
                               <option key={index} value={category.id}>{category.name}</option>
                             )
@@ -659,10 +666,27 @@ const DashboardAdminProducts = () => {
                         </div>
                   </div>
 
+                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                        <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Encabezado de la Experiencia"}</label>
+                        <input name="header" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Encabezado de la Experiencia"}/>
+                        <div className="w-full h-6">
+                          {errorMessages.header && (
+                            <motion.p 
+                              initial="hidden"
+                              animate="show"
+                              exit="hidden"
+                              variants={fadeIn("up","", 0, 1)}
+                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                              {errorMessages.header}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre del Producto"}</label>
-                        <input name="name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre del Producto"}/>
+                        <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre de la Experiencia"}</label>
+                        <input name="name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre del Experiencia"}/>
                         <div className="w-full h-6">
                           {errorMessages.name && (
                             <motion.p 
@@ -714,18 +738,18 @@ const DashboardAdminProducts = () => {
                         </div>
 
                         <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Stock"}</label>
-                          <input name="stock" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Stock"}/>
+                          <label htmlFor="duration" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Duracion en minutos"}</label>
+                          <input name="duration" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Duracion"}/>
 
                           <div className="w-full h-6">
-                            {errorMessages.stock && (
+                            {errorMessages.duration && (
                               <motion.p 
                                 initial="hidden"
                                 animate="show"
                                 exit="hidden"
                                 variants={fadeIn("up","", 0, 1)}
                                 className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.stock}
+                                {errorMessages.duration}
                               </motion.p>
                             )}
                           </div>
@@ -750,7 +774,7 @@ const DashboardAdminProducts = () => {
                               <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio"}</label>
                               <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
                             </div>
-                          <Button onClick={()=>handleAddCustomPrice("form_create_product")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
+                          <Button onClick={()=>handleAddCustomPrice("form_create_experience")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                         </div>
                         <div id="tent_create_container_custom_prices flex flex-col items-start justify-start"className="w-full h-auto">
                           <AnimatePresence>
@@ -876,7 +900,7 @@ const DashboardAdminProducts = () => {
 
                       <div className="flex flex-row justify-end gap-x-6 w-full">
                           <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                          <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Producto </Button>
+                          <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Experiencia </Button>
                       </div>
 
                   </div>
@@ -884,7 +908,7 @@ const DashboardAdminProducts = () => {
             </motion.div>
         )}
 
-        {currentView === "E" && selectedProduct && (
+        {currentView === "E" && selectedExperience && (
                 <motion.div 
                     key={"Edit-View"}
                     initial="hidden"
@@ -893,18 +917,18 @@ const DashboardAdminProducts = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Pizza/>Editar Producto</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>Editar Experiencia</h2>
 
-                  <form id="form_update_product" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitUpdate(e)}>
+                  <form id="form_update_experience" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitUpdate(e)}>
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Categoria"}</label>
-                                <select name="categoryId" onChange={(e)=>onChangeSelectedProduct(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                  { datasetProductsCategory.map((category,index)=>{
+                                <select name="categoryId" onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                                  { datasetExperiencesCategory.map((category,index)=>{
                                     return(
-                                      <option key={index} value={category.id} selected={category.id == selectedProduct.category.id}>{category.name}</option>
+                                      <option key={index} value={category.id} selected={category.id == selectedExperience.category.id}>{category.name}</option>
                                     )
                                   })}
                                 </select>
@@ -923,8 +947,25 @@ const DashboardAdminProducts = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre del Producto"}</label>
-                            <input name="name" value={selectedProduct.name}  onChange={(e)=>onChangeSelectedProduct(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre del Producto"}/>
+                            <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Encabezado de la Experiencia"}</label>
+                            <input name="header" value={selectedExperience.header}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Encabezado de la Experiencia"}/>
+                            <div className="w-full h-6">
+                              {errorMessages.header && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.header}
+                                </motion.p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre de la Experiencia"}</label>
+                            <input name="name" value={selectedExperience.name}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de la Experiencia"}/>
                             <div className="w-full h-6">
                               {errorMessages.name && (
                                 <motion.p 
@@ -941,7 +982,7 @@ const DashboardAdminProducts = () => {
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
-                            <textarea name="description"  onChange={(e)=>onChangeSelectedProduct(e)} className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}>{selectedProduct.description}</textarea>
+                            <textarea name="description"  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}>{selectedExperience.description}</textarea>
                             <div className="w-full h-6">
                               {errorMessages.description && (
                                 <motion.p 
@@ -959,7 +1000,7 @@ const DashboardAdminProducts = () => {
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                               <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio Fijo"}</label>
-                              <input name="price" value={selectedProduct.price}  onChange={(e)=>onChangeSelectedProduct(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"}/>
+                              <input name="price" value={selectedExperience.price}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"}/>
 
                               <div className="w-full h-6">
                                 {errorMessages.price && (
@@ -977,18 +1018,18 @@ const DashboardAdminProducts = () => {
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
 
-                              <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Stock"}</label>
-                              <input name="stock" value={selectedProduct.stock}  onChange={(e)=>onChangeSelectedProduct(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Stock"}/>
+                              <label htmlFor="duration" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Duracion en minutos"}</label>
+                              <input name="duration" value={selectedExperience.duration}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Duracion"}/>
 
                               <div className="w-full h-6">
-                                {errorMessages.stock && (
+                                {errorMessages.duration && (
                                   <motion.p 
                                     initial="hidden"
                                     animate="show"
                                     exit="hidden"
                                     variants={fadeIn("up","", 0, 1)}
                                     className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.stock}
+                                    {errorMessages.duration}
                                   </motion.p>
                                 )}
                               </div>
@@ -1012,7 +1053,7 @@ const DashboardAdminProducts = () => {
                                   <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio"}</label>
                                   <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
                                 </div>
-                                <Button onClick={()=>handleAddCustomPrice("form_update_product")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
+                                <Button onClick={()=>handleAddCustomPrice("form_update_experience")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                             </div>
                             <div id="tent_create_container_custom_prices flex flex-col items-start justify-start"className="w-full h-auto">
                               <AnimatePresence>
@@ -1065,9 +1106,9 @@ const DashboardAdminProducts = () => {
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
-                            <select name="status" onChange={(e)=>onChangeSelectedProduct(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              <option value="ACTIVE" selected={selectedProduct.status == "ACTIVE"}>ACTIVO</option>
-                              <option value="INACTIVE" selected={selectedProduct.status == "INACTIVE"}>INACTIVO</option>
+                            <select name="status" onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                              <option value="ACTIVE" selected={selectedExperience.status == "ACTIVE"}>ACTIVO</option>
+                              <option value="INACTIVE" selected={selectedExperience.status == "INACTIVE"}>INACTIVO</option>
                             </select>
                             <div className="w-full h-6">
                               {errorMessages.status && (
@@ -1170,4 +1211,4 @@ const DashboardAdminProducts = () => {
     )
 }
 
-export default DashboardAdminProducts;
+export default DashboardAdminExperiences;

@@ -1,4 +1,4 @@
-import { User, Tent, Product, TentFormData, ProductFormData, ProductCategory } from "../lib/interfaces"
+import { User, Tent, Product, TentFormData, ProductFormData, ProductCategory, ExperienceCategory, Experience, ExperienceFormData } from "../lib/interfaces"
 import { convertStrToCurrentTimezoneDate } from "../lib/utils";
 
 export const serializeUser = (data:any):User|null => {
@@ -145,4 +145,72 @@ export const serializeCategoryProduct = (data:any):ProductCategory|null => {
   };
 
   return ProductCategory;
+}
+
+export const serializeCategoryExperience = (data:any):ExperienceCategory|null => {
+  let ExperienceCategory:ExperienceCategory|null = null;
+
+  ExperienceCategory = {
+    id: data.id,
+    name:data.name,
+    createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
+    updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
+  };
+
+  return ExperienceCategory;
+}
+
+export const serializeExperience = (data:any):Experience|null => {
+  let experience:Experience|null = null;
+
+  const transformedCustomPrice = data.custom_price ? JSON.parse(data.custom_price).map((item:any) => ({  ...item, dateFrom: convertStrToCurrentTimezoneDate(item.dateFrom), dateTo: convertStrToCurrentTimezoneDate(item.dateTo) 
+})) : [];
+
+  experience = {
+    categoryId:data.categoryId,
+    category:data.category,
+    id: data.id,
+    header:data.header,
+    name:data.name,
+    description: data.description,
+    images: data.images ? data.images.map((image:string) => image.replace(/\\/g, '/')) : [],
+    price: data.price || 0,
+    duration:data.duration || 0,
+    custom_price: transformedCustomPrice,
+    status : data.status,
+    createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
+    updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
+  };
+  return experience;
+}
+
+
+export const serializeExperienceToDB = (experience: ExperienceFormData, isEditable?:boolean) => {
+
+    // Create a new FormData object
+    const formData = new FormData();
+
+    // Append basic fields
+    formData.append('categoryId', experience.categoryId.toString());
+    formData.append('header',experience.header);
+    formData.append('name', experience.name);
+    formData.append('description', experience.description);
+    formData.append('price', experience.price.toString());
+    formData.append('duration', experience.duration.toString());
+
+    formData.append('status', experience.status);
+
+    // Append custom prices as a JSON string
+    formData.append('custom_price', experience.custom_price);
+
+    if(isEditable && experience.existing_images){
+      formData.append('existing_images',experience.existing_images)
+    }
+
+    // Append images
+    experience.images.forEach((image) => {
+      formData.append('images', image);  // Ensure each image is appended with the correct key
+    });
+
+    return formData;
 }

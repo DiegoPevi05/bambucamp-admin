@@ -128,7 +128,7 @@ export interface ReserveIT{
   status: string;
   total: number;
   tents: Tent[];
-  experiences: ExperienceIT[];
+  experiences: Experience[];
   products: Product[];
 }
 
@@ -143,19 +143,46 @@ export interface PromotionIT {
 }
 
 
+export interface ExperienceCategory {
+  id:number;
+  name: string;
+  createdAt:Date|null;
+  updatedAt:Date|null;
+}
 
-export interface ExperienceIT {
+export interface Experience {
   id: number;
-  title: string;
+  categoryId:number;
+  category:ExperienceCategory;
+  header:string;
+  name: string;
   description: string;
-  duration: number;
   price: number;
+  duration: number;
   images: string[];
-  limitAge: number;
-  qtyPeople: number;
-  sugestions: string[];
-  quantity?: number;
-  date?: Date;
+  status:string;
+  custom_price:CustomPrice[];
+  createdAt:Date|null;
+  updatedAt:Date|null;
+}
+
+export interface ExperienceFilters {
+  name?: string;
+  status?:string;
+}
+
+
+export interface ExperienceFormData {
+  categoryId:number;
+  header:string;
+  name: string;
+  description: string;
+  images: File[];
+  price: number;
+  duration:number;
+  custom_price:string;
+  status:string;
+  existing_images?:string;
 }
 
 
