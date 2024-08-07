@@ -103,4 +103,12 @@ const ExperienceSchema = z.object({
   path: ['images'] // This can be any path to indicate where the error should appear
 });
 
-export { signInSchema, createUserSchema, editUserSchema, TentSchema, ProductSchema, ExperienceSchema};
+const DiscountCodeSchema = z.object({
+  code: z.string().nonempty({ message: 'El codigo es requerido' }),
+  discount: z.number().gt(1, { message: 'El descuento es requerido' }),
+  stock: z.number().gt(1, { message: 'El stock debe ser mayor a 1' }),
+  expiredDate: z.date(),
+  status: z.string().nonempty({ message: 'El estado es requerido' }),
+});
+
+export { signInSchema, createUserSchema, editUserSchema, TentSchema, ProductSchema, ExperienceSchema, DiscountCodeSchema};

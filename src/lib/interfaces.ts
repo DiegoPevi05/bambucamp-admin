@@ -193,22 +193,27 @@ export interface ExperienceFormData {
 
 
 
-export interface ReviewIT {
+export interface DiscountCode {
   id: number;
-  name: string;
-  title: string;
-  review: string;
-  stars: number;
-  date: string;
-  images: string[];
-  profile_image: string;
+  code:string;
+  discount:number;
+  expiredDate: Date;
+  stock:number;
+  status:string;
+  createdAt:Date|null;
+  updatedAt:Date|null;
 }
 
-export interface NotificationIT {
-  id: number;
-  type : string;
-  title:string;
-  preview:string;
-  description:string;
-  date:string;
+export interface DiscountCodeFilters {
+  code?: string;
+  status?:string;
+}
+
+
+export interface DiscountCodeFormData {
+  code:string;
+  discount:number;
+  expiredDate: Date;
+  stock:number;
+  status:string;
 }

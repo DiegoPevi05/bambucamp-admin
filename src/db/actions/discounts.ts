@@ -1,12 +1,12 @@
 import {toast} from 'sonner';
 import { ZodError } from 'zod';
 import axios from 'axios';
-import { Experience, ExperienceFilters, ExperienceFormData } from '../../lib/interfaces';
-import { serializeExperience, serializeExperienceToDB } from '../serializer';
+import { DiscountCode, DiscountCodeFilters, DiscountCodeFormData } from '../../lib/interfaces';
+import { serializeDiscountCode, serializeDiscountCodeToDB } from '../serializer';
 
-export const getAllExperiences = async( token: string, page:Number, filters?:ExperienceFilters ): Promise<{experiences:Experience[], totalPages:Number ,currentPage:Number}|null> => {
+export const getAllDiscountCodes = async( token: string, page:Number, filters?:DiscountCodeFilters ): Promise<{discountCodes:DiscountCode[], totalPages:Number ,currentPage:Number}|null> => {
 
-  let data:{ experiences:Experience[],totalPages:Number,currentPage:Number } | null = null;
+  let data:{ discountCodes:DiscountCode[],totalPages:Number,currentPage:Number } | null = null;
   try{
     // Create a URLSearchParams object to construct the query string
     const params = new URLSearchParams();
@@ -15,25 +15,25 @@ export const getAllExperiences = async( token: string, page:Number, filters?:Exp
     // Append filters to the query parameters
     if (filters) {
       Object.keys(filters).forEach((key) => {
-        if (filters[key as keyof ExperienceFilters]) {
-          params.append(key, filters[key as keyof ExperienceFilters] as string);
+        if (filters[key as keyof DiscountCodeFilters]) {
+          params.append(key, filters[key as keyof DiscountCodeFilters] as string);
         }
       });
     }
 
     // Construct the URL with query parameters
-    const url = `${import.meta.env.VITE_BACKEND_URL}/experiences?${params.toString()}`;
+    const url = `${import.meta.env.VITE_BACKEND_URL}/discounts?${params.toString()}`;
 
-    const fetchProducts = await axios.get(url, {
+    const fetchDiscounts = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
 
     data = {
-      experiences: fetchProducts.data.experiences.map((experience: any) => serializeExperience(experience)),
-      currentPage: parseInt(fetchProducts.data.currentPage as string, 10),
-      totalPages:parseInt(fetchProducts.data.totalPages as string, 10)
+      discountCodes: fetchDiscounts.data.discountCodes.map((discount: any) => serializeDiscountCode(discount)),
+      currentPage: parseInt(fetchDiscounts.data.currentPage as string, 10),
+      totalPages:parseInt(fetchDiscounts.data.totalPages as string, 10)
     }
 
 
@@ -43,7 +43,7 @@ export const getAllExperiences = async( token: string, page:Number, filters?:Exp
         toast.error((err.message));
       });
     } else {
-      toast.error("Error trayendo las experiencias.");
+      toast.error("Error trayendo los codigos de descuento.");
       console.error(error);
     }
   }
@@ -53,13 +53,14 @@ export const getAllExperiences = async( token: string, page:Number, filters?:Exp
 
 
 
-export const createExperience = async (experience: ExperienceFormData, token: string): Promise<void> => {
+export const createDiscountCode = async (discountCode: DiscountCodeFormData, token: string): Promise<void> => {
   try {
 
+    console.log(discountCode);
     // Create a new FormData object
-    const formData = serializeExperienceToDB(experience);
+    const formData = serializeDiscountCodeToDB(discountCode);
 
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/experiences`, formData, {
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/discounts`, formData, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
@@ -67,9 +68,9 @@ export const createExperience = async (experience: ExperienceFormData, token: st
     });
 
     if (response.status === 201) {
-      toast.success("Experiencia creada exitosamente");
+      toast.success("Codigo de descuento creado exitosamente");
     } else {
-      toast.error("Algo salió mal al crear la experiencia.");
+      toast.error("Algo salió mal al crear el codigo de descuento.");
     }
   } catch (error) {
     if (error instanceof ZodError) {
@@ -78,7 +79,7 @@ export const createExperience = async (experience: ExperienceFormData, token: st
       });
     } else if (axios.isAxiosError(error)) {
       if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error creando la experiencia."}`);
+        toast.error(`Error: ${error.response.data.message || "Error creando el codigo de descuento."}`);
       } else {
         toast.error("No se pudo conectar con el servidor.");
       }
@@ -90,12 +91,12 @@ export const createExperience = async (experience: ExperienceFormData, token: st
 };
 
 
-export const updateExperience = async (experienceId:Number,experience: ExperienceFormData, token: string): Promise<void> => {
+export const updateDiscountCode = async (discountCodeId:Number,discountCode: DiscountCodeFormData, token: string): Promise<void> => {
   try {
     // Create a new FormData object
-    const formData = serializeExperienceToDB(experience,true);
+    const formData = serializeDiscountCodeToDB(discountCode,true);
 
-    const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/experiences/${experienceId}`, formData, {
+    const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/discounts/${discountCodeId}`, formData, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
@@ -103,9 +104,9 @@ export const updateExperience = async (experienceId:Number,experience: Experienc
     });
 
     if (response.status === 200) {
-      toast.success("Experiencia actualizado exitosamente");
+      toast.success("Codigo de descuento actualizado exitosamente");
     } else {
-      toast.error("Algo salió mal al actualizar la experiencia.");
+      toast.error("Algo salió mal al actualizar el codigo de descuento.");
     }
   } catch (error) {
     if (error instanceof ZodError) {
@@ -114,7 +115,7 @@ export const updateExperience = async (experienceId:Number,experience: Experienc
       });
     } else if (axios.isAxiosError(error)) {
       if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error actualizando la experiencia."}`);
+        toast.error(`Error: ${error.response.data.message || "Error actualizando el codigo de descuento."}`);
       } else {
         toast.error("No se pudo conectar con el servidor.");
       }
@@ -127,19 +128,19 @@ export const updateExperience = async (experienceId:Number,experience: Experienc
 
 
 
-export const deleteExperience = async(idExperience:Number, token:string ):Promise<void> => {
+export const deleteDiscountCode = async(idDiscountCode:Number, token:string ):Promise<void> => {
 
   try {
-    const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/experiences/${idExperience}`, {
+    const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/discounts/${idDiscountCode}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
 
     if (response.status === 200) {
-      toast.success("Experiencia borrada exitosamente");
+      toast.success("Codigo de descuento borrado exitosamente");
     } else {
-      toast.error("Algo salió mal al borrar la experiencia.");
+      toast.error("Algo salió mal al borrar el codigo de descuento.");
     }
   } catch (error) {
     if (error instanceof ZodError) {
@@ -148,7 +149,7 @@ export const deleteExperience = async(idExperience:Number, token:string ):Promis
       });
     } else if (axios.isAxiosError(error)) {
       if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error borrando la experiencia."}`);
+        toast.error(`Error: ${error.response.data.message || "Error borrando el codigo de descuento."}`);
       } else {
         toast.error("No se pudo conectar con el servidor.");
       }

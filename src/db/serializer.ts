@@ -1,4 +1,4 @@
-import { User, Tent, Product, TentFormData, ProductFormData, ProductCategory, ExperienceCategory, Experience, ExperienceFormData } from "../lib/interfaces"
+import { User, Tent, Product, TentFormData, ProductFormData, ProductCategory, ExperienceCategory, Experience, ExperienceFormData, DiscountCode, DiscountCodeFormData } from "../lib/interfaces"
 import { convertStrToCurrentTimezoneDate } from "../lib/utils";
 
 export const serializeUser = (data:any):User|null => {
@@ -217,6 +217,38 @@ export const serializeExperienceToDB = (experience: ExperienceFormData, isEditab
     experience.images.forEach((image) => {
       formData.append('images', image);  // Ensure each image is appended with the correct key
     });
+
+    return formData;
+}
+
+export const serializeDiscountCode = (data:any):DiscountCode|null => {
+  let discuntCode:DiscountCode|null = null;
+
+  discuntCode = {
+    id: data.id,
+    code:data.code,
+    discount: data.discount || 0,
+    expiredDate: data.expiredDate ? convertStrToCurrentTimezoneDate(data.expiredDate) : data.expiredDate,
+    stock: data.stock || 0,
+    status: data.status,
+    createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
+    updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
+  };
+  return discuntCode;
+}
+
+
+export const serializeDiscountCodeToDB = (discountCode: DiscountCodeFormData, isEditable?:boolean) => {
+
+    // Create a new FormData object
+    const formData = new FormData();
+
+    // Append basic fields
+    formData.append('code',discountCode.code);
+    formData.append('discount', discountCode.discount.toString());
+    formData.append('expiredDate', discountCode.expiredDate.toString());
+    formData.append('stock', discountCode.stock.toString());
+    formData.append('status', discountCode.status);
 
     return formData;
 }
