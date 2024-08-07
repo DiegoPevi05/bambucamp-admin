@@ -38,6 +38,14 @@ export const formatDate = (date:Date) => {
   return new Intl.DateTimeFormat("en-US", {dateStyle: "medium", timeStyle: "short"}).format(date);
 }
 
+export const formatToISODate = (date: Date) => {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+  const day = String(date.getUTCDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
 export const convertStrToCurrentTimezoneDate = (utcDateString: string): Date => {
   const date = new Date(utcDateString);
   const localOffset = date.getTimezoneOffset(); // getTimezoneOffset() returns the difference in minutes

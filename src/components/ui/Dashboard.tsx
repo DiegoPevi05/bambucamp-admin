@@ -11,6 +11,11 @@ import {useNavigate} from "react-router-dom";
 
 const DashboardButtons: DashboardButtonDataProps[] = [
   {
+    "title": "Reservas",
+    "icon": <CalendarCheck />,
+    "section": "reserves"
+  },
+  {
     "title": "Usuarios",
     "icon": <User />,
     "section": "users"
@@ -39,16 +44,6 @@ const DashboardButtons: DashboardButtonDataProps[] = [
     "title": "Promociones",
     "icon": <Disc />,
     "section": "promotions"
-  },
-  {
-    "title": "Reservas",
-    "icon": <CalendarCheck />,
-    "section": "reserves"
-  },
-  {
-    "title": "Configuraciones",
-    "icon": <UserCog />,
-    "section": "settings"
   }
 ];
 

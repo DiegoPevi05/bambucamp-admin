@@ -238,17 +238,3 @@ export const serializeDiscountCode = (data:any):DiscountCode|null => {
 }
 
 
-export const serializeDiscountCodeToDB = (discountCode: DiscountCodeFormData, isEditable?:boolean) => {
-
-    // Create a new FormData object
-    const formData = new FormData();
-
-    // Append basic fields
-    formData.append('code',discountCode.code);
-    formData.append('discount', discountCode.discount.toString());
-    formData.append('expiredDate', discountCode.expiredDate.toString());
-    formData.append('stock', discountCode.stock.toString());
-    formData.append('status', discountCode.status);
-
-    return formData;
-}

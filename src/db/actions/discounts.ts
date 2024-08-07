@@ -2,7 +2,7 @@ import {toast} from 'sonner';
 import { ZodError } from 'zod';
 import axios from 'axios';
 import { DiscountCode, DiscountCodeFilters, DiscountCodeFormData } from '../../lib/interfaces';
-import { serializeDiscountCode, serializeDiscountCodeToDB } from '../serializer';
+import { serializeDiscountCode } from '../serializer';
 
 export const getAllDiscountCodes = async( token: string, page:Number, filters?:DiscountCodeFilters ): Promise<{discountCodes:DiscountCode[], totalPages:Number ,currentPage:Number}|null> => {
 
@@ -56,14 +56,9 @@ export const getAllDiscountCodes = async( token: string, page:Number, filters?:D
 export const createDiscountCode = async (discountCode: DiscountCodeFormData, token: string): Promise<void> => {
   try {
 
-    console.log(discountCode);
-    // Create a new FormData object
-    const formData = serializeDiscountCodeToDB(discountCode);
-
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/discounts`, formData, {
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/discounts`, discountCode, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
       }
     });
 
@@ -93,13 +88,10 @@ export const createDiscountCode = async (discountCode: DiscountCodeFormData, tok
 
 export const updateDiscountCode = async (discountCodeId:Number,discountCode: DiscountCodeFormData, token: string): Promise<void> => {
   try {
-    // Create a new FormData object
-    const formData = serializeDiscountCodeToDB(discountCode,true);
 
-    const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/discounts/${discountCodeId}`, formData, {
+    const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/discounts/${discountCodeId}`, discountCode, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
       }
     });
 

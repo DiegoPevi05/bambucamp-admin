@@ -15,7 +15,7 @@ import Modal from "../components/Modal";
 import { toast } from "sonner";
 
 
-const DashboardAdminDiscounts = () => {
+const DashboardAdminPromotions = () => {
 
     const { user } = useAuth();
     const [datasetDiscountCodes,setDataSetDiscountCodes] = useState<{discountCodes:DiscountCode[],totalPages:Number,currentPage:Number}>({discountCodes:[],totalPages:1,currentPage:1});
@@ -578,4 +578,4 @@ const DashboardAdminDiscounts = () => {
     )
 }
 
-export default DashboardAdminDiscounts;
+export default DashboardAdminPromotions;
