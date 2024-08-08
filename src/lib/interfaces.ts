@@ -132,16 +132,6 @@ export interface ReserveIT{
   products: Product[];
 }
 
-export interface PromotionIT {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  link: string;
-  discount: number;
-  remaining: number;
-}
-
 
 export interface ExperienceCategory {
   id:number;
@@ -216,4 +206,61 @@ export interface DiscountCodeFormData {
   expiredDate: Date;
   stock:number;
   status:string;
+}
+
+
+export interface itemPromotion {
+  id:number;
+  label:string;
+  qty:number;
+  price:number;
+}
+
+export interface optionsPromotion {
+  tents:Tent[];
+  products:Product[];
+  experiences:Experience[];
+}
+
+export interface Promotion {
+  id: number;
+  title:string;
+  description:string;
+  images:string[];
+  expiredDate:Date;
+  status:string;
+  qtypeople:number;
+  qtykids:number;
+  netImport:number;
+  discount:number;
+  grossImport:number;
+  stock:number;
+  idtents:itemPromotion[];
+  idproducts:itemPromotion[];
+  idexperiences:itemPromotion[];
+  createdAt:Date|null;
+  updatedAt:Date|null;
+}
+
+export interface PromotionFilters {
+  title?: string;
+  status?:string;
+}
+
+export interface PromotionFormData {
+  title:string;
+  description:string;
+  images:File[];
+  expiredDate:Date;
+  status:string;
+  qtypeople:number;
+  qtykids:number;
+  netImport:number;
+  discount:number;
+  grossImport:number;
+  stock:number;
+  idtents:string;
+  idproducts:string;
+  idexperiences:string;
+  existing_images?:string;
 }

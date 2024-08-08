@@ -1,4 +1,4 @@
-import { User, Tent, Product, TentFormData, ProductFormData, ProductCategory, ExperienceCategory, Experience, ExperienceFormData, DiscountCode, DiscountCodeFormData } from "../lib/interfaces"
+import { User, Tent, Product, TentFormData, ProductFormData, ProductCategory, ExperienceCategory, Experience, ExperienceFormData, DiscountCode, Promotion,PromotionFormData, optionsPromotion } from "../lib/interfaces"
 import { convertStrToCurrentTimezoneDate } from "../lib/utils";
 
 export const serializeUser = (data:any):User|null => {
@@ -237,4 +237,86 @@ export const serializeDiscountCode = (data:any):DiscountCode|null => {
   return discuntCode;
 }
 
+export const serializePromotionOptions = (data:any):optionsPromotion|null => {
+  let options:optionsPromotion|null = null;
 
+  const transformedTents = data.tents ? data.tents.map((item:any) => ( serializeTent(item) )) : [];
+
+  const transformedProducts = data.products ? data.products.map((item:any) => ( serializeProduct(item) )) : [];
+
+  const transformedExperiences = data.experiences ? data.experiences.map((item:any) => ( serializeExperience(item) )) : [];
+
+  options = {
+    tents: transformedTents,
+    products:transformedProducts,
+    experiences: transformedExperiences
+  }
+
+  return options;
+}
+
+export const serializePromotion = (data:any):Promotion|null => {
+  let promotion:Promotion|null = null;
+
+  const transformedIdtents = data.idtents ? JSON.parse(data.idtents).map((item:any) => ({  ...item, id: Number(item.id), qty: Number(item.qty) , price: Number(item.price)
+})) : [];
+
+  const transformedIdProducts = data.idproducts ? JSON.parse(data.idproducts).map((item:any) => ({  ...item, id: Number(item.id), qty: Number(item.qty) , price: Number(item.price)
+})) : [];
+
+  const transformedIdExperiences = data.idexperiences ? JSON.parse(data.idexperiences).map((item:any) => ({  ...item, id: Number(item.id), qty: Number(item.qty) , price: Number(item.price)
+})) : [];
+
+  promotion = {
+    id: data.id,
+    title:data.title,
+    description: data.description,
+    images: data.images ? data.images.map((image:string) => image.replace(/\\/g, '/')) : [],
+    expiredDate: data.expiredDate ? convertStrToCurrentTimezoneDate(data.expiredDate) : data.expiredDate,
+    status : data.status,
+    qtypeople: data.qtypeople || 0,
+    qtykids: data.qtykids || 0,
+    netImport: data.netImport || 0,
+    discount: data.discount || 0,
+    grossImport: data.grossImport || 0,
+    stock: data.stock || 0,
+    idtents: transformedIdtents,
+    idproducts: transformedIdProducts,
+    idexperiences: transformedIdExperiences,
+    createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
+    updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
+  };
+  return promotion;
+}
+
+
+export const serializePromotionToDB = (promotion: PromotionFormData, isEditable?:boolean) => {
+
+    // Create a new FormData object
+    const formData = new FormData();
+
+    // Append basic fields
+    formData.append('title',promotion.title);
+    formData.append('description', promotion.description);
+    formData.append('expiredDate', promotion.expiredDate.toString());
+    formData.append('status', promotion.status);
+    formData.append('qtypeople', promotion.qtypeople.toString());
+    formData.append('qtykids', promotion.qtykids.toString());
+    formData.append('netImport', promotion.netImport.toString());
+    formData.append('discount', promotion.grossImport.toString());
+    formData.append('stock', promotion.stock.toString());
+    formData.append('idtents', promotion.idtents);
+    formData.append('idproducts', promotion.idproducts);
+    formData.append('idexperiences', promotion.idexperiences);
+
+    if(isEditable && promotion.existing_images){
+      formData.append('existing_images',promotion.existing_images)
+    }
+
+    // Append images
+    promotion.images.forEach((image) => {
+      formData.append('images', image);  // Ensure each image is appended with the correct key
+    });
+
+    return formData;
+}

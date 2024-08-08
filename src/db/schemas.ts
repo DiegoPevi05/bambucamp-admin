@@ -111,4 +111,33 @@ const DiscountCodeSchema = z.object({
   status: z.string().nonempty({ message: 'El estado es requerido' }),
 });
 
-export { signInSchema, createUserSchema, editUserSchema, TentSchema, ProductSchema, ExperienceSchema, DiscountCodeSchema};
+const itemPromotion = z.object({
+  id: z.number().positive({ message: 'El id debe ser un número positivo' }),
+  label: z.string().nonempty({message:'El nombre del item no debe estar vacio'}),
+  qty:z.number().positive({ message: 'La cantidad debe ser un número positivo' }),
+  price: z.number().positive({ message: 'El precio debe ser un número positivo' })
+});
+
+const PromotionSchema = z.object({
+  title: z.string().nonempty({ message: 'El título es requerido' }),
+  description: z.string().nonempty({ message: 'La descripción es requerida' }),
+  existing_images: z.array(z.string()).default([]),
+  images: z.array(imageFileSchema).default([]),
+  status: z.string().nonempty({ message: 'El estado es requerido' }),
+  expiredDate: z.date(),
+  qtypeople: z.number().gt(1, { message: 'Debe ser almenos para una persona la actividad.' }),
+  qtykids: z.number(),
+  netImport: z.number().gt(1, { message: 'Debe ser mayor que 0 el importe.' }),
+  discount: z.number().gt(1, { message: 'Debe ser mayor que 0 el descuento.' }),
+  grossImport: z.number().gt(1, { message: 'Debe ser mayor que 0 el total.' }),
+  stock: z.number().gt(1, { message: 'Debe ser mayor que 0 el stock.' }),
+  idtents: z.array(itemPromotion),
+  idproducts: z.array(itemPromotion),
+  idexperiences: z.array(itemPromotion),
+}).refine(data => data.existing_images.length > 0 || data.images.length > 0, {
+  message: 'Debe haber al menos una imagen',
+  path: ['images'] // This can be any path to indicate where the error should appear
+});
+
+
+export { signInSchema, createUserSchema, editUserSchema, TentSchema, ProductSchema, ExperienceSchema, DiscountCodeSchema, PromotionSchema};
