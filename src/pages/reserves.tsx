@@ -310,8 +310,9 @@ const DashboardAdminReserves = () => {
     const handleApplyDiscount = async(formname:string) => {
       const form = document.getElementById(formname) as HTMLFormElement;
       const discountInput = form.querySelector('input[name="discount"]') as HTMLInputElement;
-      const discountCodeId = form.querySelector('input[name="discount_code_id"]') as HTMLInputElement;
-      if(Number(discountCodeId) > 0){
+      const discountCodeInput = form.querySelector('select[name="discount_code_id"]') as HTMLInputElement;
+      const discountCodeId = Number(discountCodeInput.value);
+      if(discountCodeId > 0){
         const discount = datasetReservesOptions.discounts.find((i)=> i.id == Number(discountCodeId));
         discountInput.value = discount?.discount ? discount?.discount.toString() : "0";
         discountInput.disabled = true;

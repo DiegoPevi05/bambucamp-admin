@@ -333,7 +333,7 @@ export const serializeReserveOptions = (data:any):optionsReserve|null => {
 
   const transformedPromotions = data.promotions ? data.promotions.map((item:any) => ( serializePromotion(item) )) : [];
 
-  const transformedDiscounts = data.promotion ? data.promotions.map((item:any) => (serializeDiscountCode(item) )) : [];
+  const transformedDiscounts = data.discounts ? data.discounts.map((item:any) => (serializeDiscountCode(item) )) : [];
 
   options = {
     tents: transformedTents,
