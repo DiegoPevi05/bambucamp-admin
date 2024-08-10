@@ -62,6 +62,7 @@ export const getAllPromotions = async( token: string, page:Number, filters?:Prom
         Authorization: `Bearer ${token}`
       }
     });
+    console.log(fetchPromotions);
 
     data = {
       promotions: fetchPromotions.data.promotions.map((promotion: any) => serializePromotion(promotion)),

@@ -1,5 +1,5 @@
 import Dashboard from "../components/ui/Dashboard";
-import { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Eye, Pen, X, ChevronLeft, ChevronRight, CircleX, Image, RefreshCw, Percent } from "lucide-react";
 import Button from "../components/ui/Button";
 import { InputRadio } from "../components/ui/Input";
@@ -8,11 +8,10 @@ import { getAllDiscountCodes, createDiscountCode, updateDiscountCode, deleteDisc
 import { useAuth } from "../contexts/AuthContext";
 import { DiscountCode, DiscountCodeFilters, DiscountCodeFormData } from "../lib/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
-import {fadeIn, fadeOnly} from "../lib/motions";
+import {fadeIn} from "../lib/motions";
 import {  ZodError } from 'zod';
 import { DiscountCodeSchema } from "../db/schemas";
 import Modal from "../components/Modal";
-import { toast } from "sonner";
 
 
 const DashboardAdminDiscounts = () => {
@@ -196,7 +195,7 @@ const DashboardAdminDiscounts = () => {
                             <input 
                               type="text" 
                               name="criteria_search_value"
-                              placeholder="Buscar Experiencia" 
+                              placeholder="Buscar Descuento" 
                               className="w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
                             <InputRadio name="criteria_search" variant="dark" value="title" placeholder="Nombre"/>
@@ -325,7 +324,7 @@ const DashboardAdminDiscounts = () => {
                           </div>
 
                           <div className="flex flex-row justify-end gap-x-6 w-full">
-                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Volver a lista de Glampings</Button>
+                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Volver a lista de Descuentos</Button>
                           </div>
 
                       </div>

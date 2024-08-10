@@ -1,4 +1,4 @@
-import { User, Tent, Product, TentFormData, ProductFormData, ProductCategory, ExperienceCategory, Experience, ExperienceFormData, DiscountCode, Promotion,PromotionFormData, optionsPromotion } from "../lib/interfaces"
+import { User, Tent, Product, TentFormData, ProductFormData, ProductCategory, ExperienceCategory, Experience, ExperienceFormData, DiscountCode, Promotion,PromotionFormData, optionsPromotion, optionsReserve, Reserve } from "../lib/interfaces"
 import { convertStrToCurrentTimezoneDate } from "../lib/utils";
 
 export const serializeUser = (data:any):User|null => {
@@ -303,7 +303,8 @@ export const serializePromotionToDB = (promotion: PromotionFormData, isEditable?
     formData.append('qtypeople', promotion.qtypeople.toString());
     formData.append('qtykids', promotion.qtykids.toString());
     formData.append('netImport', promotion.netImport.toString());
-    formData.append('discount', promotion.grossImport.toString());
+    formData.append('discount', promotion.discount.toString());
+    formData.append('grossImport', promotion.grossImport.toString());
     formData.append('stock', promotion.stock.toString());
     formData.append('idtents', promotion.idtents);
     formData.append('idproducts', promotion.idproducts);
@@ -319,4 +320,61 @@ export const serializePromotionToDB = (promotion: PromotionFormData, isEditable?
     });
 
     return formData;
+}
+
+export const serializeReserveOptions = (data:any):optionsReserve|null => {
+  let options:optionsReserve|null = null;
+
+  const transformedTents = data.tents ? data.tents.map((item:any) => ( serializeTent(item) )) : [];
+
+  const transformedProducts = data.products ? data.products.map((item:any) => ( serializeProduct(item) )) : [];
+
+  const transformedExperiences = data.experiences ? data.experiences.map((item:any) => ( serializeExperience(item) )) : [];
+
+  options = {
+    tents: transformedTents,
+    products:transformedProducts,
+    experiences: transformedExperiences
+  }
+
+  return options;
+}
+
+export const serializeReserve = (data:any):Reserve|null => {
+  let reserve:Reserve|null = null;
+
+  const transformedTents = data.tentsDB ? data.tentsDB.map((item:any) => ( serializeTent(item) )) : [];
+
+  const transformedProducts = data.productsDB ? data.productsDB.map((item:any) => ( serializeProduct(item) )) : [];
+
+  const transformedExperiences = data.experiencesDB ? data.experiencesDB.map((item:any) => ( serializeExperience(item) )) : [];
+
+  reserve = {
+    id: data.id,
+    qtypeople:data.title,
+    qtykids:data.qtykids,
+    userId:data.userId,
+    dateFrom: data.dateFrom ? convertStrToCurrentTimezoneDate(data.dateFrom) : data.dateFrom,
+    dateTo: data.dateTo ? convertStrToCurrentTimezoneDate(data.dateTo) : data.dateTo,
+    dateSale: data.dateSale ? convertStrToCurrentTimezoneDate(data.dateSale) : data.dateSale,
+    promotionId: data.promotionId || 0,
+    price_is_calculated : data.price_is_calculated,
+    discountCodeId:data.discountCodeId || 0,
+    netImport: data.netImport || 0,
+    discount: data.discount || 0,
+    grossImport: data.grossImport || 0,
+    tentsDB: transformedTents,
+    tents:data.tents,
+    productsDB: transformedProducts,
+    products:data.products,
+    experiencesDB: transformedExperiences,
+    experiences: data.experiences,
+    canceled_reason:data.canceled_reason,
+    canceled_status:data.canceled_status,
+    paymentStatus:data.paymentStatus,
+    aditionalPeople: data.aditionalPeople || 0,
+    createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
+    updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
+  };
+  return reserve;
 }

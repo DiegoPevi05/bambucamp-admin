@@ -264,3 +264,86 @@ export interface PromotionFormData {
   idexperiences:string;
   existing_images?:string;
 }
+
+export interface optionsReserve {
+  tents:Tent[];
+  products:Product[];
+  experiences:Experience[];
+}
+
+export interface ReserveTentDto {
+  idTent:number;
+  name:string;
+  price:number;
+  quantity:number;
+}
+
+export interface ReserveProductDto {
+  idProduct:number;
+  name:string;
+  price:number;
+  quantity:number;
+}
+
+export interface ReserveExperienceDto {
+  idExperience:number;
+  name:string;
+  price:number;
+  quantity:number;
+}
+
+export interface Reserve {
+  id: number;
+  qtypeople:number;
+  qtykids:number;
+  userId:number;
+  tents:ReserveTentDto;
+  tentsDB:Tent[];
+  products:ReserveProductDto;
+  productsDB:Product[];
+  experiences:ReserveExperienceDto;
+  experiencesDB:Experience[];
+  dateFrom:Date;
+  dateTo:Date;
+  dateSale: Date;
+  promotionId: number;
+  price_is_calculated: boolean;
+  discountCodeId: number;
+  netImport: number;
+  discount: number;
+  grossImport: number;
+  canceled_reason: string;
+  canceled_status: boolean;
+  paymentStatus: string;
+  aditionalPeople: number;
+  createdAt:Date|null;
+  updatedAt:Date|null;
+}
+
+export interface ReserveFilters {
+  dateFrom?: string;
+  dateTo?:string;
+}
+
+
+export interface ReserveFormData {
+  qtypeople:number;
+  qtykids:number;
+  userId:number;
+  tents:ReserveTentDto[];
+  products:ReserveProductDto[];
+  experiences:ReserveExperienceDto[];
+  dateFrom:Date;
+  dateTo:Date;
+  dateSale: Date;
+  promotionId: number;
+  price_is_calculated: boolean;
+  discountCodeId: number;
+  netImport: number;
+  discount: number;
+  grossImport: number;
+  canceled_reason: string;
+  canceled_status: boolean;
+  paymentStatus: string;
+  aditionalPeople: number;
+}
