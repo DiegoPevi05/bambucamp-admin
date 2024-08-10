@@ -331,10 +331,16 @@ export const serializeReserveOptions = (data:any):optionsReserve|null => {
 
   const transformedExperiences = data.experiences ? data.experiences.map((item:any) => ( serializeExperience(item) )) : [];
 
+  const transformedPromotions = data.promotions ? data.promotions.map((item:any) => ( serializePromotion(item) )) : [];
+
+  const transformedDiscounts = data.promotion ? data.promotions.map((item:any) => (serializeDiscountCode(item) )) : [];
+
   options = {
     tents: transformedTents,
     products:transformedProducts,
-    experiences: transformedExperiences
+    experiences: transformedExperiences,
+    promotions: transformedPromotions, 
+    discounts: transformedDiscounts
   }
 
   return options;
@@ -342,12 +348,6 @@ export const serializeReserveOptions = (data:any):optionsReserve|null => {
 
 export const serializeReserve = (data:any):Reserve|null => {
   let reserve:Reserve|null = null;
-
-  const transformedTents = data.tentsDB ? data.tentsDB.map((item:any) => ( serializeTent(item) )) : [];
-
-  const transformedProducts = data.productsDB ? data.productsDB.map((item:any) => ( serializeProduct(item) )) : [];
-
-  const transformedExperiences = data.experiencesDB ? data.experiencesDB.map((item:any) => ( serializeExperience(item) )) : [];
 
   reserve = {
     id: data.id,
@@ -363,11 +363,8 @@ export const serializeReserve = (data:any):Reserve|null => {
     netImport: data.netImport || 0,
     discount: data.discount || 0,
     grossImport: data.grossImport || 0,
-    tentsDB: transformedTents,
-    tents:data.tents,
-    productsDB: transformedProducts,
-    products:data.products,
-    experiencesDB: transformedExperiences,
+    tents: data.tents,
+    products: data.products,
     experiences: data.experiences,
     canceled_reason:data.canceled_reason,
     canceled_status:data.canceled_status,

@@ -1,14 +1,14 @@
 import Dashboard from "../components/ui/Dashboard";
-import { useState, useEffect, ChangeEvent, FormEvent } from "react";
-import { Eye, Pen, X, ChevronLeft, ChevronRight, Calendar, CircleX, Image, UserIcon, Blocks  } from "lucide-react";
+import { useState, useEffect, FormEvent } from "react";
+import { Eye, Pen, X, ChevronLeft, ChevronRight, Calendar, CircleX,  UserIcon, FlameKindling, Tent, Pizza, Search  } from "lucide-react";
 import Button from "../components/ui/Button";
-import { InputRadio } from "../components/ui/Input";
-import {  formatDate, createImagesArray, formatToISODate, getTotalPromotionCalculated } from "../lib/utils";
+import {  formatDate, formatToISODate, getTotalReserveCalculated } from "../lib/utils";
 import { getAllReserveOptions, getAllReserves, createReserve, updateReserve, deleteReserve } from "../db/actions/reserves";
+import { getAllUsers } from "../db/actions/users";
 import { useAuth } from "../contexts/AuthContext";
-import { Reserve, ReserveFilters, ReserveFormData, optionsReserve, ReserveTentDto, ReserveProductDto, ReserveExperienceDto, ImageInterface } from "../lib/interfaces";
+import { UserFilters, Reserve, ReserveFilters, ReserveFormData, optionsReserve, ReserveTentDto, ReserveProductDto, ReserveExperienceDto, User } from "../lib/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
-import {fadeIn, fadeOnly} from "../lib/motions";
+import {fadeIn, fadeOnly, slideIn} from "../lib/motions";
 import {  ZodError } from 'zod';
 import { ReserveFormDataSchema } from "../db/schemas";
 import Modal from "../components/Modal";
@@ -19,7 +19,7 @@ const DashboardAdminReserves = () => {
 
     const { user } = useAuth();
     const [datasetReserves,setDataSetReserves] = useState<{reserves:Reserve[],totalPages:Number,currentPage:Number}>({reserves:[],totalPages:1,currentPage:1});
-    const [datasetReservesOptions, setDatasetReservesOptions] = useState<optionsReserve>({ tents:[], products:[], experiences:[] });
+    const [datasetReservesOptions, setDatasetReservesOptions] = useState<optionsReserve>({ tents:[], products:[], experiences:[], promotions:[], discounts:[] });
     const [tents,setTents] = useState<ReserveTentDto[]>([]);
     const [products,setProducts] = useState<ReserveProductDto[]>([]);
     const [experiences,setExperiences] = useState<ReserveExperienceDto[]>([]);
@@ -46,7 +46,7 @@ const DashboardAdminReserves = () => {
             const reserves  = await getAllReserves(user.token,page,filters);
             if(reserves){
                 setDataSetReserves(reserves);
-                setCurrentView("L");
+                setCurrentView("A");
             }
         }
     }
@@ -191,26 +191,26 @@ const DashboardAdminReserves = () => {
     const [selectedReserve, setSelectedReserve] = useState<Reserve|null>(null);
 
     const searchReserveHandler = async() => {
+      
         // Get the input value
-        const searchValue = (document.querySelector('input[name="criteria_search_value"]') as HTMLInputElement).value.trim();
+        const searchValueFrom = (document.querySelector('input[name="criteria_search_value_date_from"]') as HTMLInputElement).value;
+        const searchValueTo = (document.querySelector('input[name="criteria_search_value_date_from"]') as HTMLInputElement).value ;
 
-        // Get the selected criteria from radio buttons
-        const selectedCriteria = (
-        document.querySelector('input[name="criteria_search"]:checked') as HTMLInputElement
-        )?.value;
-
-        // Get the selected role from the select dropdown
-        const selectedStatus = (document.querySelector('select[name="criteria_search_status"]') as HTMLSelectElement).value;
-
+        const selectedPaymentStatus = (document.querySelector('select[name="criteria_search_status"]') as HTMLSelectElement).value;
 
         // Construct filters based on input values and selected criteria
         const filters: ReserveFilters = {};
-        if (selectedCriteria && searchValue) {
-            filters[selectedCriteria as keyof ReserveFilters] = searchValue;
+
+        if (searchValueFrom) {
+            filters["dateFrom"] = searchValueFrom;
         }
 
-        if (selectedStatus) {
-            filters.status = selectedStatus;
+        if (searchValueFrom) {
+            filters["dateTo"] = searchValueTo;
+        }
+
+        if(selectedPaymentStatus){
+          filters.paymentStatus =  selectedPaymentStatus;
         }
 
         getReservesHandler(1,filters);
@@ -276,6 +276,52 @@ const DashboardAdminReserves = () => {
         grossImportInput.value = valueCalendarounted.toString();
     }
 
+    const [users,setUsers] = useState<User[]>([])
+
+    const searchUsersByEmail = async(formname:string) => {
+      const form = document.getElementById(formname) as HTMLFormElement;
+      const email = (form.querySelector('input[name="search_user_email"]') as HTMLInputElement).value;
+
+      const filters: UserFilters = {}
+
+      if(email){
+        filters['email'] =  email;
+      }
+
+      filters.role = "CLIENT";
+
+      if(user != null){
+          const usersDB  = await getAllUsers(user.token, 1, filters );
+          if(usersDB){
+              setUsers(usersDB.users);
+          }
+      }
+    }
+    const selectUserId = async(formname:string, user:User) => {
+      const form = document.getElementById(formname) as HTMLFormElement;
+      const userIdInput = form.querySelector('input[name="userId"]') as HTMLInputElement;
+      const userIdNameInput = form.querySelector('input[name="userId_name"]') as HTMLInputElement;
+
+      userIdInput.value = user.id.toString();
+      userIdNameInput.value = user.firstName ? user.firstName : "";
+      setUsers([]);
+    }
+
+    const handleApplyDiscount = async(formname:string) => {
+      const form = document.getElementById(formname) as HTMLFormElement;
+      const discountInput = form.querySelector('input[name="discount"]') as HTMLInputElement;
+      const discountCodeId = form.querySelector('input[name="discount_code_id"]') as HTMLInputElement;
+      if(Number(discountCodeId) > 0){
+        const discount = datasetReservesOptions.discounts.find((i)=> i.id == Number(discountCodeId));
+        discountInput.value = discount?.discount ? discount?.discount.toString() : "0";
+        discountInput.disabled = true;
+        calculatedCalendarountLocally(formname);
+      }else{
+        discountInput.disabled = false;
+      }
+
+    }
+
     return (
     <Dashboard>
         <AnimatePresence>
@@ -309,20 +355,26 @@ const DashboardAdminReserves = () => {
                         <div className="w-auto h-auto flex flex-col md:flex-row justify-start items-start gap-y-4 gap-x-4">
                           <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
                             <input 
-                              type="text" 
-                              name="criteria_search_value"
-                              placeholder="Buscar Promocion" 
-                              className="w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
+                              type="date" 
+                              name="criteria_search_value_date_from"
+                              placeholder="Desde" 
+                              className="w-48 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
-                            <InputRadio name="criteria_search" variant="dark" value="title" placeholder="Nombre"/>
+                            <input 
+                              type="date" 
+                              name="criteria_search_value_date_to"
+                              placeholder="Hasta" 
+                              className="w-48 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
+                            />
                           </div>
                           <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
                               <label className="md:ml-4 flex items-center">
-                                Estatus
+                                Estado de Pago
                                 <select name="criteria_search_status" className="ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
                                   <option value="">Seleccionar Estatus</option>
-                                  <option value="ACTIVE">ACTIVO</option>
-                                  <option value="INACTIVE">INACTIVO</option>
+                                  <option value="PAID">PAGADO</option>
+                                  <option value="PENDING">PENDIENTE</option>
+                                  <option value="DEBT">DEBE</option>
                                 </select>
                               </label>
                               <Button size="sm" variant="dark" effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchReserveHandler()}>
@@ -339,12 +391,13 @@ const DashboardAdminReserves = () => {
                             <tr className="">
                                 <th className="rounded-tl-xl p-2">#</th>
                                 <th className="p-2">Titulo</th>
-                                <th className="p-2">Expira</th>
-                                <th className="p-2">Personas</th>
-                                <th className="p-2">Descuento</th>
-                                <th className="p-2">Total</th>
-                                <th className="p-2">Imagenes</th>
-                                <th className="p-2">Estado</th>
+                                <th className="p-2">Usuario</th>
+                                <th className="p-2">Desde</th>
+                                <th className="p-2">Hasta</th>
+                                <th className="p-2">Servicios y Productos</th>
+                                <th className="p-2">Importe Total</th>
+                                <th className="p-2">Cancelado</th>
+                                <th className="p-2">Estado de Pago</th>
                                 <th className="p-2">Creado</th>
                                 <th className="p-2">Actualizado</th>
                                 <th className="rounded-tr-xl p-2">Acciones</th>
@@ -355,30 +408,24 @@ const DashboardAdminReserves = () => {
                                     return(
                                     <tr key={"user_key"+index} className="text-slate-400 hover:bg-secondary hover:text-white duration-300 cursor-pointer"> 
                                         <td className="">{reserveItem.id}</td>
-                                        <td className="">{reserveItem.title}</td>
-                                        <td className="">{reserveItem.expiredDate !== undefined && reserveItem.expiredDate != null ? formatToISODate(reserveItem.expiredDate) : "None"}</td>
+                                        <td className="">{reserveItem.userId}</td>
+
+                                        <td className="">{reserveItem.dateFrom !== undefined && reserveItem.dateFrom != null ? formatToISODate(reserveItem.dateFrom) : "None"}</td>
+                                        <td className="">{reserveItem.dateFrom !== undefined && reserveItem.dateTo != null ? formatToISODate(reserveItem.dateTo) : "None"}</td>
 
                                         <td className="flex flex-row gap-x-4 justify-around">
-                                          <div className="flex flex-row gap-x-4"><UserIcon/>{reserveItem.qtypeople}</div>
-                                          <div className="flex flex-row gap-x-4"><Blocks/>{reserveItem.qtykids}</div>
+                                          <div className="flex flex-row gap-x-4"><Tent/>{reserveItem.tents.length}</div>
+                                          <div className="flex flex-row gap-x-4"><FlameKindling/>{reserveItem.experiences.length}</div>
+                                          <div className="flex flex-row gap-x-4"><Pizza/>{reserveItem.products.length}</div>
                                         </td>
-
-                                        <td className="">{reserveItem.discount}</td>
                                         <td className="">{`$ ${reserveItem.grossImport}`}</td>
-                                        <td className="flex flex-row flex-wrap items-start justify-start gap-2">
-                                          {reserveItem.images.map((img, index) => (
-                                            <a key={index} href={`${import.meta.env.VITE_BACKEND_URL}/${img}`} target="_blank">
-                                              <Image className="hover:text-tertiary duration-300"/>
-                                            </a>
-                                          ))}
-                                        </td>
-                                        <td className="h-full">{reserveItem.status != "ACTIVE" ? "INACTIVO" : "ACTIVO" }</td>
+                                        <td className="h-full">{reserveItem.paymentStatus != "PAID" ?  ( reserveItem.paymentStatus != "DEBT" ? "PENDIENTE" : "SIN PAGAR" ) : "PAGADO" }</td>
                                         <td className="h-full">{reserveItem.updatedAt != undefined && reserveItem.updatedAt != null ? formatDate(reserveItem.updatedAt) : "None"}</td>
                                         <td className="h-full">{reserveItem.createdAt != undefined && reserveItem.createdAt != null ? formatDate(reserveItem.createdAt) : "None"}</td>
                                         <td className="h-full flex flex-col items-center justify-center">
                                           <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
-                                            <button onClick={()=>{setSelectedReserve(reserveItem);  setTents(reserveItem.idtents); setProducts(reserveItem.idproducts); setExperiences(reserveItem.idexperiences); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
-                                            <button  onClick={()=>{setSelectedReserve(reserveItem); setTents(reserveItem.idtents); setProducts(reserveItem.idproducts); setExperiences(reserveItem.idexperiences); setCurrentView("E")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Pen className="h-5 w-5"/></button>
+                                            <button onClick={()=>{setSelectedReserve(reserveItem);  setTents(reserveItem.tents); setProducts(reserveItem.products); setExperiences(reserveItem.experiences); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
+                                            <button  onClick={()=>{setSelectedReserve(reserveItem); setTents(reserveItem.tents); setProducts(reserveItem.products); setExperiences(reserveItem.experiences); setCurrentView("E")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Pen className="h-5 w-5"/></button>
                                             <button onClick={()=>{setOpenDeleteModal(true),setSelectedReserve(reserveItem)}} className="border rounded-md hover:bg-red-400 hover:text-white duration-300 active:scale-75 p-1"><X className="h-5 w-5"/></button>
                                           </div>
                                         </td>
@@ -653,29 +700,131 @@ const DashboardAdminReserves = () => {
                 viewport={{ once: true }}
                 variants={fadeIn("up","",0.5,0.3)}
                 className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Calendar/>Agregar Promocion</h2>
+                <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Calendar/>Agregar Reserva</h2>
 
-              <form id="form_create_promotion" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
+              <form id="form_create_reserve" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
 
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Titulo de la promocion"}</label>
-                        <input name="title" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Titulo de la Promocion"}/>
+                      <div className="flex flex-col justify-start items-start w-full h-auto my-1 gap-y-2 sm:gap-y-1">
+                        <label htmlFor="search_user_email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Buscar Usuario"}</label>
+                        <div className="w-full h-auto flex flex-row justify-between gap-x-4 relative">
+                          <input name="search_user_email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Buscar usuario"}/>
+                          <AnimatePresence>
+                            {users && users.length > 0 && (
+                              <motion.div 
+                                initial="hidden"
+                                animate="show"
+                                variants={fadeIn("up","", 0, 0.3)}
+                                className="absolute left-0 top-8 sm:top-10 w-full max-h-[100px] min-h-[50px] overflow-y-scroll flex flex-col justify-start items-start bg-white py-2">
+                                {users.map((userItem,index)=>{
+                                  return(
+                                    <span onClick={()=>selectUserId('form_create_reserve', userItem) } className="w-full h-auto text-sm font-primary text-secondary hover:bg-secondary hover:text-white duration-300 hover:cursor-pointer p-2" key={"user"+index}>{`Usuario: ${userItem.firstName},${userItem.lastName} Correo: ${userItem.email}`}</span>
+                                  )
+                                })}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          <button type="button" onClick={()=>searchUsersByEmail('form_create_reserve')} className="w-auto h-auto border border-2 border-slate-200 p-2 rounded-xl active:scale-95 duration-300"><Search/></button>
+                        </div>
+                        <label htmlFor="userId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6"> Usuario</label>
+                        <input name="userId" className="hidden"/>
+                        <input name="userId_name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Usuario seleccionado"}/>
+
                         <div className="w-full h-6">
-                          {errorMessages.title && (
+                          {errorMessages.userId && (
                             <motion.p 
                               initial="hidden"
                               animate="show"
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.title}
+                              {errorMessages.userId}
                             </motion.p>
                           )}
                         </div>
                       </div>
 
+                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+
+                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                          <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de personas"}</label>
+                          <input name="qtypeople" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de personas"}/>
+
+                          <div className="w-full h-6">
+                            {errorMessages.qtypeople && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {errorMessages.qtypeople}
+                              </motion.p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                          <label htmlFor="qtykids" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad  de niños"}</label>
+                          <input name="qtykids" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de niños"}/>
+
+                          <div className="w-full h-6">
+                            {errorMessages.qtykids && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {errorMessages.qtykids}
+                              </motion.p>
+                            )}
+                          </div>
+                        </div>
+
+                      </div>
+
+                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                          <label htmlFor="dateFrom" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Desde"}</label>
+                          <input name="dateFrom" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+
+                          <div className="w-full h-6">
+                            {errorMessages.dateFrom && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {errorMessages.dateFrom}
+                              </motion.p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                          <label htmlFor="dateTo" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Hasta"}</label>
+                          <input name="dateTo" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+
+                          <div className="w-full h-6">
+                            {errorMessages.dateTo && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {errorMessages.dateTo}
+                              </motion.p>
+                            )}
+                          </div>
+                        </div>
+
+                      </div>
+                      {/*
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                         <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
                         <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}/>
@@ -732,45 +881,7 @@ const DashboardAdminReserves = () => {
 
                       </div>
 
-                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
 
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de personas"}</label>
-                          <input name="qtypeople" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de personas"}/>
-
-                          <div className="w-full h-6">
-                            {errorMessages.qtypeople && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.qtypeople}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="qtykids" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad  de niños"}</label>
-                          <input name="qtykids" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de niños"}/>
-
-                          <div className="w-full h-6">
-                            {errorMessages.qtykids && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.qtykids}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-
-                      </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                         <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
@@ -841,11 +952,12 @@ const DashboardAdminReserves = () => {
                             )}
                           </div>
                       </div>
+                  */}
+
 
                   </div>
 
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
-
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
                         <label htmlFor="glampings" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Glampings en la promocion"}</label>
                         <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
@@ -864,7 +976,7 @@ const DashboardAdminReserves = () => {
                               <label htmlFor="promotion_option_qty" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad"}</label>
                               <input name="promotion_option_tent_qty" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad"}/>
                             </div>
-                            <Button onClick={()=>handleAddReserveOption("form_create_promotion","tent")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
+                            <Button onClick={()=>handleAddReserveOption("form_create_reserve","tent")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                         </div>
 
                         <div className="w-full h-auto">
@@ -880,10 +992,10 @@ const DashboardAdminReserves = () => {
                                         className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                       >
                                         <span className="w-[30%]">
-                                          Tienda: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                          Tienda: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                         </span>
                                         <span className="w-[30%]">
-                                          Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                          Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                         </span>
                                         <span className="w-[30%]">
                                           Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
@@ -933,7 +1045,7 @@ const DashboardAdminReserves = () => {
                               <label htmlFor="promotion_option_product_qty" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad"}</label>
                               <input name="promotion_option_product_qty" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad"}/>
                             </div>
-                            <Button onClick={()=>handleAddReserveOption("form_create_promotion","product")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
+                            <Button onClick={()=>handleAddReserveOption("form_create_reserve","product")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                         </div>
 
                         <div className="w-full h-auto">
@@ -949,10 +1061,10 @@ const DashboardAdminReserves = () => {
                                         className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                       >
                                         <span className="w-[30%]">
-                                          Producto: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                          Producto: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                         </span>
                                         <span className="w-[30%]">
-                                          Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                          Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                         </span>
                                         <span className="w-[30%]">
                                           Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
@@ -1003,7 +1115,7 @@ const DashboardAdminReserves = () => {
                               <label htmlFor="promotion_option_experience_qty" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad"}</label>
                               <input name="promotion_option_experience_qty" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad"}/>
                             </div>
-                            <Button onClick={()=>handleAddReserveOption("form_create_promotion","experience")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
+                            <Button onClick={()=>handleAddReserveOption("form_create_reserve","experience")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                         </div>
 
                         <div className="w-full h-auto">
@@ -1019,10 +1131,10 @@ const DashboardAdminReserves = () => {
                                         className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                       >
                                         <span className="w-[30%]">
-                                          Experiencia: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                          Experiencia: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                         </span>
                                         <span className="w-[30%]">
-                                          Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                          Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                         </span>
                                         <span className="w-[30%]">
                                           Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
@@ -1041,14 +1153,43 @@ const DashboardAdminReserves = () => {
                         </div>
 
                         <div className="w-full h-6">
-                          {errorMessages.products && (
+                          {errorMessages.experiences && (
                             <motion.p 
                               initial="hidden"
                               animate="show"
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.products}
+                              {errorMessages.experiences}
+                            </motion.p>
+                          )}
+                        </div>
+
+                      </div>
+
+                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
+                        <label htmlFor="discount_code_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Aplicar codigo de descuento"}</label>
+                        <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                              <select onChange={()=>handleApplyDiscount("form_create_reserve")} name="discount_code_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+
+                                          <option value="0">Sin Descuento</option>
+                                  { datasetReservesOptions.discounts.map((discount,index) => {
+                                      return(
+                                          <option key={index} value={discount.id}>{`${discount.code} | Descuento: ${discount.discount}%`}</option>
+                                      )
+                                  })}
+                              </select>
+                        </div>
+
+                        <div className="w-full h-6">
+                          {errorMessages.discount && (
+                            <motion.p 
+                              initial="hidden"
+                              animate="show"
+                              exit="hidden"
+                              variants={fadeIn("up","", 0, 1)}
+                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                              {errorMessages.discount}
                             </motion.p>
                           )}
                         </div>
@@ -1059,7 +1200,7 @@ const DashboardAdminReserves = () => {
 
                         <div className="flex flex-col justify-start itemst-start gap-x-6 w-[50%] h-auto gap-y-2 sm:gap-y-1">
                           <label htmlFor="importe_calculado" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Total Calculado"}</label>
-                          <input name="importe_calculado" value={ `$ ${getTotalPromotionCalculated(tents,products,experiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  disabled/>
+                          <input name="importe_calculado" value={ `$ ${getTotalReserveCalculated(tents,products,experiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  disabled/>
                         </div>
 
                         <div className="flex flex-col justify-start itemst-start gap-x-6 w-[40%] h-auto gap-y-2 sm:gap-y-1">
@@ -1084,7 +1225,7 @@ const DashboardAdminReserves = () => {
                           <button
                             type="button"
 
-                            onClick={()=>calculatedCalendarountLocally("form_create_promotion")}
+                            onClick={()=>calculatedCalendarountLocally("form_create_reserve")}
                             className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-primary hover:text-white rounded-xl duration-300 hover:border-primary"
                           >
                              %
@@ -1133,10 +1274,9 @@ const DashboardAdminReserves = () => {
 
                       </div>
 
-
                       <div className="flex flex-row justify-end gap-x-6 w-full">
                           <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                          <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Promocion </Button>
+                          <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Reserva </Button>
                       </div>
 
                   </div>
@@ -1581,7 +1721,7 @@ const DashboardAdminReserves = () => {
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-[50%] h-auto gap-y-2 sm:gap-y-1">
                               <label htmlFor="importe_calculado" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Total Calculado"}</label>
-                              <input name="importe_calculado" value={ `$ ${getTotalPromotionCalculated(tents,products,experiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  disabled/>
+                              <input name="importe_calculado" value={ `$ ${getTotalReserveCalculated(tents,products,experiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  disabled/>
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-[40%] h-auto gap-y-2 sm:gap-y-1">

@@ -269,6 +269,8 @@ export interface optionsReserve {
   tents:Tent[];
   products:Product[];
   experiences:Experience[];
+  promotions:Promotion[];
+  discounts:DiscountCode[];
 }
 
 export interface ReserveTentDto {
@@ -297,12 +299,9 @@ export interface Reserve {
   qtypeople:number;
   qtykids:number;
   userId:number;
-  tents:ReserveTentDto;
-  tentsDB:Tent[];
-  products:ReserveProductDto;
-  productsDB:Product[];
-  experiences:ReserveExperienceDto;
-  experiencesDB:Experience[];
+  tents:ReserveTentDto[];
+  products:ReserveProductDto[];
+  experiences:ReserveExperienceDto[];
   dateFrom:Date;
   dateTo:Date;
   dateSale: Date;
@@ -323,6 +322,7 @@ export interface Reserve {
 export interface ReserveFilters {
   dateFrom?: string;
   dateTo?:string;
+  paymentStatus?:string;
 }
 
 

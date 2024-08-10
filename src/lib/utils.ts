@@ -1,6 +1,6 @@
 import {ClassValue,clsx} from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import {ReserveIT, ImageInterface, itemPromotion} from './interfaces'
+import {ReserveIT, ImageInterface, itemPromotion, ReserveTentDto, ReserveProductDto, ReserveExperienceDto} from './interfaces'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -90,6 +90,27 @@ export const getTotalPromotionCalculated = (tents: itemPromotion[], products: it
   // Sum prices for experiences
   if (experiences && experiences.length > 0) {
     total += experiences.reduce((sum, item) => sum + (item.qty * item.price), 0);
+  }
+
+  return total;
+}
+
+export const getTotalReserveCalculated = (tents: ReserveTentDto[], products: ReserveProductDto[], experiences: ReserveExperienceDto[]): number => {
+  let total = 0;
+
+  // Sum prices for tents
+  if (tents && tents.length > 0) {
+    total += tents.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+  }
+
+  // Sum prices for products
+  if (products && products.length > 0) {
+    total += products.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+  }
+
+  // Sum prices for experiences
+  if (experiences && experiences.length > 0) {
+    total += experiences.reduce((sum, item) => sum + (item.quantity * item.price), 0);
   }
 
   return total;
