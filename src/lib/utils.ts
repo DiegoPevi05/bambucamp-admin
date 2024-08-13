@@ -1,6 +1,6 @@
 import {ClassValue,clsx} from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import {ReserveIT, ImageInterface, itemPromotion, ReserveTentDto, ReserveProductDto, ReserveExperienceDto} from './interfaces'
+import {ReserveIT, ImageInterface, itemPromotion, ReserveTentDto, ReserveProductDto, ReserveExperienceDto, CustomPrice} from './interfaces'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -114,4 +114,31 @@ export const getTotalReserveCalculated = (tents: ReserveTentDto[], products: Res
   }
 
   return total;
+}
+
+export const calculatePrice = (basePrice: number , customPrices: CustomPrice[], noCustomPrice?:boolean): number => {
+
+  console.log(customPrices)
+  if(customPrices === null) return basePrice;
+
+  if(noCustomPrice) return basePrice;
+
+  const currentCustomPrice = getCurrentCustomPrice(customPrices);
+
+  return currentCustomPrice > 0 ? currentCustomPrice : basePrice;
+};
+
+export const getCurrentCustomPrice = (customPrices: CustomPrice[]): number => {
+
+
+  const currentDate = new Date();
+  
+  const matchingPrices = customPrices.filter(customPrice => currentDate >= customPrice.dateFrom && currentDate <= customPrice.dateTo);
+
+  if (matchingPrices.length === 0) {
+    return 0;
+  }
+  matchingPrices.sort((a, b) => b.dateTo.getTime() - a.dateTo.getTime());
+  
+  return matchingPrices[0].price;
 }
