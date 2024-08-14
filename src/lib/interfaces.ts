@@ -121,18 +121,6 @@ export interface ProductFormData {
 }
 
 
-export interface ReserveIT{
-  id: number;
-  checkin: Date;
-  checkout: Date;
-  status: string;
-  total: number;
-  tents: Tent[];
-  experiences: Experience[];
-  products: Product[];
-}
-
-
 export interface ExperienceCategory {
   id:number;
   name: string;
