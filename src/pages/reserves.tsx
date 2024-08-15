@@ -26,8 +26,6 @@ const DashboardAdminReserves = () => {
     const [experiences,setExperiences] = useState<ReserveExperienceDto[]>([]);
     const [criteriaReserve,setCriteriaReserve] = useState<string>("NORMAL");
 
-    console.log(datasetReservesOptions);
-
     const [currentView,setCurrentView] = useState<string>("LOADING");
 
     useEffect(()=>{
@@ -141,6 +139,7 @@ const DashboardAdminReserves = () => {
 
 
         setErrorMessages({});
+        console.log(tents);
 
         try {
 
@@ -186,10 +185,10 @@ const DashboardAdminReserves = () => {
         e.preventDefault();
         setLoadingForm(true);
         const fieldsValidated = validateFields('form_create_reserve');
-        console.log(fieldsValidated);
         if(fieldsValidated != null){
           if(user !== null){
-            //await createReserve(fieldsValidated, user.token);
+            console.log(fieldsValidated);
+            await createReserve(fieldsValidated, user.token);
           }
           getReservesHandler(1);
           setCurrentView("L")
@@ -356,7 +355,7 @@ const DashboardAdminReserves = () => {
 
     const mapItems = (items:any, idKey:any) => 
       items.map((item:any) => ({
-        [idKey]: item.id,
+        [`id${idKey.slice(2, 3).toUpperCase() + idKey.slice(3).toLowerCase()}`]: item.id,
         name: item.label,
         price: item.price,
         quantity: item.qty
@@ -465,7 +464,6 @@ const DashboardAdminReserves = () => {
                         <thead className="font-primary text-md bg-primary text-white">
                             <tr className="">
                                 <th className="rounded-tl-xl p-2">#</th>
-                                <th className="p-2">Titulo</th>
                                 <th className="p-2">Usuario</th>
                                 <th className="p-2">Desde</th>
                                 <th className="p-2">Hasta</th>
@@ -485,15 +483,16 @@ const DashboardAdminReserves = () => {
                                         <td className="">{reserveItem.id}</td>
                                         <td className="">{reserveItem.userId}</td>
 
-                                        <td className="">{reserveItem.dateFrom !== undefined && reserveItem.dateFrom != null ? formatToISODate(reserveItem.dateFrom) : "None"}</td>
-                                        <td className="">{reserveItem.dateFrom !== undefined && reserveItem.dateTo != null ? formatToISODate(reserveItem.dateTo) : "None"}</td>
+                                        <td className="">{reserveItem.dateFrom !== undefined && reserveItem.dateFrom != null ? formatDate(reserveItem.dateFrom) : "None"}</td>
+                                        <td className="">{reserveItem.dateFrom !== undefined && reserveItem.dateTo != null ? formatDate(reserveItem.dateTo) : "None"}</td>
 
                                         <td className="flex flex-row gap-x-4 justify-around">
-                                          <div className="flex flex-row gap-x-4"><Tent/>{reserveItem.tents.length}</div>
-                                          <div className="flex flex-row gap-x-4"><FlameKindling/>{reserveItem.experiences.length}</div>
-                                          <div className="flex flex-row gap-x-4"><Pizza/>{reserveItem.products.length}</div>
+                                          <div className="flex flex-row gap-x-2"><Tent/>{reserveItem.tents.length}</div>
+                                          <div className="flex flex-row gap-x-2"><FlameKindling/>{reserveItem.experiences.length}</div>
+                                          <div className="flex flex-row gap-x-2"><Pizza/>{reserveItem.products.length}</div>
                                         </td>
                                         <td className="">{`$ ${reserveItem.grossImport}`}</td>
+                                      <td className="h-full">{reserveItem.canceled_status ? "CANCELADA": "ACTIVA" }</td>
                                         <td className="h-full">{reserveItem.paymentStatus != "PAID" ?  ( reserveItem.paymentStatus != "DEBT" ? "PENDIENTE" : "SIN PAGAR" ) : "PAGADO" }</td>
                                         <td className="h-full">{reserveItem.updatedAt != undefined && reserveItem.updatedAt != null ? formatDate(reserveItem.updatedAt) : "None"}</td>
                                         <td className="h-full">{reserveItem.createdAt != undefined && reserveItem.createdAt != null ? formatDate(reserveItem.createdAt) : "None"}</td>
@@ -988,8 +987,8 @@ const DashboardAdminReserves = () => {
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-2  gap-y-2">
                         <label htmlFor="criteria_reserve" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{"Criterio de Reserva"}</label>
                         <div className="flex flex-row justify-start items-start gap-x-6">
-                          <InputRadio name="criteria_reserve" variant="dark" value="NORMAL" placeholder="Normal" checked={criteriaReserve == "NORMAL"} onClick={(e)=>changeReserveType(e)} />
-                          <InputRadio name="criteria_reserve" variant="dark" value="PROMOTION" placeholder="Promocion" checked={ criteriaReserve == "PROMOTION" } onClick={(e)=>changeReserveType(e)}/>
+                          <InputRadio name="criteria_reserve" variant="dark" value="NORMAL" placeholder="Normal" checked={criteriaReserve == "NORMAL"} onClick={(e)=>changeReserveType(e)} readOnly/>
+                          <InputRadio name="criteria_reserve" variant="dark" value="PROMOTION" placeholder="Promocion" checked={ criteriaReserve == "PROMOTION" } onClick={(e)=>changeReserveType(e)} readOnly/>
                         </div>
                       </div>
                       {criteriaReserve === "NORMAL" ? 
