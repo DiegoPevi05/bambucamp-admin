@@ -1,5 +1,4 @@
 import {toast} from 'sonner';
-import { ZodError } from 'zod';
 import axios from 'axios';
 import { Product, ProductFilters, ProductFormData } from '../../lib/interfaces';
 import { serializeProduct, serializeProductToDB } from '../serializer';
@@ -38,14 +37,19 @@ export const getAllProducts = async( token: string, page:Number, filters?:Produc
 
 
   }catch(error){
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error((err.message));
-      });
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error retrieving products.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      } else {
+        toast.error(errorMessage);
+      }
     } else {
-      toast.error("Error trayendo los productos.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
   return data;
@@ -67,25 +71,24 @@ export const createProduct = async (product: ProductFormData, token: string): Pr
     });
 
     if (response.status === 201) {
-      toast.success("Producto creado exitosamente");
+      toast.success("Product created successfully.");
     } else {
-      toast.error("Algo salió mal al crear el producto.");
+      toast.error("Something went wrong creating the product.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error creando el producto."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error creating the product.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error creando el producto.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -103,25 +106,24 @@ export const updateProduct = async (productId:Number,tent: ProductFormData, toke
     });
 
     if (response.status === 200) {
-      toast.success("Producto actualizado exitosamente");
+      toast.success("Product updated successfully.");
     } else {
-      toast.error("Algo salió mal al actualizar el producto.");
+      toast.error("Something went wrong updating the product.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error actualizando el producto."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error updating the product.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error actualizando el producto.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -137,25 +139,24 @@ export const deleteProduct = async(idProduct:Number, token:string ):Promise<void
     });
 
     if (response.status === 200) {
-      toast.success("Producto borrado exitosamente");
+      toast.success("Product deleted successfully.");
     } else {
-      toast.error("Algo salió mal al borrar el producto.");
+      toast.error("Something went wrong deleting the product.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error borrando el producto."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error deleting the product.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error borrando el producto.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
 }

@@ -1,5 +1,4 @@
 import {toast} from 'sonner';
-import { ZodError } from 'zod';
 import axios from 'axios';
 import {  ProductCategory, ExperienceCategory } from '../../lib/interfaces';
 import { serializeCategoryProduct, serializeCategoryExperience } from '../serializer';
@@ -22,14 +21,19 @@ export const getAllProductsCategory = async( token: string ): Promise<ProductCat
     data = fetchCategoryProducts.data.map((categoryProduct: any) => serializeCategoryProduct(categoryProduct));
 
   }catch(error){
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error((err.message));
-      });
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error retrieving categories.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      } else {
+        toast.error(errorMessage);
+      }
     } else {
-      toast.error("Error trayendo last categorias de productos.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
   return data;
@@ -47,25 +51,24 @@ export const createProductCategory = async (nameCategory: string, token: string)
     });
 
     if (response.status === 201) {
-      toast.success("Categoria de Producto creado exitosamente");
+      toast.success("Category of product was created successfully.");
     } else {
-      toast.error("Algo salió mal al crear la categoria producto.");
+      toast.error("Something went wrong creating the category of product.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error creando la categoria de producto."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error creating the category of product.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error creando la categoria del producto.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -80,25 +83,24 @@ export const updateProductCategory = async (productCategoryId:Number,productCate
     });
 
     if (response.status === 200) {
-      toast.success("Categoria de producto actualizado exitosamente");
+      toast.success("Category of product was successfully updated");
     } else {
-      toast.error("Algo salió mal al actualizar la categoria del producto.");
+      toast.error("Something went wrong trying to update the category of product.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error actualizando la categoria del producto."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error updating category of product.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error actualizando la categoria de producto.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -114,25 +116,24 @@ export const deleteProductCategory = async(idProductCategory:Number, token:strin
     });
 
     if (response.status === 200) {
-      toast.success("Categoria de producto borrado exitosamente");
+      toast.success("Category of product deleted successfully");
     } else {
-      toast.error("Algo salió mal al borrar la categoria de producto.");
+      toast.error("Something went wrong updating the category of product.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error borrando la categoria de producto."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error updating the category of product.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error borrando la categoria producto.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
 }
@@ -156,14 +157,19 @@ export const getAllExperiencesCategory = async( token: string ): Promise<Experie
     data = fetchCategoryExperiences.data.map((categoryExperience: any) => serializeCategoryExperience(categoryExperience));
 
   }catch(error){
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error((err.message));
-      });
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error fetching category of experience.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      } else {
+        toast.error(errorMessage);
+      }
     } else {
-      toast.error("Error trayendo last categorias de experiencias.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
   return data;
@@ -181,25 +187,24 @@ export const createExperienceCategory = async (nameCategory: string, token: stri
     });
 
     if (response.status === 201) {
-      toast.success("Categoria de Experiencia creado exitosamente");
+      toast.success("Category of experience created successfully.");
     } else {
-      toast.error("Algo salió mal al crear la categoria de experiencia.");
+      toast.error("Something went wrong creating the category of experience.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error creando la categoria de experiencia."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error creating the category of experience.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error creando la categoria del producto.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -214,25 +219,24 @@ export const updateExperienceCategory = async (experienceCategoryId:Number,exper
     });
 
     if (response.status === 200) {
-      toast.success("Categoria de experiencia actualizado exitosamente");
+      toast.success("Category of experience updated successfully.");
     } else {
-      toast.error("Algo salió mal al actualizar la categoria de la experiencia.");
+      toast.error("Something went wrong updating the category of experience.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error actualizando la categoria de experiencia."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error updating the category of experience.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error actualizando la categoria de experiencia.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -248,25 +252,24 @@ export const deleteExperienceCategory = async(idExperienceCategory:Number, token
     });
 
     if (response.status === 200) {
-      toast.success("Categoria de experiencia borrado exitosamente");
+      toast.success("Category of experience deleted successfully.");
     } else {
-      toast.error("Algo salió mal al borrar la categoria de experiencia.");
+      toast.error("Something went wrong deleting the category of experience.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error borrando la categoria de experiencia."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error deleting the category of experience.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error borrando la categoria de experiencia.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
 }

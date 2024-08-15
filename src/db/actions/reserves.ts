@@ -1,5 +1,4 @@
 import {toast} from 'sonner';
-import { ZodError } from 'zod';
 import axios from 'axios';
 import { Reserve, ReserveFilters, ReserveFormData, optionsReserve } from '../../lib/interfaces';
 import { serializeReserve, serializeReserveOptions } from '../serializer';
@@ -23,15 +22,19 @@ export const getAllReserveOptions = async(token:string):Promise<optionsReserve|n
 
 
   }catch(error){
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error((err.message));
-        console.log(err.message);
-      });
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error retrieving reserves.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      } else {
+        toast.error(errorMessage);
+      }
     } else {
-      toast.error("Error trayendo las opciones de reservas.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
   return data;
@@ -71,14 +74,19 @@ export const getAllReserves = async( token: string, page:Number, filters?:Reserv
 
 
   }catch(error){
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error((err.message));
-      });
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error retrieving reserves.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      } else {
+        toast.error(errorMessage);
+      }
     } else {
-      toast.error("Error trayendo las reservas.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
   return data;
@@ -96,25 +104,24 @@ export const createReserve = async (reserve: ReserveFormData, token: string): Pr
     });
 
     if (response.status === 201) {
-      toast.success("Reserva creada exitosamente");
+      toast.success("Reserve created successfully.");
     } else {
-      toast.error("Algo salió mal al crear la reserva.");
+      toast.error("Something went wrong creating the reserve.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error creando la reserva."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error creating the reserve.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error creando la reserva .");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -129,25 +136,24 @@ export const updateReserve = async (reserveId:Number,reserve: ReserveFormData, t
     });
 
     if (response.status === 200) {
-      toast.success("Reserva actualizada exitosamente");
+      toast.success("Reserve updated successfully.");
     } else {
-      toast.error("Algo salió mal al actualizar la reserva.");
+      toast.error("Something went wrong updating the reserve.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error actualizando la reserva."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error updating reserves.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error actualizando la reserva.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -163,25 +169,24 @@ export const deleteReserve = async(idReserve:Number, token:string ):Promise<void
     });
 
     if (response.status === 200) {
-      toast.success("Reserva borrada exitosamente");
+      toast.success("Reserve deleted successfully.");
     } else {
-      toast.error("Algo salió mal al borrar la reserva.");
+      toast.error("Something went wrong deleting the reserve.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error borrando la reserva."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error deleting the reserve.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error borrando la reserva.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
 }

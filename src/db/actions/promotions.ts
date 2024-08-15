@@ -1,5 +1,4 @@
 import {toast} from 'sonner';
-import { ZodError } from 'zod';
 import axios from 'axios';
 import { Promotion, PromotionFilters, PromotionFormData, optionsPromotion } from '../../lib/interfaces';
 import { serializePromotion, serializePromotionToDB, serializePromotionOptions } from '../serializer';
@@ -23,15 +22,19 @@ export const getAllPromotionOptions = async(token:string):Promise<optionsPromoti
 
 
   }catch(error){
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error((err.message));
-        console.log(err.message);
-      });
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error fetching promotion options.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      } else {
+        toast.error(errorMessage);
+      }
     } else {
-      toast.error("Error trayendo las promociones.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
   return data;
@@ -72,14 +75,19 @@ export const getAllPromotions = async( token: string, page:Number, filters?:Prom
 
 
   }catch(error){
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error((err.message));
-      });
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error fetching promotions.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      } else {
+        toast.error(errorMessage);
+      }
     } else {
-      toast.error("Error trayendo las promociones.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
   return data;
@@ -101,25 +109,24 @@ export const createPromotion = async (promotion: PromotionFormData, token: strin
     });
 
     if (response.status === 201) {
-      toast.success("Promocion creada exitosamente");
+      toast.success("Promotion created successfully.");
     } else {
-      toast.error("Algo salió mal al crear la promocion.");
+      toast.error("Something went wrong creating the promotion.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error creando la promocion."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error creating the promotion.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error creando la promocion .");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -137,25 +144,24 @@ export const updatePromotion = async (promotionId:Number,promotion: PromotionFor
     });
 
     if (response.status === 200) {
-      toast.success("Promocion actualizada exitosamente");
+      toast.success("Promotion updated successfully.");
     } else {
-      toast.error("Algo salió mal al actualizar la promocion.");
+      toast.error("Something went wrong updating the promotion.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error actualizando la promocion."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error updating the promotion.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error actualizando la promocion.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -171,25 +177,24 @@ export const deletePromotion = async(idPromotion:Number, token:string ):Promise<
     });
 
     if (response.status === 200) {
-      toast.success("Promocion borrada exitosamente");
+      toast.success("Promotion deleted successfully.");
     } else {
-      toast.error("Algo salió mal al borrar la promocion.");
+      toast.error("Something went wrong deleting the promotion.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error borrando la promocion."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error deleting the promotion.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error borrando la promocion.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
 }

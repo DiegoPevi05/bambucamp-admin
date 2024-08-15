@@ -1,5 +1,4 @@
 import {toast} from 'sonner';
-import { ZodError } from 'zod';
 import axios from 'axios';
 import { Experience, ExperienceFilters, ExperienceFormData } from '../../lib/interfaces';
 import { serializeExperience, serializeExperienceToDB } from '../serializer';
@@ -38,14 +37,19 @@ export const getAllExperiences = async( token: string, page:Number, filters?:Exp
 
 
   }catch(error){
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error((err.message));
-      });
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error retrieving experiences.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      } else {
+        toast.error(errorMessage);
+      }
     } else {
-      toast.error("Error trayendo las experiencias.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
   return data;
@@ -67,25 +71,24 @@ export const createExperience = async (experience: ExperienceFormData, token: st
     });
 
     if (response.status === 201) {
-      toast.success("Experiencia creada exitosamente");
+      toast.success("Experience created successfully");
     } else {
-      toast.error("Algo salió mal al crear la experiencia.");
+      toast.error("Something went wrong during the creation.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error creando la experiencia."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error creating the experience.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error creando la experiencia .");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -103,25 +106,24 @@ export const updateExperience = async (experienceId:Number,experience: Experienc
     });
 
     if (response.status === 200) {
-      toast.success("Experiencia actualizado exitosamente");
+      toast.success("Experience update successfully");
     } else {
-      toast.error("Algo salió mal al actualizar la experiencia.");
+      toast.error("Something went wrong updating the experience.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error actualizando la experiencia."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error updating the experience.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error actualizando la experiencia.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -137,25 +139,24 @@ export const deleteExperience = async(idExperience:Number, token:string ):Promis
     });
 
     if (response.status === 200) {
-      toast.success("Experiencia borrada exitosamente");
+      toast.success("Experience deleted successfully");
     } else {
-      toast.error("Algo salió mal al borrar la experiencia.");
+      toast.error("Something went wrong deleting experience.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error borrando la experiencia."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error deleting the experience.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error borrando la experiencia.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
 }

@@ -187,8 +187,11 @@ const DashboardAdminReserves = () => {
         const fieldsValidated = validateFields('form_create_reserve');
         if(fieldsValidated != null){
           if(user !== null){
-            console.log(fieldsValidated);
-            await createReserve(fieldsValidated, user.token);
+            const response = await createReserve(fieldsValidated, user.token);
+            if(response == null){
+              setLoadingForm(false);
+              return;
+            } 
           }
           getReservesHandler(1);
           setCurrentView("L")

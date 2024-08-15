@@ -1,5 +1,4 @@
 import {toast} from 'sonner';
-import { ZodError } from 'zod';
 import axios from 'axios';
 import { User, UserFilters } from '../../lib/interfaces';
 import { serializeUser } from '../serializer';
@@ -40,14 +39,19 @@ export const getAllUsers = async(token:string, page:Number, filters?:UserFilters
     }
 
   }catch(error){
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error((err.message));
-      });
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error fetching users.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      } else {
+        toast.error(errorMessage);
+      }
     } else {
-      toast.error("Error trayendo los usuarios.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
   return data;
@@ -65,25 +69,24 @@ export const createUser = async (user: CreateUserFormValues, token: string): Pro
     });
 
     if (response.status === 201) {
-      toast.success("Usuario creado exitosamente");
+      toast.success("User created successfully.");
     } else {
-      toast.error("Algo salió mal al crear el usuario.");
+      toast.error("Something went wrong creating the user.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error creando el usuario."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error creating the user.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error creando el usuario.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -100,25 +103,24 @@ export const updateUser = async (userId:Number,user: EditUserFormValues, token: 
     });
 
     if (response.status === 200) {
-      toast.success("Usuario actualizado exitosamente");
+      toast.success("User updated successfully.");
     } else {
-      toast.error("Algo salió mal al actualizar el usuario.");
+      toast.error("Something went wrong updating the user.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error actualizando el usuario."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error updating the user.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error actualizando el usuario.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -135,25 +137,24 @@ export const deleteUser = async(idUser:Number, token:string ):Promise<void> => {
     });
 
     if (response.status === 200) {
-      toast.success("Usuario borrado exitosamente");
+      toast.success("User deleted successfully.");
     } else {
-      toast.error("Algo salió mal al borrar el usuario.");
+      toast.error("Something went wrong deleting the user..");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error borrando el usuario."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error deleting the user.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error borrando el usuario.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
 }
@@ -168,25 +169,24 @@ export const disableUser = async(idUser:Number, token:string ):Promise<void> => 
     });
 
     if (response.status === 200) {
-      toast.success("Usuario Inhabilitado exitosamente");
+      toast.success("User disabled successfully.");
     } else {
-      toast.error("Algo salió mal al inhabilitar el usuario.");
+      toast.error("Something went wrong disabling the user.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error inhabilitando el usuario."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error disabling the user.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error inhabilitando el usuario.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
 }
@@ -202,25 +202,24 @@ export const enableUser = async(idUser:Number, token:string ):Promise<void> => {
     console.log(response);
 
     if (response.status === 200) {
-      toast.success("Usuario Habilitado exitosamente");
+      toast.success("User enable successfully.");
     } else {
-      toast.error("Algo salió mal al habilitar el usuario.");
+      toast.error("Something went wrong enabling the user.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error habilitando el usuario."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error enabling the user.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error habilitando el usuario.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
 }

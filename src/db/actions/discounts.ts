@@ -1,5 +1,4 @@
 import {toast} from 'sonner';
-import { ZodError } from 'zod';
 import axios from 'axios';
 import { DiscountCode, DiscountCodeFilters, DiscountCodeFormData } from '../../lib/interfaces';
 import { serializeDiscountCode } from '../serializer';
@@ -38,14 +37,19 @@ export const getAllDiscountCodes = async( token: string, page:Number, filters?:D
 
 
   }catch(error){
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error((err.message));
-      });
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error fetching discount codes.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      } else {
+        toast.error(errorMessage);
+      }
     } else {
-      toast.error("Error trayendo los codigos de descuento.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
   return data;
@@ -63,25 +67,24 @@ export const createDiscountCode = async (discountCode: DiscountCodeFormData, tok
     });
 
     if (response.status === 201) {
-      toast.success("Codigo de descuento creado exitosamente");
+      toast.success("Discount code created successfully.");
     } else {
-      toast.error("Algo salió mal al crear el codigo de descuento.");
+      toast.error("Something went wrong creating the discount code.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error creando el codigo de descuento."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error creating the discount code.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error creando la experiencia .");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -96,25 +99,24 @@ export const updateDiscountCode = async (discountCodeId:Number,discountCode: Dis
     });
 
     if (response.status === 200) {
-      toast.success("Codigo de descuento actualizado exitosamente");
+      toast.success("Discount code updated successfully.");
     } else {
-      toast.error("Algo salió mal al actualizar el codigo de descuento.");
+      toast.error("Something went wrong updating the discount code.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error actualizando el codigo de descuento."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error updating the discount code.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error actualizando la experiencia.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 };
 
@@ -130,25 +132,24 @@ export const deleteDiscountCode = async(idDiscountCode:Number, token:string ):Pr
     });
 
     if (response.status === 200) {
-      toast.success("Codigo de descuento borrado exitosamente");
+      toast.success("Discount code deleted successfully.");
     } else {
-      toast.error("Algo salió mal al borrar el codigo de descuento.");
+      toast.error("Something went wrong deleting the discount.");
     }
   } catch (error) {
-    if (error instanceof ZodError) {
-      error.errors.forEach((err) => {
-        toast.error(err.message);
-      });
-    } else if (axios.isAxiosError(error)) {
-      if (error.response) {
-        toast.error(`Error: ${error.response.data.message || "Error borrando el codigo de descuento."}`);
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorMessage = error.response?.data?.error || "Error deleting the discount code.";
+
+      if (statusCode) {
+        toast.error(`${errorMessage} (Code: ${statusCode})`);
       } else {
-        toast.error("No se pudo conectar con el servidor.");
+        toast.error(errorMessage);
       }
     } else {
-      toast.error("Error borrando la experiencia.");
-      console.error(error);
+      toast.error("An unexpected error occurred.");
     }
+    console.error(error);
   }
 
 }
