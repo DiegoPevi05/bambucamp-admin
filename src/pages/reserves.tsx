@@ -139,7 +139,6 @@ const DashboardAdminReserves = () => {
 
 
         setErrorMessages({});
-        console.log(tents);
 
         try {
 
@@ -172,8 +171,6 @@ const DashboardAdminReserves = () => {
             error.errors.forEach(err => {
               const fieldName = err.path[0] as string;
               newErrorMessages[fieldName] = err.message;
-              console.log(fieldName);
-              console.log(err.message);
             });
             setErrorMessages(newErrorMessages);
           }
@@ -187,8 +184,8 @@ const DashboardAdminReserves = () => {
         const fieldsValidated = validateFields('form_create_reserve');
         if(fieldsValidated != null){
           if(user !== null){
-            const response = await createReserve(fieldsValidated, user.token);
-            if(response == null){
+            const isSuccess = await createReserve(fieldsValidated, user.token);
+            if(!isSuccess){
               setLoadingForm(false);
               return;
             } 
@@ -232,7 +229,10 @@ const DashboardAdminReserves = () => {
 
     const deleteReserveHandler = async() => {
         if(user != null && selectedReserve != null){
-            await deleteReserve(selectedReserve.id,user.token)
+            const isSuccess = await deleteReserve(selectedReserve.id,user.token)
+            if(!isSuccess){
+              return;
+            } 
         }
         getReservesHandler(1);
         setOpenDeleteModal(false);
@@ -266,7 +266,11 @@ const DashboardAdminReserves = () => {
         const fieldsValidated = validateFields('form_update_promotion');
         if(fieldsValidated != null){
           if(user !== null && selectedReserve != null){
-              await updateReserve(selectedReserve.id,fieldsValidated, user.token);
+            const isSuccess =  await updateReserve(selectedReserve.id,fieldsValidated, user.token);
+            if(!isSuccess){
+              setLoadingForm(false);
+              return;
+            } 
           }
           getReservesHandler(1);
           setCurrentView("L")
@@ -546,80 +550,80 @@ const DashboardAdminReserves = () => {
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Titulo de la promocion"}</label>
-                            <input name="title" value={selectedReserve.title} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Titulo de la promocion"} disabled/>
+                          <div className="flex flex-col justify-start items-start w-full h-auto my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="userId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6"> Usuario</label>
+                            <input name="userId" value={selectedReserve.id} className="hidden"/>
+                            <input name="userId_name" value={selectedReserve.id} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Usuario seleccionado"} disabled/>
                           </div>
 
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
-                            <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}>{ selectedReserve.description }</textarea>
+                        <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+
+                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                            <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de personas"}</label>
+                            <input name="qtypeople" type="number" value={selectedReserve.qtypeople} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de personas"} disabled/>
                           </div>
 
-                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="expiredDate" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Fecha de Expiracion"}</label>
-                              <input name="expiredDate" type="date" value={formatToISODate(selectedReserve.expiredDate)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Fecha de expiracion"} disabled/>
-                            </div>
-
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de promociones"}</label>
-                              <input name="stock" value={selectedReserve.stock} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Duracion"} disabled/>
-                            </div>
+                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                            <label htmlFor="qtykids"  className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad  de niños"}</label>
+                            <input name="qtykids" type="number" value={selectedReserve.qtykids} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de niños"} disabled/>
                           </div>
 
-                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                        </div>
 
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de Personas"}</label>
-                              <input name="qtypeople" value={selectedReserve.qtypeople} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de Personas"} disabled/>
-                            </div>
-
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="qtykids" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de Niños"}</label>
-                              <input name="qtykids" value={selectedReserve.qtykids} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de Niños"} disabled/>
-                            </div>
+                        <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                            <label htmlFor="dateFrom" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Desde"}</label>
+                            <input name="dateFrom" type="date" value={selectedReserve.dateFrom.toISOString()} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"} disabled/>
                           </div>
 
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
-                            <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              <option value={selectedReserve.status}>{selectedReserve.status == "ACTIVE" ? "ACTIVO" : "INACTIVO"}</option>
+                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                            <label htmlFor="dateTo" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Hasta"}</label>
+                            <input name="dateTo" type="date" value={selectedReserve.dateTo.toISOString()} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"} disabled/>
+                          </div>
+
+                        </div>
+
+                        <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+
+                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                            <label htmlFor="payment_status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estado de Pago"}</label>
+                            <select name="payment_status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                              <option value={selectedReserve.paymentStatus}>{selectedReserve.paymentStatus != "PAID" ?  (selectedReserve.paymentStatus == "DEBT" ? "DEBE" : "PENDIENTE")  : "PAGADO"}</option>
                             </select>
                           </div>
-                          
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
-                              <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
-                                <AnimatePresence>
-                                  {selectedReserve.images.map((image, index) => (
-                                    <motion.div
-                                      key={index}
-                                      initial="hidden"
-                                      animate="show"
-                                      exit="hidden"
-                                      viewport={{ once: true }}
-                                      variants={fadeOnly("",0,0.3)}
-                                      className="image-selected"
-                                      style={{
-                                        backgroundImage: `url(${import.meta.env.VITE_BACKEND_URL}/${image})`,
-                                        backgroundSize: 'cover',
-                                        position: 'relative'
-                                      }}
-                                    >
-                                    </motion.div>
-                                  ))}
-                                </AnimatePresence>
-                              </div>
+
+                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                            <label htmlFor="additional_people" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de Personas adicionales"}</label>
+                            <input name="additional_people" type="number" step="0.01" value={selectedReserve.aditionalPeople} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de Personas adicionales"} disabled/>
                           </div>
 
-                      </div>
+                        </div>
+
+                        <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1  gap-y-2">
+
+                          <label htmlFor="canceled_reason" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{"Cancelacion"}</label>
+
+                            <div className="checkbox-wrapper-13 px-2">
+                              <input name="canceled_status" type="checkbox" aria-hidden="true" checked={selectedReserve.canceled_status}/>
+                              <label htmlFor="canceled_status">Reserva Cancelada?</label>
+                            </div>
+
+                            <textarea name="canceled_reason" className="w-full h-8 sm:h-20 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Razon de cancelacion"} disabled>{selectedReserve.canceled_reason}</textarea>
+                        </div>
+                    </div>
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
-
+                      {criteriaReserve === "NORMAL" ? 
+                        <>
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="price_is_calculated" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precios Calculados?"}</label>
+                            <div className="checkbox-wrapper-13 px-2">
+                              <input name="price_is_calculated" type="checkbox" aria-hidden="true" checked={selectedReserve.price_is_calculated} />
+                              <label className="text-[12px]" htmlFor="price_is_calculated">Los precios se calcularan en base a los precios de los productos</label>
+                            </div>
+                          </div>
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="glampings" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Glampings en la promocion"}</label>
+                            <label htmlFor="glampings" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Glampings en la reserva"}</label>
                             <div className="w-full h-auto">
                               <AnimatePresence>
                                 {tents.map((item, index) => (
@@ -633,21 +637,14 @@ const DashboardAdminReserves = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                             </span>
                                             <span className="w-[30%]">
                                               Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
                                             </span>
-                                            <button
-                                              type="button"
-                                              onClick={() => handleRemoveReserveOption(index,"tent")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              Borrar
-                                            </button>
                                           </motion.div>
                                         ))}
                               </AnimatePresence>
@@ -655,7 +652,7 @@ const DashboardAdminReserves = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="products" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Productos en la promocion"}</label>
+                            <label htmlFor="products" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Productos en la reserva"}</label>
                             <div className="w-full h-auto">
                               <AnimatePresence>
                                 {products.map((item, index) => (
@@ -669,22 +666,14 @@ const DashboardAdminReserves = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                              Producto: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                             </span>
                                             <span className="w-[30%]">
                                               Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
                                             </span>
-                                            <button
-                                              type="button"
-
-                                              onClick={() => handleRemoveReserveOption(index,"product")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              Borrar
-                                            </button>
                                           </motion.div>
                                         ))}
                               </AnimatePresence>
@@ -692,7 +681,7 @@ const DashboardAdminReserves = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="experiences" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Experiencias en la promocion"}</label>
+                            <label htmlFor="experiences" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Experiencias en la reserva"}</label>
                             <div className="w-full h-auto">
                               <AnimatePresence>
                                 {experiences.map((item, index) => (
@@ -706,10 +695,97 @@ const DashboardAdminReserves = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                              Experiencia: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
+                                            </span>
+                                            <span className="w-[30%]">
+                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
+                                            </span>
+                                          </motion.div>
+                                        ))}
+                              </AnimatePresence>
+                            </div>
+                          </div>
+                        </>
+                      :
+                        <>
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
+                            <label htmlFor="promotion_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Selecciona la promocion a aplicar en la reserva"}</label>
+                            <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                                  <select name="promotion_option_id" className="w-[100%] h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                                      <option value={selectedReserve.promotionId}>{`Nombre: ${selectedReserve.promotionId} | Precio: $${selectedReserve.promotionId} | Descuento: ${selectedReserve.promotionId}%`}</option>
+                                  </select>
+                            </div>
+                            <input name="promotion_id" value={selectedReserve.promotionId} className="hidden" disabled/>
+                            <div className="w-full h-auto">
+                              <AnimatePresence>
+                                {tents.map((item, index) => (
+                                          <motion.div
+                                            key={index}
+                                            initial="hidden"
+                                            animate="show"
+                                            exit="hidden"
+                                            viewport={{ once: true }}
+                                            variants={fadeIn("up","",0,0.3)}
+                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
+                                          >
+                                            <span className="w-[30%]">
+                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
+                                            </span>
+                                            <span className="w-[30%]">
+                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
+                                            </span>
+                                            <span className="w-[30%]">
+                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
+                                            </span>
+                                          </motion.div>
+                                        ))}
+                              </AnimatePresence>
+                            </div>
+                            <div className="w-full h-auto">
+                              <AnimatePresence>
+                                {products.map((item, index) => (
+                                          <motion.div
+                                            key={index}
+                                            initial="hidden"
+                                            animate="show"
+                                            exit="hidden"
+                                            viewport={{ once: true }}
+                                            variants={fadeIn("up","",0,0.3)}
+                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
+                                          >
+                                            <span className="w-[30%]">
+                                              Producto: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
+                                            </span>
+                                            <span className="w-[30%]">
+                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
+                                            </span>
+                                            <span className="w-[30%]">
+                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
+                                            </span>
+                                          </motion.div>
+                                        ))}
+                              </AnimatePresence>
+                            </div>
+                            <div className="w-full h-auto">
+                              <AnimatePresence>
+                                {experiences.map((item, index) => (
+                                          <motion.div
+                                            key={index}
+                                            initial="hidden"
+                                            animate="show"
+                                            exit="hidden"
+                                            viewport={{ once: true }}
+                                            variants={fadeIn("up","",0,0.3)}
+                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
+                                          >
+                                            <span className="w-[30%]">
+                                              Experiencia: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
+                                            </span>
+                                            <span className="w-[30%]">
+                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                             </span>
                                             <span className="w-[30%]">
                                               Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
@@ -727,38 +803,46 @@ const DashboardAdminReserves = () => {
                               </AnimatePresence>
                             </div>
                           </div>
+                        </>
+                      }
 
-                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
 
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="importe_calculado" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Total Calculado"}</label>
-                              <input name="importe_calculado" value={ `$ ${getTotalPromotionCalculated(tents,products,experiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  disabled/>
-                            </div>
 
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descuento en %"}</label>
-                              <input name="discount" value={selectedReserve.discount} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Descuento en %"} disabled/>
-                            </div>
+                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
+                        <label htmlFor="discount_code_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Aplicar codigo de descuento"}</label>
+                        <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                              <select name="discount_code_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                                  <option value={selectedReserve.discountCodeId}>{`${selectedReserve.discountCodeId} | Descuento: ${selectedReserve.discountCodeId}%`}</option>
+                              </select>
+                        </div>
+                      </div>
 
-                          </div>
+                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
 
-                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-[50%] h-auto gap-y-2 sm:gap-y-1">
+                          <label htmlFor="importe_calculado" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Total Calculado"}</label>
+                          <input name="importe_calculado" value={ `$ ${getTotalReserveCalculated(tents,products,experiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  disabled/>
+                        </div>
 
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="netImport" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Neto"}</label>
-                              <input name="netImport" value={selectedReserve.netImport} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Importe Neto"} disabled/>
-                            </div>
+                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-[50%] h-auto gap-y-2 sm:gap-y-1">
+                          <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descuento en %"}</label>
+                          <input name="discount" value={selectedReserve.discount} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Descuento en %"} disabled/>
+                        </div>
+                      </div>
 
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="grossImport" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Total"}</label>
-                              <input name="grossImport" value={selectedReserve.grossImport} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Importe Total"} disabled/>
-                            </div>
+                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
 
-                          </div>
+                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                          <label htmlFor="netImport" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Neto"}</label>
+                          <input name="netImport" value={selectedReserve.netImport} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Importe Neto"} disabled/>
+                        </div>
 
-                          <div className="flex flex-row justify-end gap-x-6 w-full">
-                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Volver a lista de Promociones</Button>
-                          </div>
+                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                          <label htmlFor="grossImport" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Total"}</label>
+                          <input name="grossImport" value={selectedReserve.grossImport} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Importe Total"} disabled/>
+                        </div>
+
+                      </div>
 
                       </div>
                     </div>

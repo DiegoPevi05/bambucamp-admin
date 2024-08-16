@@ -114,7 +114,7 @@ export const getAllReserves = async( token: string, page:Number, filters?:Reserv
 
 
 
-export const createReserve = async (reserve: ReserveFormData, token: string): Promise<void> => {
+export const createReserve = async (reserve: ReserveFormData, token: string): Promise<boolean> => {
   try {
 
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/reserves`, reserve, {
@@ -124,6 +124,7 @@ export const createReserve = async (reserve: ReserveFormData, token: string): Pr
       }
     });
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -147,11 +148,12 @@ export const createReserve = async (reserve: ReserveFormData, token: string): Pr
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
-export const updateReserve = async (reserveId:Number,reserve: ReserveFormData, token: string): Promise<void> => {
+export const updateReserve = async (reserveId:Number,reserve: ReserveFormData, token: string): Promise<boolean> => {
   try {
 
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/reserves/${reserveId}`, reserve, {
@@ -162,6 +164,7 @@ export const updateReserve = async (reserveId:Number,reserve: ReserveFormData, t
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -185,12 +188,13 @@ export const updateReserve = async (reserveId:Number,reserve: ReserveFormData, t
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
 
-export const deleteReserve = async(idReserve:Number, token:string ):Promise<void> => {
+export const deleteReserve = async(idReserve:Number, token:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/reserves/${idReserve}`, {
@@ -201,6 +205,7 @@ export const deleteReserve = async(idReserve:Number, token:string ):Promise<void
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -224,6 +229,7 @@ export const deleteReserve = async(idReserve:Number, token:string ):Promise<void
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 
 }

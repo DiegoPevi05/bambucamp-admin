@@ -177,8 +177,6 @@ const DashboardAdminExperiences = () => {
             error.errors.forEach(err => {
               const fieldName = err.path[0] as string;
               newErrorMessages[fieldName] = err.message;
-              console.log(fieldName);
-              console.log(err.message);
             });
             setErrorMessages(newErrorMessages);
           }
@@ -190,10 +188,13 @@ const DashboardAdminExperiences = () => {
         e.preventDefault();
         setLoadingForm(true);
         const fieldsValidated = validateFields('form_create_experience');
-        console.log(fieldsValidated);
         if(fieldsValidated != null){
           if(user !== null){
-            await createExperience(fieldsValidated, user.token);
+            const isSuccess = await createExperience(fieldsValidated, user.token);
+            if(!isSuccess){
+              setLoadingForm(false);
+              return;
+            }
           }
           getExperiencesHandler(1);
           setImages([]);
@@ -237,17 +238,21 @@ const DashboardAdminExperiences = () => {
 
     const deleteExperienceHandler = async() => {
         if(user != null && selectedExperience != null){
-            await deleteExperience(selectedExperience.id,user.token)
+            const isSuccess = await deleteExperience(selectedExperience.id,user.token)
+            if(!isSuccess){
+              return;
+            }
         }
         getExperiencesHandler(1);
         setOpenDeleteModal(false);
     }
 
-    const onChangeSelectedExperience = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, type, value } = e.target;
+    const onChangeSelectedExperience = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
         const fieldValue = value;
 
         setSelectedExperience(prevSelectedExperience => {
+            if(!prevSelectedExperience) return null;
             return {
                 ...prevSelectedExperience,
                 [name]: fieldValue,
@@ -262,7 +267,11 @@ const DashboardAdminExperiences = () => {
         if(fieldsValidated != null){
           fieldsValidated.existing_images = JSON.stringify(existingImages);
           if(user !== null && selectedExperience != null){
-              await updateExperience(selectedExperience.id,fieldsValidated, user.token);
+              const isSuccess = await updateExperience(selectedExperience.id,fieldsValidated, user.token);
+              if(!isSuccess){
+                setLoadingForm(false);
+                return;
+              }
           }
           setImages([]);
           setCustomPrices([]);
@@ -283,6 +292,7 @@ const DashboardAdminExperiences = () => {
         const fieldValue = value;
 
         setSelectedCategory(prevSelectedCategory => {
+            if(!prevSelectedCategory) return null;
             return {
                 ...prevSelectedCategory,
                 [name]: fieldValue,
@@ -304,7 +314,11 @@ const DashboardAdminExperiences = () => {
         };
 
         if(user !== null){
-            await createExperienceCategory(category, user.token);
+            const isSuccess = await createExperienceCategory(category, user.token);
+            if(!isSuccess){
+              setLoadingCategory(false);
+              return;
+            }
             getExperiencesCategory();
         }
         setLoadingCategory(false);
@@ -313,7 +327,10 @@ const DashboardAdminExperiences = () => {
     const onSubmitUpdateCategory = async () => {
         setLoadingCategory(true);
         if(user !== null && selectedCategory != null){
-            await updateExperienceCategory(selectedCategory.id,selectedCategory, user.token);
+            const isSuccess = await updateExperienceCategory(selectedCategory.id,selectedCategory, user.token);
+            if(!isSuccess){
+              setLoadingForm(false);
+            }
             getExperiencesCategory();
         }
         setLoadingCategory(false);
@@ -323,7 +340,10 @@ const DashboardAdminExperiences = () => {
     const deleteExperienceCategoryHandler = async(idCategory:number) => {
         setLoadingCategory(true);
         if(user != null){
-            await deleteExperienceCategory(idCategory,user.token)
+            const isSuccess = await deleteExperienceCategory(idCategory,user.token)
+            if(!isSuccess){
+              setLoadingForm(false);
+            }
             getExperiencesCategory();
         }
         setLoadingCategory(false);

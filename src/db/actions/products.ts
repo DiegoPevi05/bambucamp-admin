@@ -67,7 +67,7 @@ export const getAllProducts = async( token: string, page:Number, filters?:Produc
 
 
 
-export const createProduct = async (product: ProductFormData, token: string): Promise<void> => {
+export const createProduct = async (product: ProductFormData, token: string): Promise<boolean> => {
   try {
 
     // Create a new FormData object
@@ -81,6 +81,7 @@ export const createProduct = async (product: ProductFormData, token: string): Pr
       }
     });
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -104,11 +105,12 @@ export const createProduct = async (product: ProductFormData, token: string): Pr
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
-export const updateProduct = async (productId:Number,tent: ProductFormData, token: string): Promise<void> => {
+export const updateProduct = async (productId:Number,tent: ProductFormData, token: string): Promise<boolean> => {
   try {
     // Create a new FormData object
     const formData = serializeProductToDB(tent,true);
@@ -122,6 +124,7 @@ export const updateProduct = async (productId:Number,tent: ProductFormData, toke
     });
 
     toast.success(response.data.message);
+    return true;
 
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -146,12 +149,13 @@ export const updateProduct = async (productId:Number,tent: ProductFormData, toke
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
 
-export const deleteProduct = async(idProduct:Number, token:string ):Promise<void> => {
+export const deleteProduct = async(idProduct:Number, token:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/products/${idProduct}`, {
@@ -161,6 +165,7 @@ export const deleteProduct = async(idProduct:Number, token:string ):Promise<void
       }
     });
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -184,6 +189,7 @@ export const deleteProduct = async(idProduct:Number, token:string ):Promise<void
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 
 }

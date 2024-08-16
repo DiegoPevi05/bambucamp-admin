@@ -67,7 +67,7 @@ export const getAllExperiences = async( token: string, page:Number, filters?:Exp
 
 
 
-export const createExperience = async (experience: ExperienceFormData, token: string): Promise<void> => {
+export const createExperience = async (experience: ExperienceFormData, token: string): Promise<boolean> => {
   try {
 
     // Create a new FormData object
@@ -82,7 +82,7 @@ export const createExperience = async (experience: ExperienceFormData, token: st
     });
 
     toast.success(response.data.message);
-
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -106,11 +106,12 @@ export const createExperience = async (experience: ExperienceFormData, token: st
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
-export const updateExperience = async (experienceId:Number,experience: ExperienceFormData, token: string): Promise<void> => {
+export const updateExperience = async (experienceId:Number,experience: ExperienceFormData, token: string): Promise<boolean> => {
   try {
     // Create a new FormData object
     const formData = serializeExperienceToDB(experience,true);
@@ -124,6 +125,7 @@ export const updateExperience = async (experienceId:Number,experience: Experienc
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -147,12 +149,13 @@ export const updateExperience = async (experienceId:Number,experience: Experienc
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
 
-export const deleteExperience = async(idExperience:Number, token:string ):Promise<void> => {
+export const deleteExperience = async(idExperience:Number, token:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/experiences/${idExperience}`, {
@@ -163,6 +166,7 @@ export const deleteExperience = async(idExperience:Number, token:string ):Promis
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -186,6 +190,7 @@ export const deleteExperience = async(idExperience:Number, token:string ):Promis
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 
 }

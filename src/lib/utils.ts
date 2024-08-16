@@ -118,7 +118,6 @@ export const getTotalReserveCalculated = (tents: ReserveTentDto[], products: Res
 
 export const calculatePrice = (basePrice: number , customPrices: CustomPrice[], noCustomPrice?:boolean): number => {
 
-  console.log(customPrices)
   if(customPrices === null) return basePrice;
 
   if(noCustomPrice) return basePrice;

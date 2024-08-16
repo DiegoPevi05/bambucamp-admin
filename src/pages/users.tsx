@@ -55,7 +55,11 @@ const DashboardAdminUsers = () => {
     const onSubmitCreation = async (data: CreateUserFormValues) => {
         setLoadingForm(true);
         if(user !== null){
-            await createUser(data, user.token);
+            const isSuccess = await createUser(data, user.token);
+            if(!isSuccess){
+                setLoadingForm(false);
+                return;
+            }
             reset();
         }
         getUsersHandler(1);
@@ -93,7 +97,10 @@ const DashboardAdminUsers = () => {
 
     const deleteUserHandler = async() => {
         if(user != null && selectedUser != null){
-            await deleteUser(selectedUser.id,user.token)
+            const isSuccess = await deleteUser(selectedUser.id,user.token)
+            if(!isSuccess){
+                return;
+            }
         }
         getUsersHandler(1);
         setOpenDeleteModal(false);
@@ -101,13 +108,19 @@ const DashboardAdminUsers = () => {
 
     const disabledUserHandler = async( userId:Number ) => {
         if(user != null){
-            await disableUser(userId,user.token);
+            const isSuccess = await disableUser(userId,user.token);
+            if(!isSuccess){
+                return;
+            }
         }
         getUsersHandler(1);
     }
     const enabledUserHandler = async(userId:Number) => {
         if(user != null){
-            await enableUser(userId,user.token);
+            const isSuccess = await enableUser(userId,user.token);
+            if(!isSuccess){
+                return;
+            }
         }
         getUsersHandler(1);
     }
@@ -115,7 +128,11 @@ const DashboardAdminUsers = () => {
     const onSubmitUpdate = async (data: EditUserFormValues) => {
         setLoadingForm(true);
         if(user !== null && selectedUser != null){
-            await updateUser(selectedUser.id,data, user.token);
+            const isSuccess = await updateUser(selectedUser.id,data, user.token);
+            if(!isSuccess){
+                setLoadingForm(false);
+                return;
+            }
             reset();
         }
         getUsersHandler(1);

@@ -68,7 +68,7 @@ export const getAllTents = async( token: string, page:Number, filters?:TentFilte
 
 
 
-export const createTent = async (tent: TentFormData, token: string): Promise<void> => {
+export const createTent = async (tent: TentFormData, token: string): Promise<boolean> => {
   try {
 
     // Create a new FormData object
@@ -83,6 +83,7 @@ export const createTent = async (tent: TentFormData, token: string): Promise<voi
     });
 
     toast.success(response.data.message);
+    return true;
 
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -107,11 +108,12 @@ export const createTent = async (tent: TentFormData, token: string): Promise<voi
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
-export const updateTent = async (userId:Number,tent: TentFormData, token: string): Promise<void> => {
+export const updateTent = async (userId:Number,tent: TentFormData, token: string): Promise<boolean> => {
   try {
     // Create a new FormData object
     const formData = serializeTentToDB(tent,true);
@@ -125,6 +127,7 @@ export const updateTent = async (userId:Number,tent: TentFormData, token: string
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -148,12 +151,13 @@ export const updateTent = async (userId:Number,tent: TentFormData, token: string
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
 
-export const deleteTent = async(idTent:Number, token:string ):Promise<void> => {
+export const deleteTent = async(idTent:Number, token:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/tents/${idTent}`, {
@@ -164,7 +168,7 @@ export const deleteTent = async(idTent:Number, token:string ):Promise<void> => {
     });
 
     toast.success(response.data.message);
-
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -188,6 +192,7 @@ export const deleteTent = async(idTent:Number, token:string ):Promise<void> => {
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 
 }

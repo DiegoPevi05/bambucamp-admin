@@ -1,6 +1,6 @@
 import Dashboard from "../components/ui/Dashboard";
 import { useState, useEffect, FormEvent } from "react";
-import { Eye, Pen, X, ChevronLeft, ChevronRight, CircleX, Image, RefreshCw, Percent } from "lucide-react";
+import { Eye, Pen, X, ChevronLeft, ChevronRight, CircleX, Percent } from "lucide-react";
 import Button from "../components/ui/Button";
 import { InputRadio } from "../components/ui/Input";
 import {  formatDate, formatToISODate } from "../lib/utils";
@@ -65,8 +65,6 @@ const DashboardAdminDiscounts = () => {
             error.errors.forEach(err => {
               const fieldName = err.path[0] as string;
               newErrorMessages[fieldName] = err.message;
-              console.log(fieldName);
-              console.log(err.message);
             });
             setErrorMessages(newErrorMessages);
           }
@@ -80,7 +78,11 @@ const DashboardAdminDiscounts = () => {
         const fieldsValidated = validateFields('form_create_discount');
         if(fieldsValidated != null){
           if(user !== null){
-            await createDiscountCode(fieldsValidated, user.token);
+            const isSuccess = await createDiscountCode(fieldsValidated, user.token);
+            if(!isSuccess){
+                setLoadingForm(false);
+                return;
+            }
           }
           getDiscountCodesHandler(1);
           setCurrentView("L")
@@ -121,13 +123,16 @@ const DashboardAdminDiscounts = () => {
 
     const deleteDiscountCodeHandler = async() => {
         if(user != null && selectedDiscountCode != null){
-            await deleteDiscountCode(selectedDiscountCode.id,user.token)
+            const isSuccess = await deleteDiscountCode(selectedDiscountCode.id,user.token)
+            if(!isSuccess){
+                return;
+            }
         }
         getDiscountCodesHandler(1);
         setOpenDeleteModal(false);
     }
 
-    const onChangeSelectedDiscountCode = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const onChangeSelectedDiscountCode = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, type, value } = e.target;
         
         // Convert the value to a Date object if the input type is 'date'
@@ -140,10 +145,13 @@ const DashboardAdminDiscounts = () => {
           fieldValue = localDate;
         }
 
-        setSelectedDiscountCode(prevSelectedDiscountCode => ({
-            ...prevSelectedDiscountCode,
-            [name]: fieldValue,
-        }));
+        setSelectedDiscountCode(prevSelectedDiscountCode => {
+            if(!prevSelectedDiscountCode) return null
+            return {
+                ...prevSelectedDiscountCode,
+                [name]: fieldValue,
+            };
+        });
     };
 
     const onSubmitUpdate = async (e: FormEvent) => {
@@ -152,7 +160,11 @@ const DashboardAdminDiscounts = () => {
         const fieldsValidated = validateFields('form_update_discount');
         if(fieldsValidated != null){
           if(user !== null && selectedDiscountCode != null){
-              await updateDiscountCode(selectedDiscountCode.id,fieldsValidated, user.token);
+              const isSuccess = await updateDiscountCode(selectedDiscountCode.id,fieldsValidated, user.token);
+              if(!isSuccess){
+                  setLoadingForm(false);
+                  return;
+              }
           }
           getDiscountCodesHandler(1);
           setCurrentView("L")

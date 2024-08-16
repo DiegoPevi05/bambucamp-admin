@@ -70,7 +70,7 @@ export const getAllUsers = async(token:string, page:Number, filters?:UserFilters
 
 type CreateUserFormValues = z.infer<typeof createUserSchema>;
 
-export const createUser = async (user: CreateUserFormValues, token: string): Promise<void> => {
+export const createUser = async (user: CreateUserFormValues, token: string): Promise<boolean> => {
   try {
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/users`, user, {
       headers: {
@@ -80,6 +80,7 @@ export const createUser = async (user: CreateUserFormValues, token: string): Pro
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -103,12 +104,13 @@ export const createUser = async (user: CreateUserFormValues, token: string): Pro
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 type EditUserFormValues = z.infer<typeof editUserSchema>;
 
-export const updateUser = async (userId:Number,user: EditUserFormValues, token: string): Promise<void> => {
+export const updateUser = async (userId:Number,user: EditUserFormValues, token: string): Promise<boolean> => {
   try {
     const { password, ...userData } = user;
     const payload = password ? { ...userData, password } : userData;
@@ -120,6 +122,7 @@ export const updateUser = async (userId:Number,user: EditUserFormValues, token: 
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -143,13 +146,14 @@ export const updateUser = async (userId:Number,user: EditUserFormValues, token: 
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
 
 
-export const deleteUser = async(idUser:Number, token:string ):Promise<void> => {
+export const deleteUser = async(idUser:Number, token:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/users/${idUser}`, {
@@ -160,6 +164,7 @@ export const deleteUser = async(idUser:Number, token:string ):Promise<void> => {
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -183,11 +188,12 @@ export const deleteUser = async(idUser:Number, token:string ):Promise<void> => {
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 
 }
 
-export const disableUser = async(idUser:Number, token:string ):Promise<void> => {
+export const disableUser = async(idUser:Number, token:string ):Promise<boolean> => {
 
   try {
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/users/${idUser}/disable`,{}, {
@@ -198,6 +204,7 @@ export const disableUser = async(idUser:Number, token:string ):Promise<void> => 
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -221,11 +228,12 @@ export const disableUser = async(idUser:Number, token:string ):Promise<void> => 
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 
 }
 
-export const enableUser = async(idUser:Number, token:string ):Promise<void> => {
+export const enableUser = async(idUser:Number, token:string ):Promise<boolean> => {
 
   try {
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/users/${idUser}/enable`,{}, {
@@ -235,6 +243,7 @@ export const enableUser = async(idUser:Number, token:string ):Promise<void> => {
       }
     });
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -258,6 +267,7 @@ export const enableUser = async(idUser:Number, token:string ):Promise<void> => {
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 
 }

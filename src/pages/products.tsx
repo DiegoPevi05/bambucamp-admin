@@ -154,7 +154,11 @@ const DashboardAdminProducts = () => {
         const fieldsValidated = validateFields('form_create_product');
         if(fieldsValidated != null){
           if(user !== null){
-            await createProduct(fieldsValidated, user.token);
+            const isSuccess = await createProduct(fieldsValidated, user.token);
+            if(!isSuccess){
+              setLoadingForm(false);
+              return;
+            }
           }
           getProductsHandler(1);
           setImages([]);
@@ -196,17 +200,21 @@ const DashboardAdminProducts = () => {
 
     const deleteProductHandler = async() => {
         if(user != null && selectedProduct != null){
-            await deleteProduct(selectedProduct.id,user.token)
+            const isSuccess = await deleteProduct(selectedProduct.id,user.token)
+            if(!isSuccess){
+              return;
+            }
         }
         getProductsHandler(1);
         setOpenDeleteModal(false);
     }
 
-    const onChangeSelectedProduct = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, type, value } = e.target;
+    const onChangeSelectedProduct = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
         const fieldValue = value;
 
         setSelectedProduct(prevSelectedProduct => {
+            if(!prevSelectedProduct) return null;
             return {
                 ...prevSelectedProduct,
                 [name]: fieldValue,
@@ -221,7 +229,11 @@ const DashboardAdminProducts = () => {
         if(fieldsValidated != null){
           fieldsValidated.existing_images = JSON.stringify(existingImages);
           if(user !== null && selectedProduct != null){
-              await updateProduct(selectedProduct.id,fieldsValidated, user.token);
+              const isSuccess = await updateProduct(selectedProduct.id,fieldsValidated, user.token);
+              if(!isSuccess){
+                setLoadingForm(false);
+                return;
+              }
           }
           setImages([]);
           getProductsHandler(1);
@@ -240,6 +252,7 @@ const DashboardAdminProducts = () => {
         const fieldValue = value;
 
         setSelectedCategory(prevSelectedCategory => {
+            if(!prevSelectedCategory) return null;
             return {
                 ...prevSelectedCategory,
                 [name]: fieldValue,
@@ -261,7 +274,11 @@ const DashboardAdminProducts = () => {
         };
 
         if(user !== null){
-            await createProductCategory(category, user.token);
+            const isSuccess = await createProductCategory(category, user.token);
+            if(!isSuccess){
+              setLoadingCategory(false);
+              return;
+            }
             getProductsCategory();
         }
         setLoadingCategory(false);
@@ -270,7 +287,11 @@ const DashboardAdminProducts = () => {
     const onSubmitUpdateCategory = async () => {
         setLoadingCategory(true);
         if(user !== null && selectedCategory != null){
-            await updateProductCategory(selectedCategory.id,selectedCategory, user.token);
+            const isSuccess = await updateProductCategory(selectedCategory.id,selectedCategory, user.token);
+            if(!isSuccess){
+              setLoadingCategory(false);
+              return;
+            }
             getProductsCategory();
         }
         setLoadingCategory(false);
@@ -280,7 +301,11 @@ const DashboardAdminProducts = () => {
     const deleteProductCategoryHandler = async(idCategory:number) => {
         setLoadingCategory(true);
         if(user != null){
-            await deleteProductCategory(idCategory,user.token)
+            const isSuccess = await deleteProductCategory(idCategory,user.token)
+            if(!isSuccess){
+              setLoadingCategory(false);
+              return;
+            }
             getProductsCategory();
         }
         setLoadingCategory(false);

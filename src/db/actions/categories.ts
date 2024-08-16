@@ -51,7 +51,7 @@ export const getAllProductsCategory = async( token: string ): Promise<ProductCat
 
 
 
-export const createProductCategory = async (nameCategory: string, token: string): Promise<void> => {
+export const createProductCategory = async (nameCategory: string, token: string): Promise<boolean> => {
   try {
 
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/categories/product`, { name:nameCategory }, {
@@ -62,6 +62,7 @@ export const createProductCategory = async (nameCategory: string, token: string)
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -85,11 +86,12 @@ export const createProductCategory = async (nameCategory: string, token: string)
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
-export const updateProductCategory = async (productCategoryId:Number,productCategory: ProductCategory, token: string): Promise<void> => {
+export const updateProductCategory = async (productCategoryId:Number,productCategory: ProductCategory, token: string): Promise<boolean> => {
   try {
 
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/categories/product/${productCategoryId}`, productCategory, {
@@ -100,6 +102,7 @@ export const updateProductCategory = async (productCategoryId:Number,productCate
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -123,12 +126,13 @@ export const updateProductCategory = async (productCategoryId:Number,productCate
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
 
-export const deleteProductCategory = async(idProductCategory:Number, token:string ):Promise<void> => {
+export const deleteProductCategory = async(idProductCategory:Number, token:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/categories/product/${idProductCategory}`, {
@@ -139,6 +143,7 @@ export const deleteProductCategory = async(idProductCategory:Number, token:strin
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -162,6 +167,7 @@ export const deleteProductCategory = async(idProductCategory:Number, token:strin
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 
 }
@@ -215,7 +221,7 @@ export const getAllExperiencesCategory = async( token: string ): Promise<Experie
 
 
 
-export const createExperienceCategory = async (nameCategory: string, token: string): Promise<void> => {
+export const createExperienceCategory = async (nameCategory: string, token: string): Promise<boolean> => {
   try {
 
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/categories/experience`, { name:nameCategory }, {
@@ -226,6 +232,7 @@ export const createExperienceCategory = async (nameCategory: string, token: stri
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -249,11 +256,12 @@ export const createExperienceCategory = async (nameCategory: string, token: stri
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
-export const updateExperienceCategory = async (experienceCategoryId:Number,experienceCategory: ExperienceCategory, token: string): Promise<void> => {
+export const updateExperienceCategory = async (experienceCategoryId:Number,experienceCategory: ExperienceCategory, token: string): Promise<boolean> => {
   try {
 
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/categories/experience/${experienceCategoryId}`, experienceCategory, {
@@ -264,6 +272,7 @@ export const updateExperienceCategory = async (experienceCategoryId:Number,exper
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -287,12 +296,13 @@ export const updateExperienceCategory = async (experienceCategoryId:Number,exper
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
 
-export const deleteExperienceCategory = async(idExperienceCategory:Number, token:string ):Promise<void> => {
+export const deleteExperienceCategory = async(idExperienceCategory:Number, token:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/categories/experience/${idExperienceCategory}`, {
@@ -302,6 +312,7 @@ export const deleteExperienceCategory = async(idExperienceCategory:Number, token
       }
     });
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -325,6 +336,7 @@ export const deleteExperienceCategory = async(idExperienceCategory:Number, token
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 
 }

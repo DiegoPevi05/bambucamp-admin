@@ -162,7 +162,11 @@ const DashboardAdminGlapings = () => {
         const fieldsValidated = validateFields('form_create_tent');
         if(fieldsValidated != null){
           if(user !== null){
-            await createTent(fieldsValidated, user.token);
+            const isSuccess = await createTent(fieldsValidated, user.token);
+            if(!isSuccess){
+              setLoadingForm(false);
+              return;
+            }
           }
           getTentsHandler(1);
           setImages([]);
@@ -203,17 +207,21 @@ const DashboardAdminGlapings = () => {
 
     const deleteTentHandler = async() => {
         if(user != null && selectedTent != null){
-            await deleteTent(selectedTent.id,user.token)
+            const isSuccess = await deleteTent(selectedTent.id,user.token)
+            if(!isSuccess){
+              return;
+            }
         }
         getTentsHandler(1);
         setOpenDeleteModal(false);
     }
 
-    const onChangeSelectedTent = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, type, checked, value } = e.target;
+    const onChangeSelectedTent = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement >) => {
+        const { name, type, checked, value } = e.target as any;
         const fieldValue = type === 'checkbox' ? checked : value;
 
         setSelectedTent(prevSelectedTent => {
+            if(!prevSelectedTent) return null;
             // Check if the field is part of the services
             if (prevSelectedTent.services.hasOwnProperty(name)) {
                 return {
@@ -240,7 +248,11 @@ const DashboardAdminGlapings = () => {
         if(fieldsValidated != null){
           fieldsValidated.existing_images = JSON.stringify(existingImages);
           if(user !== null && selectedTent != null){
-              await updateTent(selectedTent.id,fieldsValidated, user.token);
+              const isSuccess = await updateTent(selectedTent.id,fieldsValidated, user.token);
+              if(!isSuccess){
+                setLoadingForm(false);
+                return;
+              }
           }
           setImages([]);
           getTentsHandler(1);
@@ -260,8 +272,6 @@ const DashboardAdminGlapings = () => {
 
       return services;
     };
-
-    console.log(images)
 
 
     return (

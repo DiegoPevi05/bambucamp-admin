@@ -114,7 +114,7 @@ export const getAllPromotions = async( token: string, page:Number, filters?:Prom
 
 
 
-export const createPromotion = async (promotion: PromotionFormData, token: string): Promise<void> => {
+export const createPromotion = async (promotion: PromotionFormData, token: string): Promise<boolean> => {
   try {
 
     // Create a new FormData object
@@ -128,6 +128,7 @@ export const createPromotion = async (promotion: PromotionFormData, token: strin
       }
     });
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -151,11 +152,12 @@ export const createPromotion = async (promotion: PromotionFormData, token: strin
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
-export const updatePromotion = async (promotionId:Number,promotion: PromotionFormData, token: string): Promise<void> => {
+export const updatePromotion = async (promotionId:Number,promotion: PromotionFormData, token: string): Promise<boolean> => {
   try {
     // Create a new FormData object
     const formData = serializePromotionToDB(promotion,true);
@@ -169,6 +171,7 @@ export const updatePromotion = async (promotionId:Number,promotion: PromotionFor
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -192,12 +195,13 @@ export const updatePromotion = async (promotionId:Number,promotion: PromotionFor
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 };
 
 
 
-export const deletePromotion = async(idPromotion:Number, token:string ):Promise<void> => {
+export const deletePromotion = async(idPromotion:Number, token:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/promotions/${idPromotion}`, {
@@ -208,6 +212,7 @@ export const deletePromotion = async(idPromotion:Number, token:string ):Promise<
     });
 
     toast.success(response.data.message);
+    return true;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -231,6 +236,7 @@ export const deletePromotion = async(idPromotion:Number, token:string ):Promise<
       toast.error("An unexpected error occurred.");
     }
     console.error(error);
+    return false;
   }
 
 }

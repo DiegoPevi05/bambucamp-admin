@@ -181,8 +181,6 @@ const DashboardAdminPromotions = () => {
             error.errors.forEach(err => {
               const fieldName = err.path[0] as string;
               newErrorMessages[fieldName] = err.message;
-              console.log(fieldName);
-              console.log(err.message);
             });
             setErrorMessages(newErrorMessages);
           }
@@ -196,7 +194,11 @@ const DashboardAdminPromotions = () => {
         const fieldsValidated = validateFields('form_create_promotion');
         if(fieldsValidated != null){
           if(user !== null){
-            await createPromotion(fieldsValidated, user.token);
+            const isSuccess = await createPromotion(fieldsValidated, user.token);
+            if(!isSuccess){
+              setLoadingForm(false);
+              return;
+            }
           }
           getPromotionsHandler(1);
           setImages([]);
@@ -238,13 +240,16 @@ const DashboardAdminPromotions = () => {
 
     const deletePromotionHandler = async() => {
         if(user != null && selectedPromotion != null){
-            await deletePromotion(selectedPromotion.id,user.token)
+            const isSuccess = await deletePromotion(selectedPromotion.id,user.token)
+            if(!isSuccess){
+              return;
+            }
         }
         getPromotionsHandler(1);
         setOpenDeleteModal(false);
     }
 
-    const onChangeSelectedPromotion = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const onChangeSelectedPromotion = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, type, value } = e.target;
         
         // Convert the value to a Date object if the input type is 'date'
@@ -258,6 +263,7 @@ const DashboardAdminPromotions = () => {
         }
 
         setSelectedPromotion(prevSelectedPromotion => {
+            if(!prevSelectedPromotion) return null;
             return {
                 ...prevSelectedPromotion,
                 [name]: fieldValue,
@@ -272,7 +278,11 @@ const DashboardAdminPromotions = () => {
         if(fieldsValidated != null){
           fieldsValidated.existing_images = JSON.stringify(existingImages);
           if(user !== null && selectedPromotion != null){
-              await updatePromotion(selectedPromotion.id,fieldsValidated, user.token);
+              const isSuccess = await updatePromotion(selectedPromotion.id,fieldsValidated, user.token);
+              if(!isSuccess){
+                setLoadingForm(false);
+                return;
+              }
           }
           setImages([]);
           getPromotionsHandler(1);
