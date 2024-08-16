@@ -12,7 +12,8 @@ export const getAllReserveOptions = async(token:string):Promise<optionsReserve|n
 
     const fetchReservesOptions = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
@@ -24,12 +25,21 @@ export const getAllReserveOptions = async(token:string):Promise<optionsReserve|n
   }catch(error){
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error retrieving reserves.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error fetching the reserves options."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -62,7 +72,8 @@ export const getAllReserves = async( token: string, page:Number, filters?:Reserv
 
     const fetchReserves = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
@@ -76,12 +87,21 @@ export const getAllReserves = async( token: string, page:Number, filters?:Reserv
   }catch(error){
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error retrieving reserves.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error fetching the reserves."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -100,14 +120,10 @@ export const createReserve = async (reserve: ReserveFormData, token: string): Pr
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/reserves`, reserve, {
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
-
-    if (response.status === 201) {
-      toast.success("Reserve created successfully.");
-    } else {
-      toast.error("Something went wrong creating the reserve.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
@@ -141,23 +157,29 @@ export const updateReserve = async (reserveId:Number,reserve: ReserveFormData, t
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/reserves/${reserveId}`, reserve, {
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 200) {
-      toast.success("Reserve updated successfully.");
-    } else {
-      toast.error("Something went wrong updating the reserve.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error updating reserves.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error updating the product."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -173,24 +195,30 @@ export const deleteReserve = async(idReserve:Number, token:string ):Promise<void
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/reserves/${idReserve}`, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 200) {
-      toast.success("Reserve deleted successfully.");
-    } else {
-      toast.error("Something went wrong deleting the reserve.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error deleting the reserve.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error deleting the product."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");

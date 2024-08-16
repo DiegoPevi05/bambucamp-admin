@@ -25,7 +25,8 @@ export const getAllDiscountCodes = async( token: string, page:Number, filters?:D
 
     const fetchDiscounts = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
@@ -39,12 +40,21 @@ export const getAllDiscountCodes = async( token: string, page:Number, filters?:D
   }catch(error){
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error fetching discount codes.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error fetching the discount codes."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -63,23 +73,29 @@ export const createDiscountCode = async (discountCode: DiscountCodeFormData, tok
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/discounts`, discountCode, {
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 201) {
-      toast.success("Discount code created successfully.");
-    } else {
-      toast.error("Something went wrong creating the discount code.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error creating the discount code.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error creating the discount code."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -95,23 +111,28 @@ export const updateDiscountCode = async (discountCodeId:Number,discountCode: Dis
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/discounts/${discountCodeId}`, discountCode, {
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
-
-    if (response.status === 200) {
-      toast.success("Discount code updated successfully.");
-    } else {
-      toast.error("Something went wrong updating the discount code.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error updating the discount code.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error updating the discount code."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -127,24 +148,29 @@ export const deleteDiscountCode = async(idDiscountCode:Number, token:string ):Pr
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/discounts/${idDiscountCode}`, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
-
-    if (response.status === 200) {
-      toast.success("Discount code deleted successfully.");
-    } else {
-      toast.error("Something went wrong deleting the discount.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error deleting the discount code.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error deleting the discount code."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");

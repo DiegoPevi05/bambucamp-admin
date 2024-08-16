@@ -28,7 +28,8 @@ export const getAllUsers = async(token:string, page:Number, filters?:UserFilters
 
     const fetchUsers = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
@@ -41,12 +42,21 @@ export const getAllUsers = async(token:string, page:Number, filters?:UserFilters
   }catch(error){
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error fetching users.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error fetching the users."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -64,24 +74,30 @@ export const createUser = async (user: CreateUserFormValues, token: string): Pro
   try {
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/users`, user, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 201) {
-      toast.success("User created successfully.");
-    } else {
-      toast.error("Something went wrong creating the user.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error creating the user.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error creating the user."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -98,24 +114,30 @@ export const updateUser = async (userId:Number,user: EditUserFormValues, token: 
     const payload = password ? { ...userData, password } : userData;
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/users/${userId}`, payload, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 200) {
-      toast.success("User updated successfully.");
-    } else {
-      toast.error("Something went wrong updating the user.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error updating the user.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error updating the user."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -132,24 +154,30 @@ export const deleteUser = async(idUser:Number, token:string ):Promise<void> => {
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/users/${idUser}`, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 200) {
-      toast.success("User deleted successfully.");
-    } else {
-      toast.error("Something went wrong deleting the user..");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error deleting the user.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error deleting the user."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -164,24 +192,30 @@ export const disableUser = async(idUser:Number, token:string ):Promise<void> => 
   try {
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/users/${idUser}/disable`,{}, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 200) {
-      toast.success("User disabled successfully.");
-    } else {
-      toast.error("Something went wrong disabling the user.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error disabling the user.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error disabling the user."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -196,25 +230,29 @@ export const enableUser = async(idUser:Number, token:string ):Promise<void> => {
   try {
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/users/${idUser}/enable`,{}, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
-    console.log(response);
-
-    if (response.status === 200) {
-      toast.success("User enable successfully.");
-    } else {
-      toast.error("Something went wrong enabling the user.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error enabling the user.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error disabling the user."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");

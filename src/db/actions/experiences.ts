@@ -25,7 +25,8 @@ export const getAllExperiences = async( token: string, page:Number, filters?:Exp
 
     const fetchProducts = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
@@ -39,12 +40,21 @@ export const getAllExperiences = async( token: string, page:Number, filters?:Exp
   }catch(error){
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error retrieving experiences.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error fetching the experiences."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -67,23 +77,30 @@ export const createExperience = async (experience: ExperienceFormData, token: st
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 201) {
-      toast.success("Experience created successfully");
-    } else {
-      toast.error("Something went wrong during the creation.");
-    }
+    toast.success(response.data.message);
+
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error creating the experience.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error creating the experience."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -102,23 +119,29 @@ export const updateExperience = async (experienceId:Number,experience: Experienc
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 200) {
-      toast.success("Experience update successfully");
-    } else {
-      toast.error("Something went wrong updating the experience.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error updating the experience.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error udpating the experience."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -134,24 +157,30 @@ export const deleteExperience = async(idExperience:Number, token:string ):Promis
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/experiences/${idExperience}`, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 200) {
-      toast.success("Experience deleted successfully");
-    } else {
-      toast.error("Something went wrong deleting experience.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error deleting the experience.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error deleting the experience."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");

@@ -14,7 +14,8 @@ export const getAllProductsCategory = async( token: string ): Promise<ProductCat
 
     const fetchCategoryProducts = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
@@ -23,12 +24,21 @@ export const getAllProductsCategory = async( token: string ): Promise<ProductCat
   }catch(error){
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error retrieving categories.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error fetching the product category."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -47,23 +57,29 @@ export const createProductCategory = async (nameCategory: string, token: string)
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/categories/product`, { name:nameCategory }, {
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 201) {
-      toast.success("Category of product was created successfully.");
-    } else {
-      toast.error("Something went wrong creating the category of product.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error creating the category of product.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error creating the product category."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -78,24 +94,30 @@ export const updateProductCategory = async (productCategoryId:Number,productCate
 
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/categories/product/${productCategoryId}`, productCategory, {
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 200) {
-      toast.success("Category of product was successfully updated");
-    } else {
-      toast.error("Something went wrong trying to update the category of product.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error updating category of product.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error udpating the product category."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -111,24 +133,30 @@ export const deleteProductCategory = async(idProductCategory:Number, token:strin
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/categories/product/${idProductCategory}`, {
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 200) {
-      toast.success("Category of product deleted successfully");
-    } else {
-      toast.error("Something went wrong updating the category of product.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error updating the category of product.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error deleting the product category."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -150,7 +178,8 @@ export const getAllExperiencesCategory = async( token: string ): Promise<Experie
 
     const fetchCategoryExperiences = await axios.get(url, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
@@ -159,12 +188,21 @@ export const getAllExperiencesCategory = async( token: string ): Promise<Experie
   }catch(error){
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error fetching category of experience.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error fetching the experience categories."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -183,23 +221,29 @@ export const createExperienceCategory = async (nameCategory: string, token: stri
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/categories/experience`, { name:nameCategory }, {
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 201) {
-      toast.success("Category of experience created successfully.");
-    } else {
-      toast.error("Something went wrong creating the category of experience.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error creating the category of experience.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error creating the experience category."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -214,24 +258,30 @@ export const updateExperienceCategory = async (experienceCategoryId:Number,exper
 
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/categories/experience/${experienceCategoryId}`, experienceCategory, {
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
 
-    if (response.status === 200) {
-      toast.success("Category of experience updated successfully.");
-    } else {
-      toast.error("Something went wrong updating the category of experience.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error updating the category of experience.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error updating the experience category."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
@@ -247,24 +297,29 @@ export const deleteExperienceCategory = async(idExperienceCategory:Number, token
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/categories/experience/${idExperienceCategory}`, {
       headers: {
-        Authorization: `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
       }
     });
-
-    if (response.status === 200) {
-      toast.success("Category of experience deleted successfully.");
-    } else {
-      toast.error("Something went wrong deleting the category of experience.");
-    }
+    toast.success(response.data.message);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
-      const errorMessage = error.response?.data?.error || "Error deleting the category of experience.";
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
 
-      if (statusCode) {
-        toast.error(`${errorMessage} (Code: ${statusCode})`);
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
       } else {
-        toast.error(errorMessage);
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error deleting the experience category."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
       }
     } else {
       toast.error("An unexpected error occurred.");
