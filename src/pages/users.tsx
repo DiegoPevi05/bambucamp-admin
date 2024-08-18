@@ -1,17 +1,15 @@
 import Dashboard from "../components/ui/Dashboard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Eye, Pen, X, ChevronLeft, ChevronRight, UserPlus, EyeOff, CircleX, UserX, UserRoundCheck, User as UserIcon, MailCheck, UserPen } from "lucide-react";
 import Button from "../components/ui/Button";
 import { InputRadio } from "../components/ui/Input";
 import { formatFullName, formatDate } from "../lib/utils";
 import { getAllUsers, createUser, deleteUser,disableUser, enableUser, updateUser } from "../db/actions/users";
 import { useAuth } from "../contexts/AuthContext";
-import { User, UserFilters } from "../lib/interfaces";
+import { User, UserFilters, UserFormData } from "../lib/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
 import {fadeIn} from "../lib/motions";
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useForm } from "react-hook-form"
+import { ZodError } from 'zod';
 import { createUserSchema, editUserSchema } from "../db/schemas";
 import Modal from "../components/Modal";
 
@@ -40,31 +38,75 @@ const DashboardAdminUsers = () => {
     const [loadingForm, setLoadingForm] = useState<boolean>(false);
     const [showPassword, setShowPassword] = useState<boolean>(false);
 
-    // Define types based on the schemas
-    type CreateUserFormValues = z.infer<typeof createUserSchema>;
-    type EditUserFormValues = z.infer<typeof editUserSchema>;
+    const [errorMessages, setErrorMessages] = useState<Record<string, string>>({});
 
-    type UserFormValues = CreateUserFormValues | EditUserFormValues;
+    const validateFields = (formname:string): UserFormData |null => {
+        const form = document.getElementById(formname) as HTMLFormElement;
+        const firstName = (form.querySelector('input[name="firstName"]') as HTMLInputElement).value;
+        const lastName = (form.querySelector('input[name="lastName"]') as HTMLTextAreaElement).value;
+        const password = (form.querySelector('input[name="password"]') as HTMLInputElement).value;
+        const email = (form.querySelector('input[name="email"]') as HTMLInputElement).value;
+        const role = (form.querySelector('select[name="role"]') as HTMLInputElement).value;
+        const phoneNumber = (form.querySelector('input[name="phoneNumber"]') as HTMLInputElement).value;
 
-    const schema = currentView == "E" ? editUserSchema : createUserSchema;
+        setErrorMessages({});
 
-    const { register, handleSubmit, formState: { errors }, reset } = useForm<UserFormValues>({
-        resolver: zodResolver(schema),
-    });
+        try {
 
-    const onSubmitCreation = async (data: CreateUserFormValues) => {
-        setLoadingForm(true);
-        if(user !== null){
-            const isSuccess = await createUser(data, user.token);
-            if(!isSuccess){
-                setLoadingForm(false);
-                return;
-            }
-            reset();
+          if(formname == "form_create_user"){
+            createUserSchema.parse({ firstName, lastName, password, email, role, phoneNumber });
+
+            return {
+                firstName,
+                lastName,
+                password,
+                email,
+                role,
+                phoneNumber
+            };
+          }else{
+              // For editing, omit password if it is empty
+              const userData:UserFormData = { firstName, lastName, email, role, phoneNumber };
+
+              if (password) {
+                userData.password = password;
+              }
+
+              editUserSchema.parse(userData); // This will validate only the fields present in `userData`
+
+              return userData;
+          }
+
+        } catch (error) {
+          if (error instanceof ZodError) {
+            const newErrorMessages: Record<string, string> = {};
+            error.errors.forEach(err => {
+              const fieldName = err.path[0] as string;
+              newErrorMessages[fieldName] = err.message;
+            });
+            setErrorMessages(newErrorMessages);
+          }
+          return null;
         }
-        getUsersHandler(1);
+    };
+
+
+    const onSubmitCreation = async (e:FormEvent ) => {
+        e.preventDefault();
+        setLoadingForm(true);
+        const fieldsValidated = validateFields('form_create_user');
+        if(fieldsValidated != null){
+            if(user !== null){
+                const isSuccess = await createUser(fieldsValidated, user.token);
+                if(!isSuccess){
+                    setLoadingForm(false);
+                    return;
+                }
+            }
+            getUsersHandler(1);
+            setCurrentView("L")
+        }
         setLoadingForm(false);
-        setCurrentView("L")
     };
 
     const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
@@ -94,6 +136,19 @@ const DashboardAdminUsers = () => {
 
         getUsersHandler(1,filters);
     }
+
+    const onChangeSelectedUser = (e: React.ChangeEvent<HTMLInputElement  | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        const fieldValue = value;
+
+        setSelectedUser(prevSelectedUser => {
+            if(!prevSelectedUser) return null;
+            return {
+                ...prevSelectedUser,
+                [name]: fieldValue,
+            };
+        });
+    };
 
     const deleteUserHandler = async() => {
         if(user != null && selectedUser != null){
@@ -125,33 +180,23 @@ const DashboardAdminUsers = () => {
         getUsersHandler(1);
     }
 
-    const onSubmitUpdate = async (data: EditUserFormValues) => {
+    const onSubmitUpdate = async (e: FormEvent) => {
+        e.preventDefault()
         setLoadingForm(true);
-        if(user !== null && selectedUser != null){
-            const isSuccess = await updateUser(selectedUser.id,data, user.token);
-            if(!isSuccess){
-                setLoadingForm(false);
-                return;
+        const fieldsValidated = validateFields('form_update_user');
+        if(fieldsValidated != null){
+            if(user !== null && selectedUser != null){
+                const isSuccess = await updateUser(selectedUser.id,fieldsValidated, user.token);
+                if(!isSuccess){
+                    setLoadingForm(false);
+                    return;
+                }
             }
-            reset();
         }
         getUsersHandler(1);
         setLoadingForm(false);
         setCurrentView("L")
     };
-
-    useEffect(() => {
-        if (selectedUser) {
-            reset({
-                firstName: selectedUser.firstName,
-                lastName: selectedUser.lastName,
-                email: selectedUser.email,
-                phoneNumber: selectedUser.phoneNumber,
-                role: selectedUser.role,
-                password: ''
-            });
-        }
-    }, [selectedUser, reset]);
 
 
     return (
@@ -377,21 +422,21 @@ const DashboardAdminUsers = () => {
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
                     <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserPlus/>Agregar Usuario</h2>
 
-                    <form className="w-full h-auto flex flex-col lg:flex-row" onSubmit={handleSubmit(onSubmitCreation)}>
+                    <form id="form_create_user" className="w-full h-auto flex flex-col lg:flex-row" onSubmit={(e)=>onSubmitCreation(e)}>
                         <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
 
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Correo Electronico"}</label>
-                                <input {...register("email")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"}/>
+                                <input name="email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"}/>
                                 <div className="w-full h-6">
-                                  {errors?.email && 
+                                  {errorMessages.email && 
                                     <motion.p 
                                       initial="hidden"
                                       animate="show"
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
-                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.email.message ? errors.email.message : "Correo es requerido."}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{ errorMessages.email }
                                     </motion.p>
                                   }
                                 </div>
@@ -400,17 +445,19 @@ const DashboardAdminUsers = () => {
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="password" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Contraseña"}</label>
                                 <div className="h-auto w-full relative">
-                                  <input {...register("password")} type={showPassword ? "text" : "password"} className="relative w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Contraseña"}/>
+                                  <input name="password" type={showPassword ? "text" : "password"} className="relative w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Contraseña"}/>
                                   <div onClick={()=>setShowPassword(!showPassword)} className="absolute top-0 right-2 h-full w-8 flex justify-center items-center cursor-pointer z-50">{ showPassword ? <EyeOff/> : <Eye />} </div>
                                 </div>
                                 <div className="w-full h-6">
-                                  {errors?.password && 
+                                  {errorMessages.password && 
                                     <motion.p 
                                       initial="hidden"
                                       animate="show"
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
-                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.password.message ? errors.password.message : "Contraseña es requerida."}
+                                        className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{
+                                        errorMessages.password
+                                        }
                                     </motion.p>
                                   }
                                 </div>
@@ -418,15 +465,16 @@ const DashboardAdminUsers = () => {
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Primer Nombre"}</label>
-                                <input {...register("firstName")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"}/>
+                                <input name="firstName" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"}/>
                                 <div className="w-full h-6">
-                                  {errors?.firstName && 
+                                  {errorMessages.firstName && 
                                     <motion.p 
                                       initial="hidden"
                                       animate="show"
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
-                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.firstName.message ? errors.firstName.message : "Nombre es requerido."}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                        {errorMessages.firstName}
                                     </motion.p>
                                   }
                                 </div>
@@ -440,15 +488,16 @@ const DashboardAdminUsers = () => {
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Apellido"}</label>
-                                <input {...register("lastName")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"}/>
+                                <input name="lastName" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"}/>
                                 <div className="w-full h-6">
-                                  {errors?.lastName && 
+                                  {errorMessages.lastName && 
                                     <motion.p 
                                       initial="hidden"
                                       animate="show"
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
-                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.lastName.message ? errors.lastName.message : "Apellido es requerido."}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                        {errorMessages.lastName}
                                     </motion.p>
                                   }
                                 </div>
@@ -456,15 +505,16 @@ const DashboardAdminUsers = () => {
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Celular"}</label>
-                                <input {...register("phoneNumber")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"}/>
+                                <input name="phoneNumber" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"}/>
                                 <div className="w-full h-6">
-                                  {errors?.phoneNumber && 
+                                  {errorMessages.phoneNumber && 
                                     <motion.p 
                                       initial="hidden"
                                       animate="show"
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
-                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.phoneNumber.message ? errors.phoneNumber.message : "Celular es requerido."}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                        {errorMessages.phoneNumber}
                                     </motion.p>
                                   }
                                 </div>
@@ -472,20 +522,19 @@ const DashboardAdminUsers = () => {
 
                             <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                               <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Rol"}</label>
-                              <select {...register("role")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                <option value="">Seleccionar Rol</option>
-                                <option value="SUPERVISOR">SUPERVISOR</option>
+                              <select name="role" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                                 <option value="CLIENT">CLIENTE</option>
+                                <option value="SUPERVISOR">SUPERVISOR</option>
                               </select>
                               <div className="w-full h-6">
-                                {errors?.role && 
+                                {errorMessages.role && 
                                   <motion.p 
                                     initial="hidden"
                                     animate="show"
                                     exit="hidden"
                                     variants={fadeIn("up","", 0, 1)}
                                     className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                      {errors.role.message ? errors.role.message : "Rol es requerido."}
+                                      {errorMessages.role}
                                   </motion.p>
                                 }
                               </div>
@@ -515,21 +564,21 @@ const DashboardAdminUsers = () => {
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
                     <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserPen/>Editar Usuario</h2>
 
-                    <form className="w-full h-auto flex flex-col lg:flex-row" onSubmit={handleSubmit(onSubmitUpdate)}>
+                    <form id='form_update_user' className="w-full h-auto flex flex-col lg:flex-row" onSubmit={(e)=>onSubmitUpdate(e)}>
                         <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Correo Electronico"}</label>
-                                <input {...register("email")} 
+                                  <input  name="email" value ={selectedUser.email} onChange={(e)=>onChangeSelectedUser(e)}
                                   className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"}/>
                                 <div className="w-full h-6">
-                                  {errors?.email && 
+                                  {errorMessages.email && 
                                     <motion.p 
                                       initial="hidden"
                                       animate="show"
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
-                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.email.message ? errors.email.message : "Correo es requerido."}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errorMessages.email}
                                     </motion.p>
                                   }
                                 </div>
@@ -538,19 +587,21 @@ const DashboardAdminUsers = () => {
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="password" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Contraseña"}</label>
                                 <div className="h-auto w-full relative">
-                                  <input {...register("password")} 
-                                    defaultValue={selectedUser.password}
+                                  <input  name="password"
+                                    value={selectedUser.password}
+                                      onChange={(e)=>onChangeSelectedUser(e)}
+
                                     type={showPassword ? "text" : "password"}  className="relative w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Contraseña"}/>
                                   <div onClick={()=>setShowPassword(!showPassword)} className="absolute top-0 right-2 h-full w-8 flex justify-center items-center cursor-pointer z-50">{ showPassword ? <EyeOff/> : <Eye />} </div>
                                 </div>
                                 <div className="w-full h-6">
-                                  {errors?.password && 
+                                  {errorMessages.password && 
                                     <motion.p 
                                       initial="hidden"
                                       animate="show"
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
-                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.password.message ? errors.password.message : "Contraseña es requerida."}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errorMessages.password}
                                     </motion.p>
                                   }
                                 </div>
@@ -558,16 +609,17 @@ const DashboardAdminUsers = () => {
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Primer Nombre"}</label>
-                                <input {...register("firstName")} 
+                                  <input  name="firstName" value={selectedUser.firstName} onChange={(e)=>onChangeSelectedUser(e)}
                                   className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"}/>
                                 <div className="w-full h-6">
-                                  {errors?.firstName && 
+                                  {errorMessages.firstName && 
                                     <motion.p 
                                       initial="hidden"
                                       animate="show"
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
-                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.firstName.message ? errors.firstName.message : "Nombre es requerido."}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                        {errorMessages.firstName}
                                     </motion.p>
                                   }
                                 </div>
@@ -578,15 +630,16 @@ const DashboardAdminUsers = () => {
                         <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Apellido"}</label>
-                                <input {...register("lastName")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"}/>
+                                  <input name="lastName" value={selectedUser.lastName} onChange={(e)=>onChangeSelectedUser(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"}/>
                                 <div className="w-full h-6">
-                                  {errors?.lastName && 
+                                  {errorMessages.lastName && 
                                     <motion.p 
                                       initial="hidden"
                                       animate="show"
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
-                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.lastName.message ? errors.lastName.message : "Apellido es requerido."}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                        {errorMessages.lastName}
                                     </motion.p>
                                   }
                                 </div>
@@ -594,15 +647,16 @@ const DashboardAdminUsers = () => {
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Celular"}</label>
-                                <input {...register("phoneNumber")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"}/>
+                                  <input name="phoneNumber" value={selectedUser.phoneNumber} onChange={(e)=>onChangeSelectedUser(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"}/>
                                 <div className="w-full h-6">
-                                  {errors?.phoneNumber && 
+                                  {errorMessages.phoneNumber && 
                                     <motion.p 
                                       initial="hidden"
                                       animate="show"
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
-                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errors.phoneNumber.message ? errors.phoneNumber.message : "Celular es requerido."}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                        {errorMessages.phoneNumber}
                                     </motion.p>
                                   }
                                 </div>
@@ -610,20 +664,19 @@ const DashboardAdminUsers = () => {
 
                             <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                               <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Rol"}</label>
-                              <select {...register("role")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                <option value="">Seleccionar Rol</option>
-                                <option value="SUPERVISOR">SUPERVISOR</option>
-                                <option value="CLIENT">CLIENTE</option>
+                                <select name="role" onChange={(e)=>onChangeSelectedUser(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                                <option value="CLIENT" selected={selectedUser.role == "CLIENT"}>CLIENTE</option>
+                                <option value="SUPERVISOR" selected={selectedUser.role == "SUPERVISOR"}>SUPERVISOR</option>
                               </select>
                               <div className="w-full h-6">
-                                {errors?.role && 
+                                {errorMessages.role && 
                                   <motion.p 
                                     initial="hidden"
                                     animate="show"
                                     exit="hidden"
                                     variants={fadeIn("up","", 0, 1)}
                                     className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                      {errors.role.message ? errors.role.message : "Rol es requerido."}
+                                      {errorMessages.role}
                                   </motion.p>
                                 }
                               </div>

@@ -1,6 +1,6 @@
 import {ClassValue,clsx} from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import {ReserveIT, ImageInterface, itemPromotion, ReserveTentDto, ReserveProductDto, ReserveExperienceDto, CustomPrice} from './interfaces'
+import {Reserve, ImageInterface, itemPromotion, ReserveTentDto, ReserveProductDto, ReserveExperienceDto, CustomPrice} from './interfaces'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -13,19 +13,19 @@ export const formatFullName = (firstName:string|undefined, lastName:string|undef
   return rtn_str;
 }
 
-export const getTentsNames = (reserve:ReserveIT) => {
+export const getTentsNames = (reserve:Reserve) => {
   if(reserve.tents.length === 0) return "N/A";
-  return reserve.tents.map((tent) => tent.title).join(", ");
+  return reserve.tents.map((tent) => tent.name).join(", ");
 }
 
-export const getProductsNames = (reserve:ReserveIT) => {
+export const getProductsNames = (reserve:Reserve) => {
   if(reserve.products.length === 0) return "N/A";
-  return reserve.products.map((product) => product.title).join(", ");
+  return reserve.products.map((product) => product.name).join(", ");
 }
 
-export const getExperiencesNames = (reserve:ReserveIT) => {
+export const getExperiencesNames = (reserve:Reserve) => {
   if(reserve.experiences.length === 0) return "N/A";
-  return reserve.experiences.map((experience) => experience.title).join(", ");
+  return reserve.experiences.map((experience) => experience.name).join(", ");
 }
 
 export const formatPrice = (price:number) => {

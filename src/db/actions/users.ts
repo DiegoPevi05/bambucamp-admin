@@ -1,9 +1,7 @@
 import {toast} from 'sonner';
 import axios from 'axios';
-import { User, UserFilters } from '../../lib/interfaces';
+import { User, UserFilters, UserFormData } from '../../lib/interfaces';
 import { serializeUser } from '../serializer';
-import {z} from 'zod';
-import { createUserSchema, editUserSchema } from '../schemas';
 
 export const getAllUsers = async(token:string, page:Number, filters?:UserFilters): Promise<{users:User[], totalPages:Number ,currentPage:Number}|null> => {
 
@@ -68,9 +66,7 @@ export const getAllUsers = async(token:string, page:Number, filters?:UserFilters
 }
 
 
-type CreateUserFormValues = z.infer<typeof createUserSchema>;
-
-export const createUser = async (user: CreateUserFormValues, token: string): Promise<boolean> => {
+export const createUser = async (user: UserFormData, token: string): Promise<boolean> => {
   try {
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/users`, user, {
       headers: {
@@ -108,13 +104,9 @@ export const createUser = async (user: CreateUserFormValues, token: string): Pro
   }
 };
 
-type EditUserFormValues = z.infer<typeof editUserSchema>;
-
-export const updateUser = async (userId:Number,user: EditUserFormValues, token: string): Promise<boolean> => {
+export const updateUser = async (userId:Number,user: UserFormData, token: string): Promise<boolean> => {
   try {
-    const { password, ...userData } = user;
-    const payload = password ? { ...userData, password } : userData;
-    const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/users/${userId}`, payload, {
+    const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/users/${userId}`, user, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept-Language':'es'
@@ -149,9 +141,6 @@ export const updateUser = async (userId:Number,user: EditUserFormValues, token: 
     return false;
   }
 };
-
-
-
 
 export const deleteUser = async(idUser:Number, token:string ):Promise<boolean> => {
 

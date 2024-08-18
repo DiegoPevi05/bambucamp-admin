@@ -22,6 +22,15 @@ export interface UserFilters {
   role?: string;
 }
 
+export interface UserFormData {
+  firstName: string;
+  lastName: string;
+  password?: string;
+  email: string;
+  role: string;
+  phoneNumber:string;
+}
+
 export interface ImageInterface {
   url: string;
   file: File;
@@ -266,6 +275,7 @@ export interface ReserveTentDto {
   name:string;
   price:number;
   quantity:number;
+  tentDB?:Tent;
 }
 
 export interface ReserveProductDto {
@@ -273,6 +283,7 @@ export interface ReserveProductDto {
   name:string;
   price:number;
   quantity:number;
+  productDB?:Product;
 }
 
 export interface ReserveExperienceDto {
@@ -280,6 +291,7 @@ export interface ReserveExperienceDto {
   name:string;
   price:number;
   quantity:number;
+  experienceDB?:Experience;
 }
 
 export interface Reserve {
@@ -334,4 +346,13 @@ export interface ReserveFormData {
   canceled_status: boolean;
   paymentStatus: string;
   aditionalPeople: number;
+}
+
+export interface NotificationIT {
+  id: number;
+  type : string;
+  title:string;
+  preview:string;
+  description:string;
+  date:string;
 }

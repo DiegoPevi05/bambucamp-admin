@@ -375,3 +375,38 @@ export const serializeReserve = (data:any):Reserve|null => {
   };
   return reserve;
 }
+
+export const serializeMyReserves = (data:any):Reserve|null => {
+  let reserve = serializeReserve(data);
+
+  reserve?.tents?.forEach((tent) => {
+    if (tent?.tentDB) {
+      const serialized = serializeTent(tent.tentDB);
+      if (serialized != null) {
+        tent.tentDB = serialized;
+      }
+    }
+  });
+
+  reserve?.experiences?.forEach((experience) => {
+    if (experience?.experienceDB) {
+      const serialized = serializeExperience(experience.experienceDB);
+      if (serialized != null) {
+        experience.experienceDB = serialized;
+      }
+    }
+  });
+
+  reserve?.products?.forEach((product) => {
+    if (product?.productDB) {
+      const serialized = serializeProduct(product.productDB);
+      if (serialized != null) {
+        product.productDB = serialized;
+      }
+    }
+  });
+
+  return reserve;
+}
+
+

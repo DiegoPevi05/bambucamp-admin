@@ -3,7 +3,7 @@ import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { Eye, Pen, X, ChevronLeft, ChevronRight, Tent as TentIcon, CircleX, User as UserIcon, Blocks, Image } from "lucide-react";
 import Button from "../components/ui/Button";
 import { InputRadio } from "../components/ui/Input";
-import {  formatDate, getLabelService, createImagesArray } from "../lib/utils";
+import {  formatDate, getLabelService, createImagesArray, formatToISODate } from "../lib/utils";
 import { getAllTents, createTent, deleteTent, updateTent } from "../db/actions/tents";
 import { useAuth } from "../contexts/AuthContext";
 import { Tent, TentFilters, TentFormData, CustomPrice, ImageInterface } from "../lib/interfaces";
@@ -86,11 +86,12 @@ const DashboardAdminGlapings = () => {
 
       const dateFrom = new Date(dateFromInput.value);
       const dateTo = new Date(dateToInput.value);
+
       const price = parseFloat(priceInput.value);
 
       if (!isNaN(dateFrom.getTime()) && !isNaN(dateTo.getTime()) && !isNaN(price)) {
-        dateFrom.setHours(12, 0, 0, 0);
-        dateTo.setHours(12, 0, 0, 0);
+        dateFrom.setUTCHours(5, 0, 0, 0);
+        dateTo.setUTCHours(5, 0, 0, 0);
 
         if(dateFrom > dateTo){
           toast.error("La fecha de inicio debe ser menor que la fecha de Fin");
@@ -453,10 +454,10 @@ const DashboardAdminGlapings = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Desde: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
+                                              Desde: <label className="text-tertiary ml-2 text-xs">{formatToISODate(price.dateFrom)}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Hasta: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
+                                              Hasta: <label className="text-tertiary ml-2 text-xs">{formatToISODate(price.dateTo)}</label>
                                             </span>
                                             <span className="w-[30%]">
                                               Precio: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
@@ -705,10 +706,10 @@ const DashboardAdminGlapings = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Desde: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
+                                              Desde: <label className="text-tertiary ml-2 text-xs">{formatToISODate(price.dateFrom)}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Hasta: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
+                                              Hasta: <label className="text-tertiary ml-2 text-xs">{formatToISODate(price.dateTo)}</label>
                                             </span>
                                             <span className="w-[30%]">
                                               Precio: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
@@ -1038,10 +1039,10 @@ const DashboardAdminGlapings = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Desde: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
+                                              Desde: <label className="text-tertiary ml-2 text-xs">{formatToISODate(price.dateFrom)}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Hasta: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
+                                              Hasta: <label className="text-tertiary ml-2 text-xs">{formatToISODate(price.dateTo)}</label>
                                             </span>
                                             <span className="w-[30%]">
                                               Precio: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
