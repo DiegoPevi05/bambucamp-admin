@@ -94,7 +94,7 @@ const DashboardAdminReserves = () => {
       }else if(type == "experience"){
         data = datasetReservesOptions.experiences.find((i)=> i.id == id);
         if(data){
-          const newOption: ReserveExperienceDto = { idExperience: id , name: data.name , quantity, price:calculatePrice (data.price,data.custom_price, no_custom_price)  };
+          const newOption: ReserveExperienceDto = { idExperience: id , name: data.name , quantity, price:calculatePrice (data.price,data.custom_price, no_custom_price) , day: new Date() };
           setExperiences([...experiences, newOption]);
         }
       } 
@@ -1967,7 +1967,7 @@ const DashboardAdminReserves = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Experiencia: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                              Experiencia: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                             </span>
                                             <span className="w-[30%]">
                                               Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>

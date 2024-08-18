@@ -24,6 +24,12 @@ export const serializeUser = (data:any):User|null => {
 
 }
 
+const formatImagePaths = (images: string[]): string[] => {
+  return images.map(image => 
+    image.replace(/\\/g, '/')
+  );
+};
+
 export const serializeTent = (data:any):Tent|null => {
   let tent:Tent|null = null;
 
@@ -35,7 +41,7 @@ export const serializeTent = (data:any):Tent|null => {
     header: data.header,
     title:data.title,
     description: data.description,
-    images: data.images ? data.images.map((image:string) => image.replace(/\\/g, '/')) : [],
+    images: formatImagePaths(data.images || []),
     qtypeople: data.qtypeople || 0,
     qtykids: data.qtykids || 0,
     price: data.price || 0,
@@ -45,6 +51,7 @@ export const serializeTent = (data:any):Tent|null => {
     createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
     updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
   };
+
   return tent;
 }
 
@@ -407,6 +414,19 @@ export const serializeMyReserves = (data:any):Reserve|null => {
   });
 
   return reserve;
+}
+
+export const serializeMyReservesCalendar = (data:any):{ id:number, dateFrom:Date, dateTo:Date } |null => {
+
+  let reserve:{ id:number, dateFrom:Date, dateTo:Date }|null = null;
+
+  reserve = {
+    id: data.id,
+    dateFrom: data.dateFrom ? convertStrToCurrentTimezoneDate(data.dateFrom) : data.dateFrom,
+    dateTo: data.dateTo ? convertStrToCurrentTimezoneDate(data.dateTo) : data.dateTo,
+  };
+
+  return reserve 
 }
 
 

@@ -29,13 +29,6 @@ export const generateCalendar = (currentDate:Date, reservedDates?:{ reserveID:nu
   // Add days from the current month
   for (let i = 1; i <= totalDaysInMonth; i++) {
     const currentIterationDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i, 12, 0, 0, 0);
-    if(currentIterationDate < today){
-      calendarDays.push(
-        <span key={`past-${i}`} className="bg-gray-100 flex items-center justify-center h-10 text-gray-400 rounded-xl">
-          {i}
-        </span>
-      );
-    }else{
       const reserve = reservedDates?.find((reserve) => reserve.checkin <= currentIterationDate && reserve.checkout >= currentIterationDate);
       if (reserve) {
         calendarDays.push(
@@ -48,18 +41,16 @@ export const generateCalendar = (currentDate:Date, reservedDates?:{ reserveID:nu
             {i}
           </span>
         );
-      }else{
-        calendarDays.push(
-          <span key={`current-${i}`} 
-            onClick={handleSelectedDate ? () => handleSelectedDate(currentIterationDate) : undefined}
-            className={`cursor-pointer bg-white text-secondary flex items-center justify-center h-10 hover:bg-secondary hover:text-white duration-300 rounded-xl 
-            ${currentDate.getDate() === i  && currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear() ? "border-2 border-slate-400": "" }`}>
-            {i}
-          </span>
-        );
-      } 
+    }else{
+      calendarDays.push(
+        <span key={`current-${i}`} 
+          onClick={handleSelectedDate ? () => handleSelectedDate(currentIterationDate) : undefined}
+          className={`cursor-pointer bg-white text-secondary flex items-center justify-center h-10 hover:bg-secondary hover:text-white duration-300 rounded-xl 
+          ${currentDate.getDate() === i  && currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear() ? "border-2 border-slate-400": "" }`}>
+          {i}
+        </span>
+      );
     } 
-
   }
 
   // Add days from the next month

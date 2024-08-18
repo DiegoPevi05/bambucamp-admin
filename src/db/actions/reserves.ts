@@ -1,7 +1,59 @@
 import {toast} from 'sonner';
 import axios from 'axios';
 import { Reserve, ReserveFilters, ReserveFormData, optionsReserve } from '../../lib/interfaces';
-import {serializeMyReserves, serializeReserve, serializeReserveOptions } from '../serializer';
+import {serializeMyReserves, serializeMyReservesCalendar, serializeReserve, serializeReserveOptions } from '../serializer';
+
+export const getAllMyReservesCalendar = async(token:string, page:Number):Promise<{reserves:{ id:number, dateFrom:Date, dateTo:Date }[]} |null> => {
+  let data:{ reserves:{ id:number, dateFrom:Date, dateTo:Date }[]}  | null = null;
+  try{
+
+    // Create a URLSearchParams object to construct the query string
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+
+    // Construct the URL with query parameters
+    const url = `${import.meta.env.VITE_BACKEND_URL}/reserves/me/admin/calendar?${params.toString()}`;
+
+    const fetchReserves = await axios.get(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':'es'
+      }
+    });
+
+    data = {
+      reserves: fetchReserves.data.reserves.map((reserve: any) => serializeMyReservesCalendar(reserve)),
+    }
+
+
+
+  }catch(error){
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
+
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
+      } else {
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error fetching the dashboard reserves."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
+      }
+    } else {
+      toast.error("An unexpected error occurred.");
+    }
+    console.error(error);
+  }
+
+  return data;
+}
 
 export const getAllMyReserves = async(token:string, page:Number):Promise<{reserves:Reserve[], totalPages:Number ,currentPage:Number}|null> => {
   let data:{ reserves:Reserve[],totalPages:Number,currentPage:Number } | null = null;

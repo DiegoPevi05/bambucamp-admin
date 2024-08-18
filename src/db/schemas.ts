@@ -157,7 +157,8 @@ const ReserveExperienceDtoSchema = z.object({
   idExperience: z.number().positive({ message: 'El id de la experiencia debe ser un número positivo' }),
   name: z.string().nonempty({ message: 'El nombre es requerido' }),
   price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
-  quantity: z.number().positive({ message: 'La cantidad debe ser un número positivo' })
+  quantity: z.number().positive({ message: 'La cantidad debe ser un número positivo' }),
+  day:z.date()
 });
 
 // Define the main ReserveFormData schema

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { fadeIn, fadeOnly } from "../lib/motions";
 import  Button from "../components/ui/Button";
 import { CalendarCheck, DoorClosed, Tent as TentIcon, Pizza,  DoorOpen,Coins,CircleSlash, CreditCard, FlameKindling, Eye, Plus, Info, CircleX, CircleCheck, User  } from "lucide-react"
-import { Experience, NotificationIT, Product, Reserve, Tent } from "../lib/interfaces";
+import { Experience, NotificationIT, Reserve, Tent } from "../lib/interfaces";
 import Modal from "../components/Modal";
 import Dashboard from "../components/ui/Dashboard";
 import { InputRadio } from "../components/ui/Input";
@@ -11,7 +11,7 @@ import { getTentsNames, getProductsNames, getExperiencesNames, formatPrice, form
 import ServiceItem from "../components/ServiceItem";
 import Calendar from "../components/Calendar";
 import {useAuth} from "../contexts/AuthContext";
-import {getAllMyReserves} from "../db/actions/reserves";
+import {getAllMyReserves, getAllMyReservesCalendar} from "../db/actions/reserves";
 
 
 interface NotificationCardProps {
@@ -175,6 +175,7 @@ const ReserveCard = (props:ReserveCardProps) => {
                 placeholder={"Glampings"} 
                 rightIcon={<TentIcon/>} 
                 checked={openDetails === "tents"}
+                readOnly
               />
               <InputRadio  
                 className="w-auto" 
@@ -183,6 +184,7 @@ const ReserveCard = (props:ReserveCardProps) => {
                 placeholder={"Productos"} 
                 rightIcon={<Pizza/>}
                 checked={openDetails === "products"}
+                readOnly
               />
               <InputRadio  
                 className="w-auto" 
@@ -191,6 +193,7 @@ const ReserveCard = (props:ReserveCardProps) => {
                 placeholder={"Experiencias"} 
                 rightIcon={<FlameKindling/>}
                 checked={openDetails === "experiences"}
+                readOnly
               />
             </div>
             <div className="w-full h-auto">
@@ -212,6 +215,7 @@ const ReserveCard = (props:ReserveCardProps) => {
                           rightIcon={<TentIcon/>} 
                           onClick={()=>setSelectedOption(index)}
                           checked={selectedOption === index}
+                          readOnly
                         />
                       )
                     ))
@@ -219,13 +223,6 @@ const ReserveCard = (props:ReserveCardProps) => {
                     <div className="w-full h-[200px] flex justify-center items-center flex-col">
                       <TentIcon className="h-12 w-12"/>
                       <p className="text-secondary text-sm">{"No hay glampings disponsibles"}</p>
-                      <Button 
-                        className="w-auto mt-4"
-                        effect="default"
-                        size="sm" 
-                        variant="ghostLight" 
-                        rightIcon={<Plus/>}
-                      >{"Agregar Tienda"}</Button>
                     </div>
                     }
                   </motion.div>
@@ -240,19 +237,10 @@ const ReserveCard = (props:ReserveCardProps) => {
                   className="w-full flex flex-col gap-y-6 py-4">
                   {reserve.products.length > 0 ? (
                     <>
-                      <div className="w-full h-auto flex flex-row justify-end items-center">
-                        <Button 
-                          className="w-auto mt-4"
-                          effect="default"
-                          size="sm" 
-                          variant="ghostLight" 
-                          rightIcon={<Plus/>}
-                        >Agregar Producto</Button>
-                      </div>
                       {reserve.products.map((product, index) => (
                         <div key={"product"+index} className="flex flex-row w-full border border-2 border-gray-200 p-2 rounded-lg">
                           <div className="w-48 h-24 bg-gray-200 rounded-lg">
-                            <img src={product?.productDB?.images[0]} alt={product?.productDB?.name} className="w-full h-full object-cover"/>
+                            <img src={`${import.meta.env.VITE_BACKEND_URL}/${product?.productDB?.images[0]}`} alt={product?.productDB?.name} className="w-full h-full object-cover"/>
                           </div>
                           <div className="w-full h-auto flex flex-col gap-y-2 px-4">
                             <p className="text-primary text-sm">{product?.productDB?.name}</p>
@@ -276,13 +264,6 @@ const ReserveCard = (props:ReserveCardProps) => {
                     <div className="w-full h-[200px] flex justify-center items-center flex-col">
                       <Pizza className="h-12 w-12"/>
                       <p className="text-secondary text-sm">No hay productos disponibles</p>
-                      <Button 
-                        className="w-auto mt-4"
-                        effect="default"
-                        size="sm" 
-                        variant="ghostLight" 
-                        rightIcon={<Plus/>}
-                      >Agregar producto</Button>
                     </div>
                   }
                 </motion.div>
@@ -309,29 +290,16 @@ const ReserveCard = (props:ReserveCardProps) => {
                               rightIcon={<FlameKindling/>} 
                               onClick={()=>setSelectedOption(index)}
                               checked={selectedOption === index}
+                              readOnly
                             />
                         ))
                       }
-                      <Button 
-                        className="w-auto ml-auto"
-                        effect="default"
-                        size="sm" 
-                        variant="ghostLight" 
-                        rightIcon={<Plus/>}
-                      >Agregar Experiencia</Button>
                     </>
                   )
                   :
                     <div className="w-full h-[200px] flex justify-center items-center flex-col">
                       <FlameKindling className="h-12 w-12"/>
                       <p className="text-secondary text-sm">No hay experiencias disponibles</p>
-                      <Button 
-                        className="w-auto mt-4"
-                        effect="default"
-                        size="sm" 
-                        variant="ghostLight" 
-                        rightIcon={<Plus/>}
-                      >Agregar Experiencia</Button>
                     </div>
                   }
                 </motion.div>
@@ -364,7 +332,7 @@ const ReserveCard = (props:ReserveCardProps) => {
                     </div>
                   </div>
                   <div className="h-full w-[25%] flex justify-center items-center overflow-hidden p-2">
-                    <img src={selectedTent.images[0]} alt={selectedTent.title} className="w-full h-auto object-cover"/>
+                    <img src={`${import.meta.env.VITE_BACKEND_URL}/${selectedTent.images[0]}`} alt={selectedTent.title} className="w-full h-auto object-cover"/>
                   </div>
                 </div>
                 <div className="h-[30%] w-full px-4 py-2 flex flex-col bg-secondary">
@@ -429,7 +397,7 @@ const ReserveCard = (props:ReserveCardProps) => {
                   </div>
                 </div>
                 <div className="h-full w-[25%] flex justify-center items-center overflow-hidden p-2">
-                  <img src={selectedExperience.images[0]} alt={selectedExperience.name} className="w-auto h-full object-cover"/>
+                  <img src={`${import.meta.env.VITE_BACKEND_URL}/${selectedExperience.images[0]}`} alt={selectedExperience.name} className="w-auto h-full object-cover"/>
                 </div>
               </div>
               <div className="h-[20%] w-full px-4 py-2 flex flex-col bg-secondary">
@@ -454,12 +422,15 @@ const DashboardReserves = () => {
     const { user } = useAuth();
 
     const [datasetReserves,setDataSetReserves] = useState<{reserves:Reserve[],totalPages:Number,currentPage:Number}>({reserves:[],totalPages:1,currentPage:1});
+    const [datasetReserveCalendar,setDataSetReservesCalendar] = useState<{ reserves: { id:number, dateFrom:Date, dateTo:Date }[] }>({reserves:[]})
     const [currentDate, setCurrentDate] = useState<Date>(new Date());
     const [currentView,setCurrentView] = useState<string>("LOADING");
 
+
     useEffect(()=>{
         getMyReservesHandler(1);
-    },[])
+        getMyReservesCalendarHandler(0);
+    },[]);
 
     const getMyReservesHandler = async (page:Number) => {
         setCurrentView("LOADING");
@@ -472,14 +443,34 @@ const DashboardReserves = () => {
         }
     }
 
+    const getMyReservesCalendarHandler = async (page:Number) => {
+        if(user != null){
+            const reservesCalendar  = await getAllMyReservesCalendar(user.token,page);
+            if(reservesCalendar){
+                setDataSetReservesCalendar(reservesCalendar);
+            }
+        }
+    }
+
     const handleNextMonth = () => {
-        setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)));
+        // Calculate the target month and year based on the page
+        const targetDate = new Date(currentDate.setMonth(currentDate.getMonth() + 1));
+        setCurrentDate(targetDate);
       }
 
     const handlePreviousMonth = () => {
-        setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)));
-      }
-      const calendarDays = Calendar(currentDate, datasetReserves.reserves.map((reserve) => ({ reserveID:reserve.id , checkin: reserve.dateFrom, checkout: reserve.dateTo })));
+        const targetDate = new Date(currentDate.setMonth(currentDate.getMonth() - 1));
+        setCurrentDate(targetDate);
+    }
+
+    useEffect(()=>{
+      const today = new Date();
+      const currentMonth = currentDate.getMonth() - today.getMonth();
+      getMyReservesCalendarHandler(currentMonth);
+
+    },[currentDate])
+
+    const calendarDays = Calendar(currentDate, datasetReserveCalendar.reserves.map((reserve) => ({ reserveID:reserve.id , checkin: reserve.dateFrom, checkout: reserve.dateTo })));
 
     return (
 
@@ -527,7 +518,7 @@ const DashboardReserves = () => {
                         <div className="flex flex-row justify-between items-center mb-4 px-4">
                           <button className="text-secondary hover:text-primary duration-300" onClick={handlePreviousMonth}>{"Anterior"}</button>
                           <h1 className="text-secondary">{currentDate.getMonth()+1 +"/"+ currentDate.getFullYear()}</h1>
-                          <button className="text-secondary hover:text-primary duration-300" onClick={handleNextMonth}>{"Next"}</button>
+                          <button className="text-secondary hover:text-primary duration-300" onClick={handleNextMonth}>{"Siguiente"}</button>
                         </div>
                         <div className="grid grid-cols-7 gap-2 p-2">
                           {calendarDays}
