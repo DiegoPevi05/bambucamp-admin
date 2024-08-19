@@ -2,7 +2,7 @@ import { useState,useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fadeIn, fadeOnly } from "../lib/motions";
 import  Button from "../components/ui/Button";
-import { CalendarCheck, DoorClosed, Tent as TentIcon, Pizza,  DoorOpen,Coins,CircleSlash, CreditCard, FlameKindling, Eye, Plus, Info, CircleX, CircleCheck, User  } from "lucide-react"
+import { CalendarCheck, DoorClosed, Tent as TentIcon, Pizza,  DoorOpen,Coins,CircleSlash, CreditCard, FlameKindling, Eye, Plus, Info, CircleX, CircleCheck, User, ChevronRight, ChevronLeft  } from "lucide-react"
 import { Experience, NotificationIT, Reserve, Tent } from "../lib/interfaces";
 import Modal from "../components/Modal";
 import Dashboard from "../components/ui/Dashboard";
@@ -527,13 +527,18 @@ const DashboardReserves = () => {
                   </AnimatePresence>
                 </div>
 
-                <div className="bg-white p-4 rounded-lg shadow-lg border-2 border-gray-200 col-span-1 row-span-3">
+                <div className="bg-white p-4 rounded-lg shadow-lg border-2 border-gray-200 col-span-1 row-span-3 flex flex-col">
                   <h1 className="text-lg flex flex-row gap-x-2 text-secondary"><TentIcon/>Reservas</h1>
                   <p className="font-secondary text-tertiary text-md">{"Mira tus reservas aqui"}</p>
+
                   <div className="w-full h-[80%] flex flex-col overflow-y-scroll">
                     {datasetReserves.reserves.map((reserve, index) => (
                       <ReserveCard key={index} reserve={reserve}/>
                     ))}
+                  </div>
+                  <div className="flex flex-row justify-between w-full mt-auto">
+                      <Button onClick={ () => getMyReservesHandler( Number(datasetReserves.currentPage) - 1)} size="sm" variant="dark" effect="default" isRound={true} disabled={datasetReserves.currentPage == 1}> <ChevronLeft/>  </Button>
+                      <Button onClick={ () => getMyReservesHandler( Number(datasetReserves.currentPage) + 1)} size="sm" variant="dark" effect="default" isRound={true} disabled={datasetReserves.currentPage >= datasetReserves.totalPages}> <ChevronRight/> </Button>
                   </div>
                 </div>
 
