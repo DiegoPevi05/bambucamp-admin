@@ -2,8 +2,8 @@ import { useState,useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fadeIn, fadeOnly } from "../lib/motions";
 import  Button from "../components/ui/Button";
-import { CalendarCheck, DoorClosed, Tent as TentIcon, Pizza,  DoorOpen,Coins,CircleSlash, CreditCard, FlameKindling, Eye, Plus, Info, CircleX, CircleCheck, User, ChevronRight, ChevronLeft  } from "lucide-react"
-import { Experience, NotificationIT, Reserve, Tent } from "../lib/interfaces";
+import { CalendarCheck, DoorClosed, Tent as TentIcon, Pizza,  DoorOpen,Coins,CircleSlash, CreditCard, FlameKindling, Eye, Info, CircleX, CircleCheck, User, ChevronRight, ChevronLeft  } from "lucide-react"
+import { Experience, NotificationDto, Reserve, Tent } from "../lib/interfaces";
 import Modal from "../components/Modal";
 import Dashboard from "../components/ui/Dashboard";
 import { InputRadio } from "../components/ui/Input";
@@ -12,10 +12,11 @@ import ServiceItem from "../components/ServiceItem";
 import Calendar from "../components/Calendar";
 import {useAuth} from "../contexts/AuthContext";
 import {getAllMyReserves, getAllMyReservesCalendar} from "../db/actions/reserves";
+import {getAllNotifications} from "../db/actions/notifications";
 
 
 interface NotificationCardProps {
-  notification: NotificationIT;
+  notification: NotificationDto;
 }
 
 const NotificationCard = (props:NotificationCardProps) => {
@@ -33,18 +34,19 @@ const NotificationCard = (props:NotificationCardProps) => {
         onClick={()=>setOpenModal(true)}
         className="bg-white p-2 rounded-xl shadow-lg border-2 border-gray-200 w-full h-auto relative flex flex-col hover:bg-secondary duration-300 cursor-pointer group active:scale-95">
         <div className="w-full h-auto flex flex-row gap-x-2">
-          { notification.type === "E" && <CircleX className="h-5 w-5 text-tertiary"/>}
-          { notification.type === "S" && <CircleCheck className="h-5 w-5 text-tertiary"/>}
-          { notification.type === "I" && <Info className="h-5 w-5 text-tertiary"/>}
+          { notification.type === "ERROR" && <CircleX className="h-5 w-5 text-tertiary"/>}
+          { notification.type === "SUCCESS" && <CircleCheck className="h-5 w-5 text-tertiary"/>}
+          { notification.type === "INFORMATION" && <Info className="h-5 w-5 text-tertiary"/>}
           <h2 className="group-hover:text-tertiary">{notification.title}</h2>
+          <h3 className="ml-auto text-xs text-secondary">{formatDate(notification.date)}</h3>
         </div>
         <p className="text-sm text-secondary group-hover:text-white font-secondary">{notification.preview}</p>
       </motion.div>
       <Modal isOpen={openModal} onClose={()=>setOpenModal(false)}>
         <div className="w-full h-auto flex flex-col items-center justify-center text-secondary p-12">
-          { notification.type === "E" && <CircleX className="h-[60px] w-[60px] text-tertiary"/>}
-          { notification.type === "S" && <CircleCheck className="h-[60px] w-[60px] text-tertiary"/>}
-          { notification.type === "I" && <Info className="h-[60px] w-[60px] text-tertiary"/>}
+          { notification.type === "ERROR" && <CircleX className="h-[60px] w-[60px] text-tertiary"/>}
+          { notification.type === "SUCCESS" && <CircleCheck className="h-[60px] w-[60px] text-tertiary"/>}
+          { notification.type === "INFORMATION" && <Info className="h-[60px] w-[60px] text-tertiary"/>}
           <p className="text-primary">{notification.title}</p>
           <p className="text-sm mt-6 text-secondary">{notification.description}</p>
         </div>
@@ -365,7 +367,20 @@ const ReserveCard = (props:ReserveCardProps) => {
                     <div className="w-[50%] h-full flex flex-col">
                       <div className="w-full h-auto flex flex-row gap-x-6 mt-4">
                         <p className="text-primary text-sm">Dia y Hora:</p>
-                        <p className="text-gray-400 text-sm">{ selectedExperience.duration}</p>
+                        <p className="text-gray-400 text-sm">
+                          {(() => {
+                            const selectedExperienceItem = reserve?.experiences.find(i => i.idExperience === selectedExperience.id);
+                            return selectedExperienceItem?.day
+                              ? selectedExperienceItem.day.toString()
+                              : "No hay dia definido";
+                          })()}
+                        </p>
+                      </div>
+                      <div className="w-full h-auto flex flex-row gap-x-6 mt-4">
+                        <p className="text-primary text-sm">Duracion:</p>
+                        <p className="text-gray-400 text-sm">
+                          { `${selectedExperience.duration} min.`  }
+                        </p>
                       </div>
                       <div className="w-full h-auto flex flex-row gap-x-6 mt-4">
                         <p className="text-primary text-sm">Cantidad de Personas:</p>
@@ -387,11 +402,15 @@ const ReserveCard = (props:ReserveCardProps) => {
                       </div>
                       <div className="w-full h-auto flex flex-row gap-x-6 mt-4">
                         <p className="text-primary text-sm">Cantidad</p>
-                        <p className="text-gray-400 text-sm">{selectedExperience.qtypeople}</p>
+                        <p className="text-gray-400 text-sm">{ reserve.experiences.find(i => i.idExperience === selectedExperience.id)?.quantity }</p>
                       </div>
                       <div className="w-full h-auto flex flex-row gap-x-6 mt-auto border-t-2 border-secondary p-2">
                         <p className="text-primary text-sm">Importe Total:</p>
-                        <p className="text-gray-400 text-sm">{formatPrice( selectedExperience.qtypeople ? selectedExperience.price * selectedExperience.qtypeople : 0)}</p>
+                          <p className="text-gray-400 text-sm">
+                            {formatPrice(
+                              (reserve?.experiences.find(i => i.idExperience === selectedExperience.id)?.quantity ?? 0) * selectedExperience.price
+                            )}
+                          </p>
                       </div>
                     </div>
                   </div>
@@ -423,13 +442,18 @@ const DashboardReserves = () => {
 
     const [datasetReserves,setDataSetReserves] = useState<{reserves:Reserve[],totalPages:Number,currentPage:Number}>({reserves:[],totalPages:1,currentPage:1});
     const [datasetReserveCalendar,setDataSetReservesCalendar] = useState<{ reserves: { id:number, dateFrom:Date, dateTo:Date }[] }>({reserves:[]})
+
+    const [dataNotifications,setDataNotifications] = useState<{notifications:NotificationDto[], totalPages:Number, currentPage:Number}>({notifications:[],totalPages:1, currentPage:1})
     const [currentDate, setCurrentDate] = useState<Date>(new Date());
     const [currentView,setCurrentView] = useState<string>("LOADING");
+
+    console.log(datasetReserves);
 
 
     useEffect(()=>{
         getMyReservesHandler(1);
         getMyReservesCalendarHandler(0);
+        getMyNotifications(1);
     },[]);
 
     const getMyReservesHandler = async (page:Number) => {
@@ -448,6 +472,16 @@ const DashboardReserves = () => {
             const reservesCalendar  = await getAllMyReservesCalendar(user.token,page);
             if(reservesCalendar){
                 setDataSetReservesCalendar(reservesCalendar);
+            }
+        }
+    }
+
+    const getMyNotifications = async (page:Number) => {
+        setCurrentView("LOADING");
+        if(user != null){
+            const notifications  = await getAllNotifications(user.token,page);
+            if(notifications){
+                setDataNotifications(notifications);
             }
         }
     }
@@ -546,11 +580,9 @@ const DashboardReserves = () => {
                   <h1 className="text-lg flex flex-row gap-x-2 text-secondary"><CalendarCheck/>Noticias</h1>
                   <p className="font-secondary text-md text-tertiary">{"Aqui estan las ultimas notificaciones"}</p>
                   <div className="w-full h-[60%] flex flex-col overflow-y-scroll gap-y-4 mt-4">
-                    {/*
-                      {notificationsData.map((notification, index) => (
+                      {dataNotifications.notifications.map((notification, index) => (
                         <NotificationCard key={index} notification={notification}/>
                       ))}
-                    */}
                   </div>
                 </div>
             </motion.div>

@@ -1,4 +1,4 @@
-import { User, Tent, Product, TentFormData, ProductFormData, ProductCategory, ExperienceCategory, Experience, ExperienceFormData, DiscountCode, Promotion,PromotionFormData, optionsPromotion, optionsReserve, Reserve } from "../lib/interfaces"
+import { User, Tent, Product, TentFormData, ProductFormData, ProductCategory, ExperienceCategory, Experience, ExperienceFormData, DiscountCode, Promotion,PromotionFormData, optionsPromotion, optionsReserve, Reserve, NotificationDto } from "../lib/interfaces"
 import { convertStrToCurrentTimezoneDate } from "../lib/utils";
 
 export const serializeUser = (data:any):User|null => {
@@ -427,6 +427,23 @@ export const serializeMyReservesCalendar = (data:any):{ id:number, dateFrom:Date
   };
 
   return reserve 
+}
+
+export const serializeNotification = (data:any): NotificationDto | null => {
+
+  let notification:NotificationDto|null = null;
+
+  notification = {
+    id:data.id,
+    title: data.title,
+    preview: data.preview,
+    description: data.description,
+    type: data.type,
+    date: data.date ? convertStrToCurrentTimezoneDate(data.date) : data.date,
+    isRead: data.isRead
+  }
+
+  return notification;
 }
 
 

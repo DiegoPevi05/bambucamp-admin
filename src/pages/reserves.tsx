@@ -92,11 +92,15 @@ const DashboardAdminReserves = () => {
           setProducts([...products, newOption]);
         }
       }else if(type == "experience"){
+
+        const DayInput = form.querySelector(`select[name="promotion_option_${type}_day"]`) as HTMLInputElement;
+        const day = new Date(DayInput.value);
         data = datasetReservesOptions.experiences.find((i)=> i.id == id);
         if(data){
-          const newOption: ReserveExperienceDto = { idExperience: id , name: data.name , quantity, price:calculatePrice (data.price,data.custom_price, no_custom_price) , day: new Date() };
+          const newOption: ReserveExperienceDto = { idExperience: id , name: data.name , quantity, price:calculatePrice (data.price,data.custom_price, no_custom_price) , day: day };
           setExperiences([...experiences, newOption]);
         }
+        DayInput.value = '';
       } 
 
       // Clear input fields
@@ -401,6 +405,55 @@ const DashboardAdminReserves = () => {
           setExperiences(experiences);
         }
       }
+    }
+
+    const [experiencesDayOptions,setDataExperienceDayOptions] = useState<{date:Date, label:string}[]>([])
+
+    const getDateRangeFromForm = (formname:string) => {
+        // Get the form element by ID
+        const form = document.getElementById(formname) as HTMLInputElement;
+        
+        if (!form) {
+            throw new Error('Form not found');
+        }
+        
+        // Select the dateFrom and dateTo inputs from the form
+        const dateFromInput = form.querySelector('input[name="dateFrom"]') as HTMLInputElement;
+        const dateToInput = form.querySelector('input[name="dateTo"]') as HTMLInputElement;
+        
+        if (!dateFromInput || !dateToInput) {
+            throw new Error('dateFrom or dateTo input not found');
+        }
+        
+        // Get the values of the dateFrom and dateTo inputs
+        const dateFrom = new Date(dateFromInput.value);
+        const dateTo = new Date(dateToInput.value);
+        
+        if (isNaN(dateFrom.getTime()) || isNaN(dateTo.getTime())) {
+            throw new Error('Invalid dates');
+        }
+
+        if (dateTo <= dateFrom) {
+            toast.error("La fecha Inicio tiene que ser previa a la fecha de Fin");
+        }
+        
+        // Initialize an array to store the date range
+        const dateRange = [];
+
+        // Loop through the dates from dateFrom to dateTo
+        let currentDate = new Date(dateFrom);
+        while (currentDate <= dateTo) {
+            const formattedDate = currentDate.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+            dateRange.push({
+                date: new Date(currentDate),
+                label: formattedDate
+            });
+            
+            // Move to the next day
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        setDataExperienceDayOptions(dateRange);
     }
 
     return (
@@ -950,7 +1003,7 @@ const DashboardAdminReserves = () => {
                       <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                         <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                           <label htmlFor="dateFrom" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Desde"}</label>
-                          <input name="dateFrom" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+                          <input name="dateFrom" type="date" onChange={()=>getDateRangeFromForm("form_create_reserve")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
 
                           <div className="w-full h-6">
                             {errorMessages.dateFrom && (
@@ -968,7 +1021,7 @@ const DashboardAdminReserves = () => {
 
                         <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                           <label htmlFor="dateTo" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Hasta"}</label>
-                          <input name="dateTo" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+                          <input name="dateTo" type="date" onChange={()=>getDateRangeFromForm("form_create_reserve")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
 
                           <div className="w-full h-6">
                             {errorMessages.dateTo && (
@@ -1249,7 +1302,7 @@ const DashboardAdminReserves = () => {
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
                             <label htmlFor="experiences" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Experiencias en la reserva"}</label>
                             <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                                <div className="flex flex-col justify-start items-start gap-x-6 w-[75%] h-auto gap-y-2 sm:gap-y-1">
+                                <div className="flex flex-col justify-start items-start gap-x-6 w-[50%] h-auto gap-y-2 sm:gap-y-1">
                                   <label htmlFor="promotion_option_experience_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Experiencia"}</label>
                                     <select name="promotion_option_experience_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                                         { datasetReservesOptions.experiences.map((experience,index) => {
@@ -1258,6 +1311,17 @@ const DashboardAdminReserves = () => {
                                             )
                                         })}
                                     </select>
+                                </div>
+
+                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
+                                  <label htmlFor="promotion_option_experience_day" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Dia"}</label>
+                                  <select name="promotion_option_experience_day" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                                    { experiencesDayOptions.map((date,index) => {
+                                        return(
+                                          <option key={index} value={date.date.toString()}>{`${date.label}`}</option>
+                                        )
+                                    })}
+                                  </select>
                                 </div>
 
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">

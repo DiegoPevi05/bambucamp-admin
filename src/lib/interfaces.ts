@@ -349,11 +349,18 @@ export interface ReserveFormData {
   aditionalPeople: number;
 }
 
-export interface NotificationIT {
-  id: number;
-  type : string;
-  title:string;
-  preview:string;
-  description:string;
-  date:string;
+export interface NotificationDto {
+  id:number;
+  title: string;
+  preview: string;
+  description: string;
+  type: string;
+  date: Date;
+  isRead: boolean;
+}
+
+export interface notifcationFilters {
+  date?:string;
+  target?:string[]; 
+  type?:string[];
 }
