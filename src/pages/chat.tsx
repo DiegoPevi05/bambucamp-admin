@@ -53,11 +53,7 @@ const DashboardAdminWebChat: React.FC = () => {
 
       socketRef.current.on('newChatMessage', (updatedChat: ChatChannel) => {
         setChatList((prevList) => {
-          const index = prevList?.findIndex(chat => chat.id === updatedChat.id);
-          if (index !== -1 && prevList) {
-            prevList[index] = updatedChat;
-            return [...prevList];
-          } else if (prevList) {
+          if (prevList) {
             return [...prevList, updatedChat];
           }
           return prevList;
