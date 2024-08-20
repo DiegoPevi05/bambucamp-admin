@@ -447,8 +447,6 @@ const DashboardReserves = () => {
     const [currentDate, setCurrentDate] = useState<Date>(new Date());
     const [currentView,setCurrentView] = useState<string>("LOADING");
 
-    console.log(datasetReserves);
-
 
     useEffect(()=>{
         getMyReservesHandler(1);
