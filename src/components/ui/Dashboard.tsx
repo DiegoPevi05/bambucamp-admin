@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import Button from "./Button";
 import { LOGO_PRIMARY } from "../../assets/images";
 import {  AnimatePresence } from "framer-motion";
-import { CalendarCheck, User, UserCog, DoorClosed, Pizza, FlameKindling, Percent, Disc, Tent, AlignJustify   } from "lucide-react"
+import { CalendarCheck, User, MessageSquare, DoorClosed, Pizza, FlameKindling, Percent, Disc, Tent, AlignJustify   } from "lucide-react"
 import {useAuth} from "../../contexts/AuthContext";
 import DropDownListAccount from "../DropDownListAccount";
 import {useNavigate} from "react-router-dom";
@@ -44,6 +44,11 @@ const DashboardButtons: DashboardButtonDataProps[] = [
     "title": "Promociones",
     "icon": <Disc />,
     "section": "promotions"
+  },
+  {
+    "title": "Web Chat",
+    "icon": <MessageSquare />,
+    "section": "web-chats"
   }
 ];
 

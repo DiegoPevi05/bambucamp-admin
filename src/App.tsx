@@ -13,6 +13,7 @@ import DashboardAdminExperiences from './pages/experiences';
 import DashboardAdminDiscounts from './pages/discounts';
 import DashboardAdminPromotions from './pages/promotions';
 import DashboardAdminReserves from './pages/reserves';
+import DashboardAdminWebChat from './pages/chat';
 
 
 const AppRoutes: React.FC = () => {
@@ -117,6 +118,18 @@ const AppRoutes: React.FC = () => {
             isAllowed={!!user && user.role != undefined && (user.role == "ADMIN" || user.role =="SUPERVISOR")}
           >
             <DashboardAdminReserves/>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/web-chats"
+        element={
+          <ProtectedRoute
+            redirectPath="/"
+            isAllowed={!!user && user.role != undefined && (user.role == "ADMIN" || user.role =="SUPERVISOR")}
+          >
+            <DashboardAdminWebChat/>
           </ProtectedRoute>
         }
       />
