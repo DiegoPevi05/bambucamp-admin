@@ -47,6 +47,8 @@ export const serializeTent = (data:any):Tent|null => {
     price: data.price || 0,
     services: data.services ? JSON.parse(data.services) : {},
     custom_price: transformedCustomPrice,
+    aditional_people_price: data.aditional_people_price,
+    max_aditional_people:data.max_aditional_people,
     status : data.status,
     createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
     updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
@@ -66,6 +68,8 @@ export const serializeTentToDB = (tent: TentFormData, isEditable?:boolean) => {
     formData.append('header', tent.header);
     formData.append('qtypeople', tent.qtypeople.toString());
     formData.append('qtykids', tent.qtykids.toString());
+    formData.append('aditional_people_price', tent.aditional_people_price.toString());
+    formData.append('max_aditional_people', tent.max_aditional_people.toString());
     formData.append('price', tent.price.toString());
     formData.append('status', tent.status);
 

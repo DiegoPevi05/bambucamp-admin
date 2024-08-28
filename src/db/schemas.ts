@@ -48,6 +48,8 @@ const TentSchema = z.object({
   images: z.array(imageFileSchema).default([]),
   qtypeople: z.number().gt(1, { message: 'La cantidad de personas debe ser mayor que 1' }),
   qtykids: z.number().nonnegative({ message: 'La cantidad de niños debe ser un número no negativo' }),
+  aditional_people_price:z.number(),
+  max_aditional_people:z.number(),
   price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
   services: z.object({
     wifi: z.boolean(),

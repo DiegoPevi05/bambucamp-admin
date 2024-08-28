@@ -65,6 +65,8 @@ export interface Tent {
     grill: boolean;
   }
   custom_price:CustomPrice[];
+  aditional_people_price:number; 
+  max_aditional_people:number;
   status:string;
   createdAt:Date|null;
   updatedAt:Date|null;
@@ -84,6 +86,8 @@ export interface TentFormData {
   qtypeople:number;
   qtykids:number;
   price: number;
+  aditional_people_price:number; 
+  max_aditional_people:number;
   custom_price:string;
   status:string;
   existing_images?:string;
@@ -271,14 +275,19 @@ export interface optionsReserve {
 }
 
 export interface ReserveTentDto {
+  id?:number;
   idTent:number;
   name:string;
   price:number;
-  quantity:number;
+  nights:number;
+  dateFrom:Date;
+  dateTo:Date;
+  aditionalPeople:number;
   tentDB?:Tent;
 }
 
 export interface ReserveProductDto {
+  id?:number;
   idProduct:number;
   name:string;
   price:number;
@@ -287,12 +296,22 @@ export interface ReserveProductDto {
 }
 
 export interface ReserveExperienceDto {
+  id?:number;
   idExperience:number;
   name:string;
   price:number;
   quantity:number;
   day:Date;
   experienceDB?:Experience;
+}
+
+export interface ReservePromotionDto {
+  id?:number;
+  idPromotion:number;
+  name:string;
+  price:number;
+  quantity:number;
+  promotionDB?:Promotion;
 }
 
 export interface Reserve {
@@ -303,19 +322,18 @@ export interface Reserve {
   tents:ReserveTentDto[];
   products:ReserveProductDto[];
   experiences:ReserveExperienceDto[];
-  dateFrom:Date;
-  dateTo:Date;
+  promotions:ReservePromotionDto[];
   dateSale: Date;
-  promotionId: number;
   price_is_calculated: boolean;
-  discountCodeId: number;
-  netImport: number;
+  discount_code_id: number;
+  discount_code_name:string;
+  net_import: number;
   discount: number;
-  grossImport: number;
+  gross_import: number;
   canceled_reason: string;
   canceled_status: boolean;
-  paymentStatus: string;
-  aditionalPeople: number;
+  payment_status: string;
+  reserve_status:string;
   createdAt:Date|null;
   updatedAt:Date|null;
 }
@@ -328,25 +346,22 @@ export interface ReserveFilters {
 
 
 export interface ReserveFormData {
-  qtypeople:number;
-  qtykids:number;
   userId:number;
   tents:ReserveTentDto[];
   products:ReserveProductDto[];
   experiences:ReserveExperienceDto[];
-  dateFrom:Date;
-  dateTo:Date;
+  promotions:ReservePromotionDto[];
   dateSale: Date;
-  promotionId: number;
   price_is_calculated: boolean;
-  discountCodeId: number;
-  netImport: number;
+  discount_code_id: number;
+  discount_code_name:string;
+  net_import: number;
   discount: number;
-  grossImport: number;
+  gross_import: number;
   canceled_reason: string;
   canceled_status: boolean;
-  paymentStatus: string;
-  aditionalPeople: number;
+  payment_status: string;
+  reserve_status:string;
 }
 
 export interface NotificationDto {

@@ -126,11 +126,13 @@ const DashboardAdminGlapings = () => {
         const qtykids = Number((form.querySelector('input[name="qtykids"]') as HTMLInputElement).value);
         const price = Number((form.querySelector('input[name="price"]') as HTMLInputElement).value);
         const status = (form.querySelector('select[name="status"]') as HTMLInputElement).value;
+        const aditional_people_price = Number((form.querySelector('input[name="aditional_people_price"]') as HTMLInputElement).value);
+        const max_aditional_people = Number((form.querySelector('input[name="max_aditional_people"]') as HTMLInputElement).value);
 
         setErrorMessages({});
 
         try {
-          TentSchema.parse({ title, description, header, existing_images:existingImages,images: images.map(image => image.file),  qtypeople, qtykids, price, services: getServices(), custom_price:customPrices, status });
+          TentSchema.parse({ title, description, header, existing_images:existingImages,images: images.map(image => image.file),  qtypeople, qtykids, price, services: getServices(), custom_price:customPrices, status,aditional_people_price,max_aditional_people });
 
           return {
             title,
@@ -138,6 +140,8 @@ const DashboardAdminGlapings = () => {
             header,
             qtypeople,
             qtykids,
+            aditional_people_price,
+            max_aditional_people,
             price,
             status,
             custom_price:JSON.stringify(customPrices),
@@ -492,6 +496,18 @@ const DashboardAdminGlapings = () => {
                               </div>
                           </div>
 
+                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                              <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                                <label htmlFor="aditional_people_price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio por persona adicional"}</label>
+                                <input name="aditional_people_price" value={selectedTent.aditional_people_price} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero de Personas"} disabled/>
+                              </div>
+
+                              <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                                <label htmlFor="max_aditional_people" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Numero maximo de personas adicionales"}</label>
+                                <input name="max_aditional_people" value={selectedTent.max_aditional_people} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero maximo de personas adicionales"} disabled/>
+                              </div>
+                          </div>
+
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="services" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Servicios"}</label>
                               <div id="input_tent_create_services" className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-2 gap-y-4 gap-x-6">
@@ -797,6 +813,43 @@ const DashboardAdminGlapings = () => {
                                       variants={fadeIn("up","", 0, 1)}
                                       className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
                                       {errorMessages.qtykids}
+                                    </motion.p>
+                                  )}
+                                </div>
+                              </div>
+                          </div>
+
+                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                              <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                                <label htmlFor="aditional_people_price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio por Persona Adicional"}</label>
+                                <input name="aditional_people_price" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio por Persona Adicional"}/>
+
+                                <div className="w-full h-6">
+                                  {errorMessages.aditional_people_price && (
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                      {errorMessages.aditional_people_price}
+                                    </motion.p>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                                <label htmlFor="max_aditional_people" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad maxima de personas adicionales"}</label>
+                                <input name="max_aditional_people" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad maxima de personas adicionales"}/>
+                                <div className="w-full h-6">
+                                  {errorMessages.max_aditional_people && (
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                      {errorMessages.max_aditional_people}
                                     </motion.p>
                                   )}
                                 </div>
@@ -1128,6 +1181,44 @@ const DashboardAdminGlapings = () => {
                                       variants={fadeIn("up","", 0, 1)}
                                       className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
                                       {errorMessages.qtykids}
+                                    </motion.p>
+                                  )}
+                                </div>
+                              </div>
+                          </div>
+
+                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                              <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                                <label htmlFor="aditional_people_price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio por Persona Adicional"}</label>
+                                <input name="aditional_people_price" value={selectedTent.aditional_people_price}  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero de Personas"}/>
+
+                                <div className="w-full h-6">
+                                  {errorMessages.aditional_people_price && (
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                      {errorMessages.aditional_people_price}
+                                    </motion.p>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                                <label htmlFor="max_aditional_people" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Numero maximo de Personas Adicionales"}</label>
+                                <input name="max_aditional_people" value={selectedTent.max_aditional_people}  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Numero de niños"}/>
+
+                                <div className="w-full h-6">
+                                  {errorMessages.max_aditional_people && (
+                                    <motion.p 
+                                      initial="hidden"
+                                      animate="show"
+                                      exit="hidden"
+                                      variants={fadeIn("up","", 0, 1)}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                      {errorMessages.max_aditional_people}
                                     </motion.p>
                                   )}
                                 </div>
