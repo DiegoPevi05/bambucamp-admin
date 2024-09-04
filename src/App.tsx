@@ -13,7 +13,8 @@ import DashboardAdminExperiences from './pages/experiences';
 import DashboardAdminDiscounts from './pages/discounts';
 import DashboardAdminPromotions from './pages/promotions';
 import DashboardAdminReserves from './pages/reserves';
-import DashboardAdminWebChat from './pages/chat';
+import DashboardAdminReviews from './pages/reviews';
+import DashboardAdminFaqs from './pages/faqs';
 
 
 const AppRoutes: React.FC = () => {
@@ -121,6 +122,31 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/questions"
+        element={
+          <ProtectedRoute
+            redirectPath="/"
+            isAllowed={!!user && user.role != undefined && (user.role == "ADMIN" || user.role =="SUPERVISOR")}
+          >
+            <DashboardAdminFaqs/>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/reviews"
+        element={
+          <ProtectedRoute
+            redirectPath="/"
+            isAllowed={!!user && user.role != undefined && (user.role == "ADMIN" || user.role =="SUPERVISOR")}
+          >
+            <DashboardAdminReviews/>
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="/signin" element={<ProtectedRoute  redirectPath="/" isAllowed={user == null || user == undefined}><SignIn /></ProtectedRoute>} />
     </Routes>
   );

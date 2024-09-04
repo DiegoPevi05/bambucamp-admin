@@ -141,3 +141,17 @@ export const getCurrentCustomPrice = (customPrices: CustomPrice[]): number => {
   
   return matchingPrices[0].price;
 }
+
+export const capitalizeNames = (names:string) => {
+  return names
+    .split(' ')
+    .map(name => name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())
+    .join(' ');
+}
+
+export const getInitials = (names:string) => {
+  const nameArray = names.split(' ');
+  const firstInitial = nameArray[0].charAt(0).toUpperCase();
+  const lastInitial = nameArray[nameArray.length - 1].charAt(0).toUpperCase();
+  return firstInitial + lastInitial;
+}

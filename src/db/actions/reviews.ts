@@ -21,7 +21,7 @@ export const getAllReviews = async( token: string, page:Number ): Promise<{revie
     });
 
     data = {
-      reviews: fetchReviews.data.faqs.map((faq: any) => serializeReview(faq)),
+      reviews: fetchReviews.data.reviews.map((faq: any) => serializeReview(faq)),
       currentPage: parseInt(fetchReviews.data.currentPage as string, 10),
       totalPages:parseInt(fetchReviews.data.totalPages as string, 10)
     }

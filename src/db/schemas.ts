@@ -189,10 +189,10 @@ const ReviewSchema = z.object({
   name: z.string().nonempty({ message: 'El nombre es requerido' }),
   title: z.string().nonempty({ message: 'El título es requerido' }),
   review: z.string().nonempty({ message: 'La Opinion es requerido' }),
-  stars: z.string().nonempty({ message: 'Las estrellas son requeridas' }),
+  stars: z.number().nonnegative({ message: 'Las estrellas son requeridas' }),
   day:z.date(),
-  href: z.string().nonempty({ message: 'La referencia es requerida' }),
-  profile_image_url: z.string().nonempty({ message: 'La imagen de perfil es requerida' }),
+  href: z.string().nullable(),
+  profile_image_url: z.string().nullable(),
 });
 
 const FaqSchema = z.object({
