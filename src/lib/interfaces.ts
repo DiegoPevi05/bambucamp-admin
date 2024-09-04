@@ -379,3 +379,40 @@ export interface notifcationFilters {
   target?:string[]; 
   type?:string[];
 }
+
+export interface Review {
+  id: number;
+  name:string;
+  title:string;
+  review:string;
+  stars:number;
+  day:Date;
+  href:string;
+  profile_image_url:string;
+  createdAt:Date|null;
+  updatedAt:Date|null;
+}
+
+export interface ReviewFormData {
+  name:string;
+  title:string;
+  review:string;
+  stars:number;
+  day:Date;
+  href:string;
+  profile_image_url:string;
+}
+
+export interface Faq {
+  id: number;
+  question:string;
+  answer:string;
+  createdAt:Date|null;
+  updatedAt:Date|null;
+}
+
+export interface FaqFormData {
+  question:string;
+  answer:string;
+}
+

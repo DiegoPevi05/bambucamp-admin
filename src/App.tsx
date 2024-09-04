@@ -121,20 +121,6 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-
-      <Route
-        path="/web-chats"
-        element={
-          <ProtectedRoute
-            redirectPath="/"
-            isAllowed={!!user && user.role != undefined && (user.role == "ADMIN" || user.role =="SUPERVISOR")}
-          >
-            <DashboardAdminWebChat/>
-          </ProtectedRoute>
-        }
-      />
-
-
       <Route path="/signin" element={<ProtectedRoute  redirectPath="/" isAllowed={user == null || user == undefined}><SignIn /></ProtectedRoute>} />
     </Routes>
   );

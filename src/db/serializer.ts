@@ -1,4 +1,4 @@
-import { User, Tent, Product, TentFormData, ProductFormData, ProductCategory, ExperienceCategory, Experience, ExperienceFormData, DiscountCode, Promotion,PromotionFormData, optionsPromotion, optionsReserve, Reserve, NotificationDto } from "../lib/interfaces"
+import { User, Tent, Product, TentFormData, ProductFormData, ProductCategory, ExperienceCategory, Experience, ExperienceFormData, DiscountCode, Promotion,PromotionFormData, optionsPromotion, optionsReserve, Reserve, NotificationDto, Faq, Review } from "../lib/interfaces"
 import { convertStrToCurrentTimezoneDate } from "../lib/utils";
 
 export const serializeUser = (data:any):User|null => {
@@ -449,5 +449,42 @@ export const serializeNotification = (data:any): NotificationDto | null => {
 
   return notification;
 }
+
+export const serializeReview = (data:any): Review | null => {
+
+  let review:Review|null = null;
+
+  review = {
+    id:data.id,
+    name:data.name,
+    title:data.title,
+    review:data.review,
+    stars:data.stars || 0,
+    day:data.day ? convertStrToCurrentTimezoneDate(data.day) : data.day,
+    href:data.href,
+    profile_image_url:data.profile_image_url,
+    createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
+    updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
+  }
+
+  return review;
+}
+
+export const serializeFaq = (data:any): Faq | null => {
+
+  let faq:Faq|null = null;
+
+  faq = {
+    id:data.id,
+    question:data.question,
+    answer:data.answer,
+    createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
+    updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
+  }
+
+  return faq;
+}
+
+
 
 
