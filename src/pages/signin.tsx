@@ -18,6 +18,8 @@ const SignIn = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const currentYear = (new Date()).getFullYear();
+
   const [loadingForm, setLoadingForm] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   type FormValues = z.infer<typeof signInSchema>;
@@ -84,6 +86,13 @@ const SignIn = () => {
           <Button variant="dark" className="mb-4" isRound={true} isLoading={loadingForm}>{"Ingresar"}</Button>
         </form>
       </div>
+      <footer className="absolute bottom-0 w-screen h-auto bg-white py-2">
+        <div className="flex items-center justify-center text-primary text-[10px] sm:text-xs">
+          <p>Developed by{" "} 
+            <a className="hover:text-tertiary hover:underline" href="https://www.digitalprocessit.com" target="_blank">DigitalProcessIT</a>{" "}&copy; <span>{currentYear}</span> 
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
