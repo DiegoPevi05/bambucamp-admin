@@ -76,6 +76,7 @@ export const getAllPromotions = async( token: string, page:Number, filters?:Prom
         'Accept-Language':'es'
       }
     });
+    console.log(fetchPromotions);
 
     data = {
       promotions: fetchPromotions.data.promotions.map((promotion: any) => serializePromotion(promotion)),
@@ -85,6 +86,7 @@ export const getAllPromotions = async( token: string, page:Number, filters?:Prom
 
 
   }catch(error){
+    console.log(error)
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
       const errorData = error.response?.data;

@@ -269,15 +269,6 @@ export const serializePromotionOptions = (data:any):optionsPromotion|null => {
 export const serializePromotion = (data:any):Promotion|null => {
   let promotion:Promotion|null = null;
 
-  const transformedIdtents = data.idtents ? JSON.parse(data.idtents).map((item:any) => ({  ...item, id: Number(item.id), qty: Number(item.qty) , price: Number(item.price)
-})) : [];
-
-  const transformedIdProducts = data.idproducts ? JSON.parse(data.idproducts).map((item:any) => ({  ...item, id: Number(item.id), qty: Number(item.qty) , price: Number(item.price)
-})) : [];
-
-  const transformedIdExperiences = data.idexperiences ? JSON.parse(data.idexperiences).map((item:any) => ({  ...item, id: Number(item.id), qty: Number(item.qty) , price: Number(item.price)
-})) : [];
-
   promotion = {
     id: data.id,
     title:data.title,
@@ -291,12 +282,14 @@ export const serializePromotion = (data:any):Promotion|null => {
     discount: data.discount || 0,
     grossImport: data.grossImport || 0,
     stock: data.stock || 0,
-    idtents: transformedIdtents,
-    idproducts: transformedIdProducts,
-    idexperiences: transformedIdExperiences,
+    tents: data.tents,
+    products: data.products,
+    experiences: data.experiences,
     createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
     updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
   };
+
+
   return promotion;
 }
 
@@ -317,9 +310,9 @@ export const serializePromotionToDB = (promotion: PromotionFormData, isEditable?
     formData.append('discount', promotion.discount.toString());
     formData.append('grossImport', promotion.grossImport.toString());
     formData.append('stock', promotion.stock.toString());
-    formData.append('idtents', promotion.idtents);
-    formData.append('idproducts', promotion.idproducts);
-    formData.append('idexperiences', promotion.idexperiences);
+    formData.append('tents', promotion.tents);
+    formData.append('products', promotion.products);
+    formData.append('experiences', promotion.experiences);
 
     if(isEditable && promotion.existing_images){
       formData.append('existing_images',promotion.existing_images)
@@ -365,22 +358,21 @@ export const serializeReserve = (data:any):Reserve|null => {
     qtypeople:data.title,
     qtykids:data.qtykids,
     userId:data.userId,
-    dateFrom: data.dateFrom ? convertStrToCurrentTimezoneDate(data.dateFrom) : data.dateFrom,
-    dateTo: data.dateTo ? convertStrToCurrentTimezoneDate(data.dateTo) : data.dateTo,
-    dateSale: data.dateSale ? convertStrToCurrentTimezoneDate(data.dateSale) : data.dateSale,
-    promotionId: data.promotionId || 0,
+    dateSale:data.dateSale ? convertStrToCurrentTimezoneDate(data.dateSale) : data.dateSale,
     price_is_calculated : data.price_is_calculated,
-    discountCodeId:data.discountCodeId || 0,
-    netImport: data.netImport || 0,
+    discount_code_id:data.discount_code_id || 0,
+    discount_code_name:data.discount_code_name || 0,
+    net_import: data.net_import || 0,
     discount: data.discount || 0,
-    grossImport: data.grossImport || 0,
+    gross_import: data.gross_import || 0,
     tents: data.tents,
     products: data.products,
     experiences: data.experiences,
+    promotions:data.promotions,
     canceled_reason:data.canceled_reason,
     canceled_status:data.canceled_status,
-    paymentStatus:data.paymentStatus,
-    aditionalPeople: data.aditionalPeople || 0,
+    payment_status:data.payment_status,
+    reserve_status:data.reserve_status,
     createdAt:data.createdAt ? convertStrToCurrentTimezoneDate(data.createdAt) : data.createdAt,
     updatedAt:data.updatedAt ? convertStrToCurrentTimezoneDate(data.updatedAt) : data.updatedAt
   };

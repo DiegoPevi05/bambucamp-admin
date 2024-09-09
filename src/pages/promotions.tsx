@@ -6,7 +6,7 @@ import { InputRadio } from "../components/ui/Input";
 import {  formatDate, createImagesArray, formatToISODate, getTotalPromotionCalculated } from "../lib/utils";
 import { getAllPromotions, getAllPromotionOptions, createPromotion, updatePromotion, deletePromotion } from "../db/actions/promotions";
 import { useAuth } from "../contexts/AuthContext";
-import { Promotion, ProductFilters, PromotionFormData, optionsPromotion, itemPromotion, ImageInterface } from "../lib/interfaces";
+import { Promotion, ProductFilters, PromotionFormData, optionsPromotion, optTentPromotionDto, optProductPromotionDto, optExperiencePromotionDto, ImageInterface } from "../lib/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
 import {fadeIn, fadeOnly} from "../lib/motions";
 import {  ZodError } from 'zod';
@@ -20,9 +20,9 @@ const DashboardAdminPromotions = () => {
     const { user } = useAuth();
     const [datasetPromotions,setDataSetPromotions] = useState<{promotions:Promotion[],totalPages:Number,currentPage:Number}>({promotions:[],totalPages:1,currentPage:1});
     const [datasetPromotionsOptions, setDatasetPromotionsOptions] = useState<optionsPromotion>({ tents:[], products:[], experiences:[] });
-    const [idTents,setIdTents] = useState<itemPromotion[]>([]);
-    const [idProducts,setIdProducts] = useState<itemPromotion[]>([]);
-    const [idExperiences,setIdExperiences] = useState<itemPromotion[]>([]);
+    const [idTents,setIdTents] = useState<optTentPromotionDto[]>([]);
+    const [idProducts,setIdProducts] = useState<optProductPromotionDto[]>([]);
+    const [idExperiences,setIdExperiences] = useState<optExperiencePromotionDto[]>([]);
 
     const [currentView,setCurrentView] = useState<string>("LOADING");
 
@@ -44,6 +44,7 @@ const DashboardAdminPromotions = () => {
         setCurrentView("LOADING");
         if(user != null){
             const promotions  = await getAllPromotions(user.token,page,filters);
+            console.log(promotions)
             if(promotions){
                 setDataSetPromotions(promotions);
                 setCurrentView("L");
@@ -113,14 +114,12 @@ const DashboardAdminPromotions = () => {
       } 
 
       if (data && label) {
-
-        const newOption: itemPromotion = { id , label , qty: quantity, price  };
         if(type =="tent") {
-            setIdTents([...idTents, newOption]);
+          setIdTents([...idTents, { idTent:id, name: label, quantity, price }]);
         }else if(type == "product"){
-            setIdProducts([...idProducts, newOption]);
+          setIdProducts([...idProducts, { idProduct:id, name:label, quantity, price }]);
         }else if(type =="experience"){
-            setIdExperiences([...idExperiences, newOption]);
+          setIdExperiences([...idExperiences, { idExperience:id, name:label, quantity, price }]);
         }
         // Clear input fields
         optionInput.value = '';
@@ -157,7 +156,7 @@ const DashboardAdminPromotions = () => {
         setErrorMessages({});
 
         try {
-          PromotionSchema.parse({title, description, existing_images:existingImages,images: images.map(image => image.file),  status, qtykids,qtypeople, netImport, discount, grossImport , stock,  idtents:idTents, idproducts:idProducts, idexperiences: idExperiences, expiredDate});
+          PromotionSchema.parse({title, description, existing_images:existingImages,images: images.map(image => image.file),  status, qtykids,qtypeople, netImport, discount, grossImport , stock,  tents:idTents, products:idProducts, experiences: idExperiences, expiredDate});
 
           return {
             title,
@@ -170,12 +169,13 @@ const DashboardAdminPromotions = () => {
             discount,
             grossImport,
             stock,
-            idtents: JSON.stringify(idTents),
-            idproducts: JSON.stringify(idProducts),
-            idexperiences :JSON.stringify(idExperiences),
+            tents: JSON.stringify(idTents),
+            products: JSON.stringify(idProducts),
+            experiences :JSON.stringify(idExperiences),
             images: images.map(image => image.file)
           };
         } catch (error) {
+          console.log(error)
           if (error instanceof ZodError) {
             const newErrorMessages: Record<string, string> = {};
             error.errors.forEach(err => {
@@ -409,8 +409,8 @@ const DashboardAdminPromotions = () => {
                                         <td className="h-full">{promotionItem.createdAt != undefined && promotionItem.createdAt != null ? formatDate(promotionItem.createdAt) : "None"}</td>
                                         <td className="h-full flex flex-col items-center justify-center">
                                           <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
-                                            <button onClick={()=>{setSelectedPromotion(promotionItem); setExistingImages(promotionItem.images); setIdTents(promotionItem.idtents); setIdProducts(promotionItem.idproducts); setIdExperiences(promotionItem.idexperiences); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
-                                            <button  onClick={()=>{setSelectedPromotion(promotionItem); setExistingImages(promotionItem.images) ; setIdTents(promotionItem.idtents); setIdProducts(promotionItem.idproducts); setIdExperiences(promotionItem.idexperiences); setImages([]); setCurrentView("E")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Pen className="h-5 w-5"/></button>
+                                            <button onClick={()=>{setSelectedPromotion(promotionItem); setExistingImages(promotionItem.images); setIdTents(promotionItem.tents); setIdProducts(promotionItem.products); setIdExperiences(promotionItem.experiences); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
+                                            <button  onClick={()=>{setSelectedPromotion(promotionItem); setExistingImages(promotionItem.images) ; setIdTents(promotionItem.tents); setIdProducts(promotionItem.products); setIdExperiences(promotionItem.experiences); setImages([]); setCurrentView("E")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Pen className="h-5 w-5"/></button>
                                             <button onClick={()=>{setOpenDeleteModal(true),setSelectedPromotion(promotionItem)}} className="border rounded-md hover:bg-red-400 hover:text-white duration-300 active:scale-75 p-1"><X className="h-5 w-5"/></button>
                                           </div>
                                         </td>
@@ -542,10 +542,10 @@ const DashboardAdminPromotions = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                             </span>
                                             <span className="w-[30%]">
                                               Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
@@ -578,10 +578,10 @@ const DashboardAdminPromotions = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                             </span>
                                             <span className="w-[30%]">
                                               Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
@@ -615,10 +615,10 @@ const DashboardAdminPromotions = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                             </span>
                                             <span className="w-[30%]">
                                               Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
@@ -913,10 +913,10 @@ const DashboardAdminPromotions = () => {
                                         className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                       >
                                         <span className="w-[30%]">
-                                          Tienda: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                          Tienda: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                         </span>
                                         <span className="w-[30%]">
-                                          Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                          Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                         </span>
                                         <span className="w-[30%]">
                                           Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
@@ -982,10 +982,10 @@ const DashboardAdminPromotions = () => {
                                         className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                       >
                                         <span className="w-[30%]">
-                                          Producto: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                          Producto: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                         </span>
                                         <span className="w-[30%]">
-                                          Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                          Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                         </span>
                                         <span className="w-[30%]">
                                           Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
@@ -1052,10 +1052,10 @@ const DashboardAdminPromotions = () => {
                                         className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                       >
                                         <span className="w-[30%]">
-                                          Experiencia: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                          Experiencia: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                         </span>
                                         <span className="w-[30%]">
-                                          Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                          Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                         </span>
                                         <span className="w-[30%]">
                                           Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
@@ -1435,10 +1435,10 @@ const DashboardAdminPromotions = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                             </span>
                                             <span className="w-[30%]">
                                               Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
@@ -1504,10 +1504,10 @@ const DashboardAdminPromotions = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Producto: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                              Producto: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                             </span>
                                             <span className="w-[30%]">
                                               Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
@@ -1574,10 +1574,10 @@ const DashboardAdminPromotions = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Experiencia: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
+                                              Experiencia: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
+                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
                                             </span>
                                             <span className="w-[30%]">
                                               Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>

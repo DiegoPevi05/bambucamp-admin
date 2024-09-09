@@ -113,10 +113,24 @@ const DiscountCodeSchema = z.object({
   status: z.string().nonempty({ message: 'El estado es requerido' }),
 });
 
-const itemPromotion = z.object({
-  id: z.number().positive({ message: 'El id debe ser un número positivo' }),
-  label: z.string().nonempty({message:'El nombre del item no debe estar vacio'}),
-  qty:z.number().positive({ message: 'La cantidad debe ser un número positivo' }),
+const TentPromotion = z.object({
+  idTent: z.number().positive({ message: 'El id debe ser un número positivo' }),
+  name: z.string().nonempty({message:'El nombre del item no debe estar vacio'}),
+  quantity:z.number().positive({ message: 'La cantidad debe ser un número positivo' }),
+  price: z.number().positive({ message: 'El precio debe ser un número positivo' })
+});
+
+const ProductPromotion = z.object({
+  idProduct: z.number().positive({ message: 'El id debe ser un número positivo' }),
+  name: z.string().nonempty({message:'El nombre del item no debe estar vacio'}),
+  quantity:z.number().positive({ message: 'La cantidad debe ser un número positivo' }),
+  price: z.number().positive({ message: 'El precio debe ser un número positivo' })
+});
+
+const ExperiencePromotion = z.object({
+  idExperience: z.number().positive({ message: 'El id debe ser un número positivo' }),
+  name: z.string().nonempty({message:'El nombre del item no debe estar vacio'}),
+  quantity:z.number().positive({ message: 'La cantidad debe ser un número positivo' }),
   price: z.number().positive({ message: 'El precio debe ser un número positivo' })
 });
 
@@ -133,9 +147,9 @@ const PromotionSchema = z.object({
   discount: z.number().gt(1, { message: 'Debe ser mayor que 0 el descuento.' }),
   grossImport: z.number().gt(1, { message: 'Debe ser mayor que 0 el total.' }),
   stock: z.number().gt(1, { message: 'Debe ser mayor que 0 el stock.' }),
-  idtents: z.array(itemPromotion),
-  idproducts: z.array(itemPromotion),
-  idexperiences: z.array(itemPromotion),
+  tents: z.array(TentPromotion),
+  products: z.array(ProductPromotion),
+  experiences: z.array(ExperiencePromotion),
 }).refine(data => data.existing_images.length > 0 || data.images.length > 0, {
   message: 'Debe haber al menos una imagen',
   path: ['images'] // This can be any path to indicate where the error should appear
