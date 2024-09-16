@@ -11,7 +11,7 @@ type signInType = {
 }
 
 
-export const SignInAccount = async (signInValues: signInType): Promise<User|null> => {
+export const SignInAccount = async (signInValues: signInType, language:string): Promise<User|null> => {
 
   let user: User | null = null;
 
@@ -19,7 +19,7 @@ export const SignInAccount = async (signInValues: signInType): Promise<User|null
     signInSchema.parse(signInValues);
     const loginResponse = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/signin`, signInValues, {
       headers: {
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
     user = {

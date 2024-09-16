@@ -3,7 +3,7 @@ import axios from 'axios';
 import { NotificationDto, notifcationFilters } from '../../lib/interfaces';
 import { serializeNotification } from '../serializer';
 
-export const getAllNotifications = async( token: string, page:Number, filters?:notifcationFilters ): Promise<{notifications:NotificationDto[], totalPages:Number ,currentPage:Number}|null> => {
+export const getAllNotifications = async( token: string, page:Number, language:string, filters?:notifcationFilters ): Promise<{notifications:NotificationDto[], totalPages:Number ,currentPage:Number}|null> => {
 
   let data:{ notifications:NotificationDto[],totalPages:Number,currentPage:Number } | null = null;
   try{
@@ -26,7 +26,7 @@ export const getAllNotifications = async( token: string, page:Number, filters?:n
     const fetchProducts = await axios.get(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 

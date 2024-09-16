@@ -82,13 +82,13 @@ const DashboardAdminReserves = () => {
       if(type == "tent"){
         data = datasetReservesOptions.tents.find((i)=> i.id == id);
         if(data){
-          const newOption: ReserveTentDto = { idTent: id , name: data.title , quantity, price: calculatePrice (data.price,data.custom_price, no_custom_price)};
+          const newOption: ReserveTentDto = { idTent: id , name: data.title , nights:quantity, price: calculatePrice (data.price,data.custom_price, no_custom_price), confirmed:true};
           setTents([...tents, newOption]);
         }
       }else if(type == "product"){
         data = datasetReservesOptions.products.find((i)=> i.id == id);
         if(data){
-          const newOption: ReserveProductDto = { idProduct: id , name: data.name , quantity, price:calculatePrice (data.price,data.custom_price, no_custom_price)  };
+          const newOption: ReserveProductDto = { idProduct: id , name: data.name , quantity, price:calculatePrice (data.price,data.custom_price, no_custom_price) , confirmed:true };
           setProducts([...products, newOption]);
         }
       }else if(type == "experience"){
@@ -97,7 +97,7 @@ const DashboardAdminReserves = () => {
         const day = new Date(DayInput.value);
         data = datasetReservesOptions.experiences.find((i)=> i.id == id);
         if(data){
-          const newOption: ReserveExperienceDto = { idExperience: id , name: data.name , quantity, price:calculatePrice (data.price,data.custom_price, no_custom_price) , day: day };
+          const newOption: ReserveExperienceDto = { idExperience: id , name: data.name , quantity, price:calculatePrice (data.price,data.custom_price, no_custom_price) , confirmed:true, day: day };
           setExperiences([...experiences, newOption]);
         }
         DayInput.value = '';

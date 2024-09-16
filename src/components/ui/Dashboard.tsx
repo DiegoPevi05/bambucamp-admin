@@ -6,6 +6,7 @@ import { CalendarCheck, User, MessageSquare, DoorClosed, Pizza, FlameKindling, P
 import {useAuth} from "../../contexts/AuthContext";
 import DropDownListAccount from "../DropDownListAccount";
 import {useNavigate} from "react-router-dom";
+import {useTranslation} from "react-i18next";
 
 
 
@@ -89,6 +90,7 @@ const DashboardButton = ({ title, icon, onClick }: DashboardButtonProps) => {
 
 const Dashboard = ({children}:{children:React.ReactNode}) => {
   const { user, logout } = useAuth();
+  const {t} = useTranslation();
   const navigate = useNavigate();
 
   const [openNavbar,setOpenNavbar] = useState<boolean>(false);
@@ -130,8 +132,8 @@ const Dashboard = ({children}:{children:React.ReactNode}) => {
             <div className="flex flex-row items-start justify-center gap-x-4">
               <button className="2xl:hidden h-full w-12 flex items-center justify-center text-secondary rounded-xl active:scale-95 active:bg-white active:text-secondary active:border active:border-secondary" onClick={()=>setOpenNavbar((prev)=> !prev)} ><AlignJustify className=""/></button>
               <div className="flex gap-x-4 items-start flex-col">
-                <h1 className="text-lg text-secondary">{"Bienvenido"} {user?.firstName}{" "}{user?.lastName}</h1>
-                <p className="font-secondary text-md text-tertiary">Aqui puedes gestionar la web <a href="https://www.bambucamp.com.pe" target="_blank" className="hover:underline">www.bambucamp.com.pe</a></p>
+                <h1 className="text-lg text-secondary">{t("common.welcome")} {user?.firstName}{" "}{user?.lastName}</h1>
+                <p className="font-secondary text-md text-tertiary">{t("common.subheader")}<a href="https://www.bambucamp.com.pe" target="_blank" className="hover:underline">www.bambucamp.com.pe</a></p>
               </div>
             </div>
             <DropDownListAccount user={user} variant="dark"/>

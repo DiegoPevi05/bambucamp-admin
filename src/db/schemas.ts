@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 
 const signInSchema = z.object({
-  email: z.string().email({ message: "Correo no es valido." }),
-  password: z.string().min(6, { message: "La Contraseña debe tener almenos 8 caracteres." }),
+  email: z.string().email({ message: "auth.validations.email_invalid" }),
+  password: z.string().min(6, { message: "auth.validations.password_length" }),
 });
 
 const createUserSchema = z.object({

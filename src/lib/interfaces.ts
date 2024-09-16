@@ -1,3 +1,8 @@
+export interface SignIn {
+  email:string;
+  password:string;
+}
+
 export interface User {
   token: string;
   id:number;
@@ -115,6 +120,10 @@ export interface Product {
   updatedAt:Date|null;
 }
 
+export interface PublicProduct extends Omit<Product,'custom_price'>{
+  custom_price:number;
+}
+
 export interface ProductFilters {
   name?: string;
   status?:string;
@@ -158,6 +167,10 @@ export interface Experience {
   custom_price:CustomPrice[];
   createdAt:Date|null;
   updatedAt:Date|null;
+}
+
+export interface PublicExperience extends Omit<Experience,'custom_price'>{
+  custom_price:number;
 }
 
 export interface ExperienceFilters {
@@ -301,6 +314,7 @@ export interface optionsReserve {
   discounts:DiscountCode[];
 }
 
+
 export interface ReserveTentDto {
   id?:number;
   idTent:number;
@@ -309,7 +323,10 @@ export interface ReserveTentDto {
   nights:number;
   dateFrom:Date;
   dateTo:Date;
+  confirmed:boolean;
   aditionalPeople:number;
+  additionalPeoplePrice?:number;
+  promotionId?:number;
   tentDB?:Tent;
 }
 
@@ -319,7 +336,13 @@ export interface ReserveProductDto {
   name:string;
   price:number;
   quantity:number;
+  confirmed:boolean;
+  promotionId?:number;
   productDB?:Product;
+}
+
+export interface createReserveProductDto extends ReserveProductDto {
+  reserveId:number;
 }
 
 export interface ReserveExperienceDto {
@@ -329,7 +352,13 @@ export interface ReserveExperienceDto {
   price:number;
   quantity:number;
   day:Date;
+  confirmed:boolean;
+  promotionId?:number;
   experienceDB?:Experience;
+}
+
+export interface createReserveExperienceDto extends ReserveExperienceDto {
+  reserveId:number;
 }
 
 export interface ReservePromotionDto {
@@ -337,14 +366,20 @@ export interface ReservePromotionDto {
   idPromotion:number;
   name:string;
   price:number;
-  quantity:number;
+  nights:number;
+  dateFrom:Date;
+  dateTo:Date;
+  confirmed:boolean;
   promotionDB?:Promotion;
+}
+
+export interface createReservePromotionDto extends ReservePromotionDto {
+  reserveId:number;
 }
 
 export interface Reserve {
   id: number;
-  qtypeople:number;
-  qtykids:number;
+  external_id:number;
   userId:number;
   tents:ReserveTentDto[];
   products:ReserveProductDto[];

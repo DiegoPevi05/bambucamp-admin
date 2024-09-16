@@ -155,3 +155,82 @@ export const getInitials = (names:string) => {
   const lastInitial = nameArray[nameArray.length - 1].charAt(0).toUpperCase();
   return firstInitial + lastInitial;
 }
+
+export const parseSuggestions = (suggestions: string[]): string => {
+  if (suggestions.length === 0) {
+    return "No Suggestions";
+  }
+  return suggestions.join('; ');
+};
+
+export const getReserveDates = (tents: ReserveTentDto[]): { dateFrom: Date; dateTo: Date } => {
+  // Initialize the earliest start date and latest end date
+  let earliestDateFrom: Date | null = null;
+  let latestDateTo: Date | null = null;
+
+  // Iterate through each tent
+  tents.forEach((tent) => {
+
+    if (earliestDateFrom === null || tent.dateFrom < earliestDateFrom) {
+      earliestDateFrom = tent.dateFrom;
+    }
+    if (latestDateTo === null || tent.dateTo > latestDateTo) {
+      latestDateTo = tent.dateTo;
+    }
+  });
+
+  // Handle case where no tents are provided
+  if (earliestDateFrom === null || latestDateTo === null) {
+    return { dateFrom: ( new Date() ), dateTo: ( new Date() ) }
+  }
+
+  return { dateFrom: earliestDateFrom, dateTo: latestDateTo };
+};
+
+
+export const getRangeDatesForReserve = (reserve:Reserve) => {
+    // Initialize an array to store the ranges of dates
+    let dateRanges: { date: Date; label: string }[] = [];
+
+    // Loop through each tent in the cart
+    reserve.tents.forEach((dateItem) => {
+      // Initialize the current date to tent's dateFrom
+      let currentDate = new Date(dateItem.dateFrom);
+
+      // Loop through the dates from dateFrom to dateTo for each tent
+      while (currentDate <= dateItem.dateTo) {
+        const formattedDate = currentDate.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+
+        // Check if the date is already in the dateRanges array to avoid overlap
+        const dateExists = dateRanges.some((range) => range.label === formattedDate);
+
+        if (!dateExists) {
+          dateRanges.push({
+            date: new Date(currentDate),
+            label: formattedDate,
+          });
+        }
+
+        // Move to the next day
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+    });
+
+    // Sort the dateRanges array by date to ensure the dates are in chronological order
+    dateRanges = dateRanges.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    return dateRanges;
+};
+
+export const formatDateToYYYYMMDD = (date: Date): string => {
+  // Create a new Date object with the current time zone
+  const localDate = new Date(date);
+
+  // Get the year, month, and day from the localDate object
+  const year = localDate.getFullYear();
+  const month = String(localDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+  const day = String(localDate.getDate()).padStart(2, '0');
+
+  // Return the date in the desired format YYYYY-MM-DD
+  return `${year}-${month}-${day}`;
+}
