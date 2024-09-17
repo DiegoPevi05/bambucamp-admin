@@ -52,7 +52,7 @@ const DashboardButtons: DashboardButtonDataProps[] = [
     "section": "questions"
   },
   {
-    "title": "Reviews",
+    "title": "review.plural",
     "icon": <MessageSquare />,
     "section": "reviews"
   },
@@ -111,7 +111,7 @@ const Dashboard = ({children}:{children:React.ReactNode}) => {
           {DashboardButtons.map((button, index) => (
             <DashboardButton
               key={index}
-              title={button.title}
+              title={t(button.title)}
               icon={button.icon}
               onClick={()=>goToSubRoute(button.section)}
             />

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Review, ReviewFormData } from '../../lib/interfaces';
 import { serializeReview } from '../serializer';
 
-export const getAllReviews = async( token: string, page:Number ): Promise<{reviews:Review[], totalPages:Number ,currentPage:Number}|null> => {
+export const getAllReviews = async( token: string, page:Number, language:string ): Promise<{reviews:Review[], totalPages:Number ,currentPage:Number}|null> => {
 
   let data:{ reviews:Review[],totalPages:Number,currentPage:Number } | null = null;
   try{
@@ -16,7 +16,7 @@ export const getAllReviews = async( token: string, page:Number ): Promise<{revie
     const fetchReviews = await axios.get(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -57,13 +57,13 @@ export const getAllReviews = async( token: string, page:Number ): Promise<{revie
 
 
 
-export const createReview = async (formData: ReviewFormData, token: string): Promise<boolean> => {
+export const createReview = async (formData: ReviewFormData, token: string, language:string): Promise<boolean> => {
   try {
 
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/web/reviews`, formData, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
     toast.success(response.data.message);
@@ -95,13 +95,13 @@ export const createReview = async (formData: ReviewFormData, token: string): Pro
   }
 };
 
-export const deleteReview = async(idReview:Number, token:string ):Promise<boolean> => {
+export const deleteReview = async(idReview:Number, token:string, language:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/web/reviews/${idReview}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
     toast.success(response.data.message);

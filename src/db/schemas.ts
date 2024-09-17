@@ -106,11 +106,11 @@ const ExperienceSchema = z.object({
 });
 
 const DiscountCodeSchema = z.object({
-  code: z.string().nonempty({ message: 'El codigo es requerido' }),
-  discount: z.number().gt(1, { message: 'El descuento es requerido' }),
-  stock: z.number().gt(1, { message: 'El stock debe ser mayor a 1' }),
+  code: z.string().nonempty({ message: 'discount.validations.code_required' }),
+  discount: z.number().min(1, { message: 'discount.validations.discount_min' }).max(100,{ message: 'discount.validations.discount_max' }),
+  stock: z.number().min(1, { message: 'discount.validations.stock_min' }),
   expiredDate: z.date(),
-  status: z.string().nonempty({ message: 'El estado es requerido' }),
+  status: z.string().nonempty({ message: 'discount.validations.status_required' }),
 });
 
 const TentPromotion = z.object({
@@ -200,18 +200,18 @@ const ReserveFormDataSchema = z.object({
 });
 
 const ReviewSchema = z.object({
-  name: z.string().nonempty({ message: 'El nombre es requerido' }),
-  title: z.string().nonempty({ message: 'El título es requerido' }),
-  review: z.string().nonempty({ message: 'La Opinion es requerido' }),
-  stars: z.number().nonnegative({ message: 'Las estrellas son requeridas' }),
-  day:z.date(),
+  name: z.string().nonempty({ message: 'review.validations.name_required' }),
+  title: z.string().nonempty({ message: 'review.validations.title_required' }),
+  review: z.string().nonempty({ message: 'review.validations.review_required' }),
+  stars: z.number().nonnegative({ message: 'review.validations.stars_required' }).min(1,{message:"review.validations.stars_minimum"}).max(5,{message:"review.validations.stars_maximum"}),
+  day:z.date({message:"review.validations.date_required"}),
   href: z.string().nullable(),
   profile_image_url: z.string().nullable(),
 });
 
 const FaqSchema = z.object({
-  question: z.string().nonempty({ message: 'La pregunta es requerida' }),
-  answer: z.string().nonempty({ message: 'La respuesta es requerida' }),
+  question: z.string().nonempty({ message: 'faq.validations.question_required' }),
+  answer: z.string().nonempty({ message: 'faq.validations.answer_required' }),
 });
 
 

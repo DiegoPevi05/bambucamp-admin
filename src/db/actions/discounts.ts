@@ -3,7 +3,7 @@ import axios from 'axios';
 import { DiscountCode, DiscountCodeFilters, DiscountCodeFormData } from '../../lib/interfaces';
 import { serializeDiscountCode } from '../serializer';
 
-export const getAllDiscountCodes = async( token: string, page:Number, filters?:DiscountCodeFilters ): Promise<{discountCodes:DiscountCode[], totalPages:Number ,currentPage:Number}|null> => {
+export const getAllDiscountCodes = async( token: string, page:Number, language:string, filters?:DiscountCodeFilters ): Promise<{discountCodes:DiscountCode[], totalPages:Number ,currentPage:Number}|null> => {
 
   let data:{ discountCodes:DiscountCode[],totalPages:Number,currentPage:Number } | null = null;
   try{
@@ -26,7 +26,7 @@ export const getAllDiscountCodes = async( token: string, page:Number, filters?:D
     const fetchDiscounts = await axios.get(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -67,13 +67,13 @@ export const getAllDiscountCodes = async( token: string, page:Number, filters?:D
 
 
 
-export const createDiscountCode = async (discountCode: DiscountCodeFormData, token: string): Promise<boolean> => {
+export const createDiscountCode = async (discountCode: DiscountCodeFormData, token: string, language:string): Promise<boolean> => {
   try {
 
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/discounts`, discountCode, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -107,13 +107,13 @@ export const createDiscountCode = async (discountCode: DiscountCodeFormData, tok
 };
 
 
-export const updateDiscountCode = async (discountCodeId:Number,discountCode: DiscountCodeFormData, token: string): Promise<boolean> => {
+export const updateDiscountCode = async (discountCodeId:Number,discountCode: DiscountCodeFormData, token: string, language:string): Promise<boolean> => {
   try {
 
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/discounts/${discountCodeId}`, discountCode, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
     toast.success(response.data.message);
@@ -147,13 +147,13 @@ export const updateDiscountCode = async (discountCodeId:Number,discountCode: Dis
 
 
 
-export const deleteDiscountCode = async(idDiscountCode:Number, token:string ):Promise<boolean> => {
+export const deleteDiscountCode = async(idDiscountCode:Number, token:string, language:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/discounts/${idDiscountCode}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
     toast.success(response.data.message);

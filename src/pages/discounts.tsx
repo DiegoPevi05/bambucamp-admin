@@ -12,10 +12,12 @@ import {fadeIn} from "../lib/motions";
 import {  ZodError } from 'zod';
 import { DiscountCodeSchema } from "../db/schemas";
 import Modal from "../components/Modal";
+import {useTranslation} from "react-i18next";
 
 
 const DashboardAdminDiscounts = () => {
 
+    const {t,i18n} = useTranslation();
     const { user } = useAuth();
     const [datasetDiscountCodes,setDataSetDiscountCodes] = useState<{discountCodes:DiscountCode[],totalPages:Number,currentPage:Number}>({discountCodes:[],totalPages:1,currentPage:1});
     const [currentView,setCurrentView] = useState<string>("LOADING");
@@ -27,7 +29,7 @@ const DashboardAdminDiscounts = () => {
     const getDiscountCodesHandler = async (page:Number, filters?:DiscountCodeFilters) => {
         setCurrentView("LOADING");
         if(user != null){
-            const experiences  = await getAllDiscountCodes(user.token,page,filters);
+            const experiences  = await getAllDiscountCodes(user.token,page,i18n.language,filters);
             if(experiences){
                 setDataSetDiscountCodes(experiences);
                 setCurrentView("L");
@@ -78,7 +80,7 @@ const DashboardAdminDiscounts = () => {
         const fieldsValidated = validateFields('form_create_discount');
         if(fieldsValidated != null){
           if(user !== null){
-            const isSuccess = await createDiscountCode(fieldsValidated, user.token);
+            const isSuccess = await createDiscountCode(fieldsValidated, user.token, i18n.language);
             if(!isSuccess){
                 setLoadingForm(false);
                 return;
@@ -123,7 +125,7 @@ const DashboardAdminDiscounts = () => {
 
     const deleteDiscountCodeHandler = async() => {
         if(user != null && selectedDiscountCode != null){
-            const isSuccess = await deleteDiscountCode(selectedDiscountCode.id,user.token)
+            const isSuccess = await deleteDiscountCode(selectedDiscountCode.id,user.token, i18n.language)
             if(!isSuccess){
                 return;
             }
@@ -160,7 +162,7 @@ const DashboardAdminDiscounts = () => {
         const fieldsValidated = validateFields('form_update_discount');
         if(fieldsValidated != null){
           if(user !== null && selectedDiscountCode != null){
-              const isSuccess = await updateDiscountCode(selectedDiscountCode.id,fieldsValidated, user.token);
+              const isSuccess = await updateDiscountCode(selectedDiscountCode.id,fieldsValidated, user.token, i18n.language);
               if(!isSuccess){
                   setLoadingForm(false);
                   return;
@@ -185,7 +187,7 @@ const DashboardAdminDiscounts = () => {
                 variants={fadeIn("up","",0.5,0.3)}
                 className="w-full min-h-[300px] flex flex-col justify-center items-center gap-y-4 bg-white pointer-events-none">
                   <div className="loader"></div>
-                  <h1 className="font-primary text-secondary mt-4">{"Cargando..."}</h1>
+                  <h1 className="font-primary text-secondary mt-4">{t("common.loading")}</h1>
             </motion.div>
         )}
 
@@ -200,51 +202,51 @@ const DashboardAdminDiscounts = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Percent/>Descuentos</h2>
-                    <div className="w-full h-auto flex flex-row justify-between items-center gap-x-4">
-                        <div className="w-auto h-auto flex flex-col md:flex-row justify-start items-start gap-y-4 gap-x-4">
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Percent/>{t("discount.plural")}</h2>
+                  <div className="w-full h-auto flex flex-col xl:flex-row  justify-start xl:justify-between items-center xl:gap-x-4">
+                    <div className="w-full xl:w-auto h-auto flex flex-row  justify-between xl:justify-start items-start gap-y-4 gap-x-4">
                           <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
                             <input 
                               type="text" 
                               name="criteria_search_value"
                               placeholder="Buscar Descuento" 
-                              className="w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
+                              className="w-48 xl:w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
                             <InputRadio name="criteria_search" variant="dark" value="title" placeholder="Nombre"/>
                           </div>
                           <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
                               <label className="md:ml-4 flex items-center">
-                                Estatus
+                                {t("discount.status")}
                                 <select name="criteria_search_status" className="ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
-                                  <option value="">Seleccionar Estatus</option>
-                                  <option value="ACTIVE">ACTIVO</option>
-                                  <option value="INACTIVE">INACTIVO</option>
+                                  <option value="">{t("discount.select_status")}</option>
+                                  <option value="ACTIVE">{t("discount.ACTIVE")}</option>
+                                  <option value="INACTIVE">{t("discount.INACTIVE")}</option>
                                 </select>
                               </label>
                               <Button size="sm" variant="dark" effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchDiscountCodeHandler()}>
-                              Buscar
+                                {t("common.search")}
                             </Button>
                           </div>
                         </div>
-                        <div className="w-auto h-auto flex flex-row justify-end items-start gap-y-4 gap-x-4">
-                          <Button onClick={()=>{setCurrentView("A")}} size="sm" variant="dark" effect="default" className="min-w-[300px]" isRound={true}>Agregar Descuento <Percent/></Button>
+                    <div className="w-full xl:w-auto h-auto flex flex-row justify-end items-start gap-y-4 gap-x-4 max-xl:mt-4">
+                          <Button onClick={()=>{setCurrentView("A")}} size="sm" variant="dark" effect="default" className="min-w-[300px]" isRound={true}>{t("discount.add_discount")}<Percent/></Button>
                         </div>
                     </div>
-                    <table className="h-full w-full shadow-xl rounded-xl text-center p-4">
-                        <thead className="font-primary text-md bg-primary text-white">
+                  <table className="h-full w-full shadow-xl rounded-xl text-center p-4">
+                    <thead className="font-primary text-sm xl:text-md bg-primary text-white">
                             <tr className="">
                                 <th className="rounded-tl-xl p-2">#</th>
-                                <th className="p-2">Codigo</th>
-                                <th className="p-2">Descuento</th>
-                                <th className="p-2">Expira</th>
-                                <th className="p-2">Stock</th>
-                                <th className="p-2">Estado</th>
-                                <th className="p-2">Creado</th>
-                                <th className="p-2">Actualizado</th>
-                                <th className="rounded-tr-xl p-2">Acciones</th>
+                                <th className="p-2">{t("discount.discount_code")}</th>
+                                <th className="p-2">{t("discount.discount_discount")}</th>
+                                <th className="p-2">{t("discount.discount_expired_date")}</th>
+                                <th className="p-2">{t("discount.discount_stock")}</th>
+                                <th className="p-2">{t("discount.discount_status")}</th>
+                              <th className="p-2 max-xl:hidden">{t("discount.created")}</th>
+                              <th className="p-2 max-xl:hidden">{t("discount.updated")}</th>
+                                <th className="rounded-tr-xl p-2">{t("discount.actions")}</th>
                             </tr>
                         </thead>
-                        <tbody className="font-secondary text-sm">
+                    <tbody className="font-secondary text-xs xl:text-sm">
                                 {datasetDiscountCodes.discountCodes.map((discountCodeItem,index)=>{
                                     return(
                                     <tr key={"user_key"+index} className="text-slate-400 hover:bg-secondary hover:text-white duration-300 cursor-pointer"> 
@@ -254,8 +256,8 @@ const DashboardAdminDiscounts = () => {
                                         <td className="">{discountCodeItem.expiredDate !== undefined && discountCodeItem.expiredDate != null ? formatToISODate(discountCodeItem.expiredDate) : "None"}</td>
                                         <td className="">{discountCodeItem.stock}</td>
                                         <td className="h-full">{discountCodeItem.status != "ACTIVE" ? "INACTIVO" : "ACTIVO" }</td>
-                                        <td className="h-full">{discountCodeItem.updatedAt != undefined && discountCodeItem.updatedAt != null ? formatDate(discountCodeItem.updatedAt) : "None"}</td>
-                                        <td className="h-full">{discountCodeItem.createdAt != undefined && discountCodeItem.createdAt != null ? formatDate(discountCodeItem.createdAt) : "None"}</td>
+                                      <td className="h-full max-xl:hidden">{discountCodeItem.updatedAt != undefined && discountCodeItem.updatedAt != null ? formatDate(discountCodeItem.updatedAt) : t("discount.none")}</td>
+                                      <td className="h-full max-xl:hidden">{discountCodeItem.createdAt != undefined && discountCodeItem.createdAt != null ? formatDate(discountCodeItem.createdAt) : t("discount.none")}</td>
                                         <td className="h-full flex flex-col items-center justify-center">
                                           <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
                                             <button onClick={()=>{setSelectedDiscountCode(discountCodeItem); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
@@ -277,11 +279,11 @@ const DashboardAdminDiscounts = () => {
                 <Modal isOpen={openDeleteModal} onClose={()=>setOpenDeleteModal(false)}>
                     <div className="w-[400px] h-auto flex flex-col items-center justify-center text-secondary pb-6 px-6 pt-12 text-center">
                         <CircleX className="h-[60px] w-[60px] text-red-400 "/>
-                        <p className="text-primary">Estas seguro de eliminar este codigo de descuento?</p>
-                        <p className="text-sm mt-6 text-secondary">El codigo de descuento se eliminara si haces click en aceptar, las reservas no se perderan, pero no se podra utilizar este codigo</p>
+                        <p className="text-primary">{t("discount.secure_delete_discount_header")}</p>
+                        <p className="text-sm mt-6 text-secondary">{t("discount.secure_delete_discount_description")}</p>
                         <div className="flex flex-row justify-around w-full mt-6">
-                            <Button size="sm" variant="dark" effect="default" isRound={true} onClick={()=>setOpenDeleteModal(false)}> Cancelar  </Button>
-                            <Button size="sm" variant="danger" effect="default" isRound={true} onClick={()=>{deleteDiscountCodeHandler()}}> Aceptar </Button>
+                            <Button size="sm" variant="dark" effect="default" isRound={true} onClick={()=>setOpenDeleteModal(false)}>{t("common.cancel")}</Button>
+                            <Button size="sm" variant="danger" effect="default" isRound={true} onClick={()=>{deleteDiscountCodeHandler()}}>{t("common.accept")}</Button>
                         </div>
                     </div>
                 </Modal>
@@ -291,32 +293,32 @@ const DashboardAdminDiscounts = () => {
 
         {currentView == "V" && selectedDiscountCode && (
                 <motion.div 
-                    key={"New-View"}
+                    key={"View"}
                     initial="hidden"
                     animate="show"
                     exit="hidden"
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Percent/>Ver Descuento</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Percent/>{t("discount.see_discount")}</h2>
 
                   <div className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" >
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="code" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre de Codigo de Descuento"}</label>
-                            <input name="code" value={selectedDiscountCode.code} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de Codigo de Descuento"} disabled/>
+                            <label htmlFor="code" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_name")}</label>
+                            <input name="code" value={selectedDiscountCode.code} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_name")}/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de Descuentos"}</label>
-                            <input name="stock" value={selectedDiscountCode.stock} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de Descuentos"} disabled/>
+                            <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_quantity")}</label>
+                            <input name="stock" value={selectedDiscountCode.stock} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_quantity")}/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descuento en %"}</label>
-                            <input name="code" value={selectedDiscountCode.discount} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Descuento en %"} disabled/>
+                            <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_discount")}</label>
+                            <input name="code" value={selectedDiscountCode.discount} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_discount")} />
                           </div>
 
                       </div>
@@ -324,19 +326,19 @@ const DashboardAdminDiscounts = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="expiredDate" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Stock"}</label>
-                            <input name="expiredDate" type="date" value={selectedDiscountCode.expiredDate.toISOString().split('T')[0]} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Fecha de Expiracion"} disabled/>
+                            <label htmlFor="expiredDate" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_expired_date")}</label>
+                            <input name="expiredDate" type="date" value={selectedDiscountCode.expiredDate.toISOString().split('T')[0]} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_expired_date")} />
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
+                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_status")}</label>
                             <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              <option value={selectedDiscountCode.status}>{selectedDiscountCode.status == "ACTIVE" ? "ACTIVO" : "INACTIVO"}</option>
+                              <option value={selectedDiscountCode.status}>{selectedDiscountCode.status == "ACTIVE" ? t("discount.ACTIVE") : t("discount.INACTIVE")}</option>
                             </select>
                           </div>
 
-                          <div className="flex flex-row justify-end gap-x-6 w-full">
-                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Volver a lista de Descuentos</Button>
+                          <div className="flex flex-row justify-end gap-x-6 w-full mt-4">
+                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("discount.go_back_discount_list")}</Button>
                           </div>
 
                       </div>
@@ -356,15 +358,15 @@ const DashboardAdminDiscounts = () => {
                 viewport={{ once: true }}
                 variants={fadeIn("up","",0.5,0.3)}
                 className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Percent/>Agregar Experiencia</h2>
+                <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Percent/>{t("discount.add_discount")}</h2>
 
               <form id="form_create_discount" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
 
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="code" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Codigo de descuento"}</label>
-                        <input name="code" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Codigo de descuento"}/>
+                        <label htmlFor="code" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_name")}</label>
+                        <input name="code" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_name")}/>
                         <div className="w-full h-6">
                           {errorMessages.code && (
                             <motion.p 
@@ -373,7 +375,7 @@ const DashboardAdminDiscounts = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.code}
+                              {t(errorMessages.code)}
                             </motion.p>
                           )}
                         </div>
@@ -381,8 +383,8 @@ const DashboardAdminDiscounts = () => {
 
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de descuentos"}</label>
-                        <input name="stock" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de descuentos"}/>
+                        <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_quantity")}</label>
+                        <input name="stock" type="number" step="1" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_quantity")}/>
                         <div className="w-full h-6">
                           {errorMessages.stock && (
                             <motion.p 
@@ -391,15 +393,15 @@ const DashboardAdminDiscounts = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.stock}
+                              {t(errorMessages.stock)}
                             </motion.p>
                           )}
                         </div>
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descuento en %"}</label>
-                        <input name="discount" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Descuento en %"}/>
+                        <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_discount")}</label>
+                        <input name="discount" type="number" step="1" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_discount")}/>
                         <div className="w-full h-6">
                           {errorMessages.discount && (
                             <motion.p 
@@ -408,7 +410,7 @@ const DashboardAdminDiscounts = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.discount}
+                              {t(errorMessages.discount)}
                             </motion.p>
                           )}
                         </div>
@@ -419,8 +421,8 @@ const DashboardAdminDiscounts = () => {
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="expiredDate" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Fecha de Expiracion"}</label>
-                        <input name="expiredDate" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Fecha de Expiracion"}/>
+                        <label htmlFor="expiredDate" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_expired_date")}</label>
+                        <input name="expiredDate" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_expired_date")}/>
                         <div className="w-full h-6">
                           {errorMessages.expiredDate && (
                             <motion.p 
@@ -429,7 +431,7 @@ const DashboardAdminDiscounts = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.expiredDate}
+                              {t(errorMessages.expiredDate)}
                             </motion.p>
                           )}
                         </div>
@@ -437,10 +439,10 @@ const DashboardAdminDiscounts = () => {
 
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
+                        <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_status")}</label>
                         <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                          <option value="ACTIVE">ACTIVO</option>
-                          <option value="INACTIVE">INACTIVO</option>
+                          <option value="ACTIVE">{t("discount.ACTIVE")}</option>
+                          <option value="INACTIVE">{t("discount.INACTIVE")}</option>
                         </select>
 
                         <div className="w-full h-6">
@@ -451,15 +453,15 @@ const DashboardAdminDiscounts = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.status}
+                              {t(errorMessages.status)}
                             </motion.p>
                           )}
                         </div>
                       </div>
 
                       <div className="flex flex-row justify-end gap-x-6 w-full">
-                          <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                          <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Descuento </Button>
+                          <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("common.cancel")}</Button>
+                          <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}>{t("discount.create_discount")}</Button>
                       </div>
 
                   </div>
@@ -476,15 +478,15 @@ const DashboardAdminDiscounts = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Percent/>Editar Descuento</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Percent/>{t("discount.edit_discount")}</h2>
 
                   <form id="form_update_discount" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitUpdate(e)}>
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="code" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre de codigo de descuento"}</label>
-                            <input name="code" value={selectedDiscountCode.code}  onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de codigo de descuento"}/>
+                            <label htmlFor="code" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_name")}</label>
+                            <input name="code" value={selectedDiscountCode.code}  onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_name")}/>
                             <div className="w-full h-6">
                               {errorMessages.code && (
                                 <motion.p 
@@ -493,15 +495,15 @@ const DashboardAdminDiscounts = () => {
                                   exit="hidden"
                                   variants={fadeIn("up","", 0, 1)}
                                   className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.code}
+                                  {t(errorMessages.code)}
                                 </motion.p>
                               )}
                             </div>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de Descuentos"}</label>
-                            <input name="stock" value={selectedDiscountCode.stock}  onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de Descuentos"}/>
+                            <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_quantity")}</label>
+                            <input name="stock" type="number" step="1" value={selectedDiscountCode.stock}  onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_quantity")}/>
                             <div className="w-full h-6">
                               {errorMessages.stock && (
                                 <motion.p 
@@ -510,15 +512,15 @@ const DashboardAdminDiscounts = () => {
                                   exit="hidden"
                                   variants={fadeIn("up","", 0, 1)}
                                   className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.stock}
+                                  {t(errorMessages.stock)}
                                 </motion.p>
                               )}
                             </div>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descuento en %"}</label>
-                            <input name="discount" value={selectedDiscountCode.discount}  onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Descuento en %"}/>
+                            <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_discount")}</label>
+                            <input name="discount" type="number" step="1" value={selectedDiscountCode.discount}  onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_discount")}/>
                             <div className="w-full h-6">
                               {errorMessages.discount && (
                                 <motion.p 
@@ -527,7 +529,7 @@ const DashboardAdminDiscounts = () => {
                                   exit="hidden"
                                   variants={fadeIn("up","", 0, 1)}
                                   className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.discount}
+                                  {t(errorMessages.discount)}
                                 </motion.p>
                               )}
                             </div>
@@ -537,8 +539,8 @@ const DashboardAdminDiscounts = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="expiredDate" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descuento en %"}</label>
-                            <input name="expiredDate" type="date" value={selectedDiscountCode.expiredDate.toISOString().split('T')[0]}  onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Descuento en %"}/>
+                            <label htmlFor="expiredDate" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_expired_date")}</label>
+                            <input name="expiredDate" type="date" value={selectedDiscountCode.expiredDate.toISOString().split('T')[0]}  onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_expired_date")}/>
                             <div className="w-full h-6">
                               {errorMessages.expiredDate && (
                                 <motion.p 
@@ -547,7 +549,7 @@ const DashboardAdminDiscounts = () => {
                                   exit="hidden"
                                   variants={fadeIn("up","", 0, 1)}
                                   className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.expiredDate}
+                                  {t(errorMessages.expiredDate)}
                                 </motion.p>
                               )}
                             </div>
@@ -555,10 +557,10 @@ const DashboardAdminDiscounts = () => {
 
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
+                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_status")}</label>
                             <select name="status" onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              <option value="ACTIVE" selected={selectedDiscountCode.status == "ACTIVE"}>ACTIVO</option>
-                              <option value="INACTIVE" selected={selectedDiscountCode.status == "INACTIVE"}>INACTIVO</option>
+                              <option value="ACTIVE" selected={selectedDiscountCode.status == "ACTIVE"}>{t("discount.ACTIVE")}</option>
+                              <option value="INACTIVE" selected={selectedDiscountCode.status == "INACTIVE"}>{t("discount.INACTIVE")}</option>
                             </select>
                             <div className="w-full h-6">
                               {errorMessages.status && (
@@ -568,15 +570,15 @@ const DashboardAdminDiscounts = () => {
                                   exit="hidden"
                                   variants={fadeIn("up","", 0, 1)}
                                   className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.status}
+                                  {t(errorMessages.status)}
                                 </motion.p>
                               )}
                             </div>
                           </div>
 
                           <div className="flex flex-row justify-end gap-x-6 w-full">
-                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                              <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Guardar Cambios </Button>
+                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("common.cancel")}</Button>
+                              <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}>{t("discount.save_changes")}</Button>
                           </div>
 
                       </div>

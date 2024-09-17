@@ -11,10 +11,13 @@ import {fadeIn} from "../lib/motions";
 import {  ZodError } from 'zod';
 import { ReviewSchema } from "../db/schemas";
 import Modal from "../components/Modal";
+import {useTranslation} from "react-i18next";
 
 
 const DashboardAdminReviews = () => {
 
+    
+    const {t,i18n} = useTranslation();
     const { user } = useAuth();
     const [datasetReviews,setDataSetReviews] = useState<{reviews:Review[],totalPages:Number,currentPage:Number}>({reviews:[],totalPages:1,currentPage:1});
     const [currentView,setCurrentView] = useState<string>("LOADING");
@@ -26,7 +29,7 @@ const DashboardAdminReviews = () => {
     const getReviewsHandler = async (page:Number) => {
         setCurrentView("LOADING");
         if(user != null){
-            const reviews  = await getAllReviews(user.token,page);
+            const reviews  = await getAllReviews(user.token,page,i18n.language);
             if(reviews){
                 setDataSetReviews(reviews);
                 setCurrentView("L");
@@ -82,7 +85,7 @@ const DashboardAdminReviews = () => {
         const fieldsValidated = validateFields('form_create_review');
         if(fieldsValidated != null){
           if(user !== null){
-            const isSuccess = await createReview(fieldsValidated, user.token);
+            const isSuccess = await createReview(fieldsValidated, user.token, i18n.language);
             if(!isSuccess){
                 setLoadingForm(false);
                 return;
@@ -101,7 +104,7 @@ const DashboardAdminReviews = () => {
 
     const deleteReviewHandler = async() => {
         if(user != null && selectedReview != null){
-            const isSuccess = await deleteReview(selectedReview.id,user.token)
+            const isSuccess = await deleteReview(selectedReview.id,user.token, i18n.language)
             if(!isSuccess){
                 return;
             }
@@ -123,7 +126,7 @@ const DashboardAdminReviews = () => {
                 variants={fadeIn("up","",0.5,0.3)}
                 className="w-full min-h-[300px] flex flex-col justify-center items-center gap-y-4 bg-white pointer-events-none">
                   <div className="loader"></div>
-                  <h1 className="font-primary text-secondary mt-4">{"Cargando..."}</h1>
+                  <h1 className="font-primary text-secondary mt-4">{t("common.loading")}</h1>
             </motion.div>
         )}
 
@@ -138,68 +141,73 @@ const DashboardAdminReviews = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><MessageSquare/>Reviews</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><MessageSquare/>{t("review.plural")}</h2>
                     <div className="w-full h-auto flex flex-row justify-end items-center gap-x-4">
                         <div className="w-auto h-auto flex flex-row justify-end items-start gap-y-4 gap-x-4">
-                          <Button onClick={()=>{setCurrentView("A")}} size="sm" variant="dark" effect="default" className="min-w-[300px]" isRound={true}>Agregar Review <MessageSquare/></Button>
+                          <Button onClick={()=>{setCurrentView("A")}} size="sm" variant="dark" effect="default" className="min-w-[300px]" isRound={true}>{t("review.add_review")}<MessageSquare/></Button>
                         </div>
                     </div>
                     <table className="h-full w-full shadow-xl rounded-xl text-center p-4">
-                        <thead className="font-primary text-md bg-primary text-white">
+                      <thead className="font-primary text-sm xl:text-md bg-primary text-white">
                             <tr className="">
                                 <th className="rounded-tl-xl p-2">#</th>
-                                <th className="p-2">Nombre</th>
-                                <th className="p-2">Titulo</th>
-                                <th className="p-2">Review</th>
-                                <th className="p-2">Valoracion</th>
-                                <th className="p-2">Dia</th>
-                                <th className="p-2">Imagen de Perfil</th>
-                                <th className="p-2">Creado</th>
-                                <th className="p-2">Actualizado</th>
-                                <th className="rounded-tr-xl p-2">Acciones</th>
+                                <th className="p-2">{t("review.name")}</th>
+                                <th className="p-2">{t("review.title")}</th>
+                                <th className="p-2">{t("review.review")}</th>
+                                <th className="p-2">{t("review.stars")}</th>
+                                <th className="p-2">{t("review.day")}</th>
+                                <th className="p-2 max-xl:hidden">{t("review.profile_image")}</th>
+                                <th className="p-2 max-xl:hidden">{t("review.created")}</th>
+                                <th className="p-2 max-xl:hidden">{t("review.updated")}</th>
+                                <th className="rounded-tr-xl p-2">{t("review.actions")}</th>
                             </tr>
                         </thead>
-                        <tbody className="font-secondary text-sm">
+                      <tbody className="font-secondary text-xs xl:text-sm">
                                 {datasetReviews.reviews.map((reviewItem,index)=>{
                                     return(
                                     <tr key={"user_key"+index} className="text-slate-400 hover:bg-secondary hover:text-white duration-300 cursor-pointer"> 
                                         <td className="">{reviewItem.id}</td>
                                         <td className="">{getInitials(reviewItem.name)}</td>
-                                        <td className="">{reviewItem.title}</td>
-                                      <td className="">{reviewItem.review ? reviewItem.review.slice(0,20)+"..." : "No review"}</td>
+                                      <td className="">{reviewItem.title}</td>
+                                      <td className="">{reviewItem.review ? reviewItem.review.slice(0,20)+"..." : t("review.no_review")}</td>
 
-                                        <td className="flex flex-row flex-wrap items-start justify-start gap-2">
+                                      <td className="w-full h-full flex flex-row flex-wrap items-center justify-center gap-1 xl:gap-2">
                                           {[...Array(5)].map((_, index) => (
                                             <span key={index}>
                                               {index < reviewItem.stars ? (
-                                                <Star /> // Replace with your filled star icon component
+                                                <Star className="w-3 h-3 xl:w-5 xl:h-5" /> // Replace with your filled star icon component
                                               ) : (
-                                                <StarOff /> // Replace with your empty star icon component
+                                                <StarOff className="w-3 h-3 xl:w-5 xl:h-5" /> // Replace with your empty star icon component
                                               )}
                                             </span>
                                           ))}
                                         </td>
-                                        <td className="">{reviewItem.day !== undefined && reviewItem.day != null ? formatToISODate(reviewItem.day) : "None"}</td>
+                                      <td className="">{reviewItem.day !== undefined && reviewItem.day != null ? formatToISODate(reviewItem.day) : t("review.none")}</td>
 
-                                        <td className="flex flex-row flex-wrap items-center justify-center gap-2">
-                                          {reviewItem.profile_image_url.length != null && reviewItem.profile_image_url.length > 0 ?
-                                            <a href={`${reviewItem.profile_image_url}`} target="_blank">
-                                              <Image className="hover:text-tertiary duration-300"/>
+                                      <td className="max-xl:hidden w-full h-full flex flex-row flex-wrap items-center justify-center gap-2">
+                                        {reviewItem.profile_image_url.length != null && reviewItem.profile_image_url.length > 0 ?
+                                          <a href={`${reviewItem.profile_image_url}`} target="_blank">
+                                            <Image className="hover:text-tertiary duration-300"/>
 
-                                            </a>
-                                          :
-                                              <span>No hay imagen</span>
-                                          }
-                                        </td>
-                                        <td className="h-full">{reviewItem.updatedAt != undefined && reviewItem.updatedAt != null ? formatDate(reviewItem.updatedAt) : "None"}</td>
-                                        <td className="h-full">{reviewItem.createdAt != undefined && reviewItem.createdAt != null ? formatDate(reviewItem.createdAt) : "None"}</td>
-                                        <td className="h-full flex flex-col items-center justify-center">
-                                          <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
-                                            <button onClick={()=>{setSelectedReview(reviewItem); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
-                                            <button onClick={()=>{setOpenDeleteModal(true),setSelectedReview(reviewItem)}} className="border rounded-md hover:bg-red-400 hover:text-white duration-300 active:scale-75 p-1"><X className="h-5 w-5"/></button>
-                                          </div>
-                                        </td>
+                                          </a>
+                                        :
+                                            <span>{t("review.no_image")}</span>
+                                        }
+                                      </td>
+                                      <td className="h-full h-full max-xl:hidden">{reviewItem.updatedAt != undefined && reviewItem.updatedAt != null ? formatDate(reviewItem.updatedAt) : t("review.none")}</td>
+                                      <td className="h-full h-full max-xl:hidden">{reviewItem.createdAt != undefined && reviewItem.createdAt != null ? formatDate(reviewItem.createdAt) : t("review.none")}</td>
+                                      <td className="h-full w-auto flex flex-col items-center justify-center">
+                                        <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
+                                          <button  onClick={()=>{setSelectedReview(reviewItem); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1">
+                                            <Eye className="h-5 w-5" />
+                                          </button>
+                                          <button onClick={()=>{setOpenDeleteModal(true),setSelectedReview(reviewItem)}}  className="border rounded-md hover:bg-red-400 hover:text-white duration-300 active:scale-75 p-1">
+                                            <X className="h-5 w-5" />
+                                          </button>
+                                        </div>
+                                      </td>
                                     </tr>
+
                                     )
                                 })}
                         </tbody>
@@ -213,11 +221,11 @@ const DashboardAdminReviews = () => {
                 <Modal isOpen={openDeleteModal} onClose={()=>setOpenDeleteModal(false)}>
                     <div className="w-[400px] h-auto flex flex-col items-center justify-center text-secondary pb-6 px-6 pt-12 text-center">
                         <CircleX className="h-[60px] w-[60px] text-red-400 "/>
-                        <p className="text-primary">Estas seguro de eliminar esta review?</p>
-                        <p className="text-sm mt-6 text-secondary">La review se eliminara</p>
+                        <p className="text-primary">{t("review.secure_delete_review_question")}</p>
+                        <p className="text-sm mt-6 text-secondary">{t("review.secure_delete_review_description")}</p>
                         <div className="flex flex-row justify-around w-full mt-6">
-                            <Button size="sm" variant="dark" effect="default" isRound={true} onClick={()=>setOpenDeleteModal(false)}> Cancelar  </Button>
-                            <Button size="sm" variant="danger" effect="default" isRound={true} onClick={()=>{deleteReviewHandler()}}> Aceptar </Button>
+                            <Button size="sm" variant="dark" effect="default" isRound={true} onClick={()=>setOpenDeleteModal(false)}>{t("common.cancel")}</Button>
+                            <Button size="sm" variant="danger" effect="default" isRound={true} onClick={()=>{deleteReviewHandler()}}>{t("common.accept")}</Button>
                         </div>
                     </div>
                 </Modal>
@@ -227,57 +235,71 @@ const DashboardAdminReviews = () => {
 
         {currentView == "V" && selectedReview && (
                 <motion.div 
-                    key={"New-View"}
+                    key={"View"}
                     initial="hidden"
                     animate="show"
                     exit="hidden"
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Percent/>Ver Descuento</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Percent/>{t("review.see_review")}</h2>
 
                   <div className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" >
 
-                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
+                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full lg:gap-y-4">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre de la Persona"}</label>
-                            <input name="name" value={selectedReview.name} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de la Persona"} disabled/>
+                            <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.author_review")}</label>
+                            <input name="name" value={selectedReview.name} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.author_review")}/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Titulo de la Review"}</label>
-                            <input name="title" value={selectedReview.title} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Titulo de la Review"} disabled/>
+                            <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.title_review")}</label>
+                            <input name="title" value={selectedReview.title} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.title_review")}/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="stars" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Valoracion"}</label>
-                            <input name="stars" type="number" value={selectedReview.stars} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Valoracion"} disabled/>
+                            <div className="h-3 sm:h-6 flex flex-row justify-center items-center">
+                              <label htmlFor="stars" className="font-primary text-secondary text-xs sm:text-lg ">{t("review.stars")}</label>
+                              <span className="w-auto h-auto flex flex-row ml-2 gap-x-1">
+                                {[...Array(5)].map((_, index) => (
+                                  <span key={index}>
+                                    <Star className="h-4 w-4" /> 
+                                  </span>
+                                ))}
+                              </span>
+                            </div>
+                            <input name="stars" type="number" max="5" min="1" step="1" value={selectedReview.stars} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.stars")}/>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="review" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{t("review.review")}</label>
+                            <textarea name="review" className="w-full h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.review")} value={selectedReview.review}/>
                           </div>
 
                       </div>
 
-                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
+                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%] lg:gap-y-4">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="day" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Dia de la Review"}</label>
-                            <input name="day" type="date" value={selectedReview.day.toISOString().split('T')[0]} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Dia de la Review"} disabled/>
+                            <label htmlFor="day" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.day_review")}</label>
+                            <input name="day" type="date" value={selectedReview.day.toISOString().split('T')[0]} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.day_review")}/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="href" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Enlace de la review"}</label>
-                            <input name="href"  value={selectedReview.href} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Enlace de la review"} disabled/>
+                            <label htmlFor="href" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.link_review")}</label>
+                            <input name="href"  value={selectedReview.href} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.link_review")}/>
                           </div>
 
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="profile_image_url" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Enlace de la foto de la persona"}</label>
-                            <input name="profile_image_url"  value={selectedReview.profile_image_url} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Enlace de la foto de la persona"} disabled/>
+                            <label htmlFor="profile_image_url" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.profile_image_review")}</label>
+                            <input name="profile_image_url"  value={selectedReview.profile_image_url} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.profile_image_review")}/>
                           </div>
 
 
                           <div className="flex flex-row justify-end gap-x-6 w-full">
-                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Volver a lista de Reviews</Button>
+                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("review.go_back_review_list")}</Button>
                           </div>
 
                       </div>
@@ -297,15 +319,15 @@ const DashboardAdminReviews = () => {
                 viewport={{ once: true }}
                 variants={fadeIn("up","",0.5,0.3)}
                 className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><MessageSquare/>Agregar Review</h2>
+                <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><MessageSquare/>{t("review.add_review")}</h2>
 
               <form id="form_create_review" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
 
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre de la persona de la Review"}</label>
-                        <input name="name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de la persona de la Review"}/>
+                        <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.author_review")}</label>
+                        <input name="name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.author_review")}/>
                         <div className="w-full h-6">
                           {errorMessages.name && (
                             <motion.p 
@@ -314,15 +336,15 @@ const DashboardAdminReviews = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.name}
+                              {t(errorMessages.name)}
                             </motion.p>
                           )}
                         </div>
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Titulo de la Review"}</label>
-                        <input name="title" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Titulo de la Review"}/>
+                        <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.title_review")}</label>
+                        <input name="title" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.title_review")}/>
                         <div className="w-full h-6">
                           {errorMessages.title && (
                             <motion.p 
@@ -331,15 +353,24 @@ const DashboardAdminReviews = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.title}
+                              {t(errorMessages.title)}
                             </motion.p>
                           )}
                         </div>
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="stars" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Valoracion"}</label>
-                        <input name="stars" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Valoracion"}/>
+                        <div className="h-3 sm:h-6 flex flex-row justify-center items-center">
+                          <label htmlFor="stars" className="font-primary text-secondary text-xs sm:text-lg ">{t("review.stars")}</label>
+                          <span className="w-auto h-auto flex flex-row ml-2 gap-x-1">
+                            {[...Array(5)].map((_, index) => (
+                              <span key={index}>
+                                <Star className="h-4 w-4" /> 
+                              </span>
+                            ))}
+                          </span>
+                        </div>
+                        <input name="stars" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.stars_review")}/>
                         <div className="w-full h-6">
                           {errorMessages.stars && (
                             <motion.p 
@@ -348,15 +379,15 @@ const DashboardAdminReviews = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.stars}
+                              {t(errorMessages.stars)}
                             </motion.p>
                           )}
                         </div>
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="review" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Review"}</label>
-                        <textarea name="review" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Review"}/>
+                        <label htmlFor="review" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{t("review.review")}</label>
+                        <textarea name="review" className="w-full h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.review")}/>
                         <div className="w-full h-6">
                           {errorMessages.review && (
                             <motion.p 
@@ -365,7 +396,7 @@ const DashboardAdminReviews = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.review}
+                              {t(errorMessages.review)}
                             </motion.p>
                           )}
                         </div>
@@ -375,8 +406,8 @@ const DashboardAdminReviews = () => {
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="day" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Dia de la review"}</label>
-                        <input name="day" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Dia de la review"}/>
+                        <label htmlFor="day" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.day_review")}</label>
+                        <input name="day" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"review.day_review"}/>
                         <div className="w-full h-6">
                           {errorMessages.day && (
                             <motion.p 
@@ -385,15 +416,15 @@ const DashboardAdminReviews = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.day}
+                              {t(errorMessages.day)}
                             </motion.p>
                           )}
                         </div>
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="href" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Enlace de la Review"}</label>
-                        <input name="href" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Enlace de la Review"}/>
+                        <label htmlFor="href" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.link_review")}</label>
+                        <input name="href" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.link_review")}/>
                         <div className="w-full h-6">
                           {errorMessages.href && (
                             <motion.p 
@@ -402,15 +433,15 @@ const DashboardAdminReviews = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.href}
+                              {t(errorMessages.href)}
                             </motion.p>
                           )}
                         </div>
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="profile_image_url" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Enlace de la foto de la persona"}</label>
-                        <input name="profile_image_url" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Enlace de la foto de la persona"}/>
+                        <label htmlFor="profile_image_url" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.profile_image_review")}</label>
+                        <input name="profile_image_url" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.profile_image_review")}/>
                         <div className="w-full h-6">
                           {errorMessages.profile_image_url && (
                             <motion.p 
@@ -419,7 +450,7 @@ const DashboardAdminReviews = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.profile_image_url}
+                              {t(errorMessages.profile_image_url)}
                             </motion.p>
                           )}
                         </div>
@@ -427,8 +458,8 @@ const DashboardAdminReviews = () => {
 
 
                       <div className="flex flex-row justify-end gap-x-6 w-full">
-                          <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                          <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Review </Button>
+                          <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("common.cancel")}</Button>
+                          <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}>{t("review.create_review")}</Button>
                       </div>
 
                   </div>

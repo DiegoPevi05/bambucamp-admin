@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Faq, FaqFormData } from '../../lib/interfaces';
 import { serializeFaq } from '../serializer';
 
-export const getAllFaqs = async( token: string, page:Number ): Promise<{faqs:Faq[], totalPages:Number ,currentPage:Number}|null> => {
+export const getAllFaqs = async( token: string, page:Number, language:string ): Promise<{faqs:Faq[], totalPages:Number ,currentPage:Number}|null> => {
 
   let data:{ faqs:Faq[],totalPages:Number,currentPage:Number } | null = null;
   try{
@@ -16,7 +16,7 @@ export const getAllFaqs = async( token: string, page:Number ): Promise<{faqs:Faq
     const fetchFaqs = await axios.get(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -57,13 +57,13 @@ export const getAllFaqs = async( token: string, page:Number ): Promise<{faqs:Faq
 
 
 
-export const createFaq = async (formData: FaqFormData, token: string): Promise<boolean> => {
+export const createFaq = async (formData: FaqFormData, token: string, language:string): Promise<boolean> => {
   try {
 
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/web/faqs`, formData, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
     toast.success(response.data.message);
@@ -95,13 +95,13 @@ export const createFaq = async (formData: FaqFormData, token: string): Promise<b
   }
 };
 
-export const deleteFaq = async(idFaq:Number, token:string ):Promise<boolean> => {
+export const deleteFaq = async(idFaq:Number, token:string, language:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/web/faqs/${idFaq}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
     toast.success(response.data.message);

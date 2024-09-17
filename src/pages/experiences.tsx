@@ -382,14 +382,14 @@ const DashboardAdminExperiences = () => {
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
                     <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>Experiencias</h2>
-                    <div className="w-full h-auto flex flex-row justify-between items-center gap-x-4">
-                        <div className="w-auto h-auto flex flex-col md:flex-row justify-start items-start gap-y-4 gap-x-4">
-                          <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
+                  <div className="w-full h-auto flex flex-col xl:flex-row justify-start xl:justify-between items-center gap-x-4">
+                    <div className="w-full xl:w-auto h-auto flex flex-col md:flex-row justify-between xl:justify-start items-start gap-y-4 gap-x-4">
+                          <div className="flex flex-row items-start md:items-center gap-x-2">
                             <input 
                               type="text" 
                               name="criteria_search_value"
                               placeholder="Buscar Experiencia" 
-                              className="w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
+                              className="w-48 xl:w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
                             <InputRadio name="criteria_search" variant="dark" value="title" placeholder="Nombre"/>
                           </div>
@@ -407,8 +407,8 @@ const DashboardAdminExperiences = () => {
                             </Button>
                           </div>
                         </div>
-                        <div className="w-auto h-auto flex flex-row justify-end items-start gap-y-4 gap-x-4">
-                            <div className="w-full h-10 flex justify-end">
+                    <div className="w-full xl:w-auto h-auto flex flex-row justify-between xl:justify-end items-start gap-y-4 gap-x-4 max-xl:mt-4">
+                      <div className="w-auto xl:w-full h-10 flex justify-end">
                               <button
                                 type="button"
                                 onClick={()=>setOpenModalCategories(true)}
@@ -421,7 +421,7 @@ const DashboardAdminExperiences = () => {
                         </div>
                     </div>
                     <table className="h-full w-full shadow-xl rounded-xl text-center p-4">
-                        <thead className="font-primary text-md bg-primary text-white">
+                      <thead className="font-primary text-sm xl:text-md bg-primary text-white">
                             <tr className="">
                                 <th className="rounded-tl-xl p-2">#</th>
                                 <th className="p-2">Categoria</th>
@@ -430,12 +430,12 @@ const DashboardAdminExperiences = () => {
                                 <th className="p-2">Duracion</th>
                                 <th className="p-2">Imagenes</th>
                                 <th className="p-2">Estado</th>
-                                <th className="p-2">Creado</th>
-                                <th className="p-2">Actualizado</th>
+                                <th className="p-2 max-xl:hidden">Creado</th>
+                                <th className="p-2 max-xl:hidden">Actualizado</th>
                                 <th className="rounded-tr-xl p-2">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody className="font-secondary text-sm">
+                      <tbody className="font-secondary text-xs xl:text-sm">
                                 {datasetExperiences.experiences.map((experienceItem,index)=>{
                                     return(
                                     <tr key={"user_key"+index} className="text-slate-400 hover:bg-secondary hover:text-white duration-300 cursor-pointer"> 
@@ -452,8 +452,8 @@ const DashboardAdminExperiences = () => {
                                           ))}
                                         </td>
                                         <td className="h-full">{experienceItem.status != "ACTIVE" ? "INACTIVO" : "ACTIVO" }</td>
-                                        <td className="h-full">{experienceItem.updatedAt != undefined && experienceItem.updatedAt != null ? formatDate(experienceItem.updatedAt) : "None"}</td>
-                                        <td className="h-full">{experienceItem.createdAt != undefined && experienceItem.createdAt != null ? formatDate(experienceItem.createdAt) : "None"}</td>
+                                      <td className="h-full max-xl:hidden">{experienceItem.updatedAt != undefined && experienceItem.updatedAt != null ? formatDate(experienceItem.updatedAt) : "None"}</td>
+                                      <td className="h-full max-xl:hidden">{experienceItem.createdAt != undefined && experienceItem.createdAt != null ? formatDate(experienceItem.createdAt) : "None"}</td>
                                         <td className="h-full flex flex-col items-center justify-center">
                                           <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
                                             <button onClick={()=>{setSelectedExperience(experienceItem); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
