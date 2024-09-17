@@ -7,19 +7,19 @@ const signInSchema = z.object({
 });
 
 const createUserSchema = z.object({
-  firstName: z.string().nonempty({ message: 'Nombre es requerido' }),
-  lastName: z.string().nonempty({ message: 'Apellido es requerido' }),
-  phoneNumber: z.string().nonempty({ message: 'Numero de telefono es requerido' }),
-  email: z.string().email({ message: 'Debe ser un Correo Electronico Valido' }),
+  firstName: z.string().nonempty({ message: 'user.validations.name_required' }),
+  lastName: z.string().nonempty({ message: 'user.validations.lastname_required' }),
+  phoneNumber: z.string().nonempty({ message: 'user.validations.cellphone_required' }),
+  email: z.string().email({ message: 'user.validations.email_invalid' }),
   role: z.string().refine(
     (value) => value === 'SUPERVISOR' || value === 'CLIENT',
-    { message: 'Rol tiene que ser Supervisor o Cliente' }
+    { message: 'user.validations.rol_invalid' }
   ),
   password: z.string()
-    .min(8, { message: 'La Contraseña debe tener almenos 8 caracteres.' })
-    .regex(/[a-zA-Z]/, { message: 'La Contraseña debe tener almenos una letra.' })
-    .regex(/[0-9]/, { message: 'La Contraseña debe tener almenos un numero.' })
-    .regex(/[^a-zA-Z0-9]/, { message: 'La Contraseña debe contener un caracter especial.' })
+    .min(8, { message: 'user.validations.password_length' })
+    .regex(/[a-zA-Z]/, { message: 'user.validations.password_letter' })
+    .regex(/[0-9]/, { message: 'user.validations.password_number' })
+    .regex(/[^a-zA-Z0-9]/, { message: 'user.validations.password_special' })
 });
 
 const editUserSchema = createUserSchema.omit({ password: true }).extend({
@@ -29,7 +29,7 @@ const editUserSchema = createUserSchema.omit({ password: true }).extend({
 const CustomPriceSchema = z.object({
   dateFrom: z.date(),
   dateTo: z.date(),
-  price: z.number().positive({ message: 'El precio debe ser un número positivo' })
+  price: z.number().positive({ message: 'common.validations.custom_price_price' })
 });
 
 const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
@@ -41,16 +41,16 @@ const imageFileSchema = z.instanceof(File).refine((file) => {
 });
 
 const TentSchema = z.object({
-  header: z.string().nonempty({ message: 'El encabezado es requerido' }),
-  title: z.string().nonempty({ message: 'El título es requerido' }),
-  description: z.string().nonempty({ message: 'La descripción es requerida' }),
+  header: z.string().nonempty({ message: 'glamping.validations.header_required' }),
+  title: z.string().nonempty({ message: 'glamping.validations.title_required' }),
+  description: z.string().nonempty({ message: 'glamping.validations.description_required' }),
   existing_images: z.array(z.string()).default([]),
   images: z.array(imageFileSchema).default([]),
-  qtypeople: z.number().gt(1, { message: 'La cantidad de personas debe ser mayor que 1' }),
-  qtykids: z.number().nonnegative({ message: 'La cantidad de niños debe ser un número no negativo' }),
+  qtypeople: z.number().min(1, { message: 'glamping.validations.qtypeople_min' }),
+  qtykids: z.number().nonnegative({ message: 'glamping.validations.qtykids_positive' }),
   aditional_people_price:z.number(),
   max_aditional_people:z.number(),
-  price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
+  price: z.number().positive({ message: 'glamping.validations.price_positive' }),
   services: z.object({
     wifi: z.boolean(),
     parking: z.boolean(),
@@ -65,24 +65,24 @@ const TentSchema = z.object({
     grill: z.boolean()
   }),
   custom_price: z.array(CustomPriceSchema),
-  status: z.string().nonempty({ message: 'El estado es requerido' }),
+  status: z.string().nonempty({ message: 'glamping.validations.status_required' }),
 }).refine(data => data.existing_images.length > 0 || data.images.length > 0, {
-  message: 'Debe haber al menos una imagen',
+  message: 'glamping.validations.images_min',
   path: ['images'] // This can be any path to indicate where the error should appear
 });
 
 const ProductSchema = z.object({
-  categoryId:z.number().positive({ message:'El producto debe tener una categoria' }),
-  name: z.string().nonempty({ message: 'El título es requerido' }),
-  description: z.string().nonempty({ message: 'La descripción es requerida' }),
+  categoryId:z.number().positive({ message:'product.validations.product_category_id_invalid' }),
+  name: z.string().nonempty({ message: 'product.validations.name_required' }),
+  description: z.string().nonempty({ message: 'product.validations.description_required' }),
   existing_images: z.array(z.string()).default([]),
   images: z.array(imageFileSchema).default([]),
-  stock: z.number().gt(1, { message: 'La cantidad de productos debe ser mayor que 1' }),
-  price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
+  stock: z.number().min(1, { message: 'product.validations.stock_min' }),
+  price: z.number().positive({ message: 'product.validations.price_min' }),
   custom_price: z.array(CustomPriceSchema),
-  status: z.string().nonempty({ message: 'El estado es requerido' }),
+  status: z.string().nonempty({ message: 'product.validations.status_required' }),
 }).refine(data => data.existing_images.length > 0 || data.images.length > 0, {
-  message: 'Debe haber al menos una imagen',
+  message: 'product.validations.images_min',
   path: ['images'] // This can be any path to indicate where the error should appear
 });
 

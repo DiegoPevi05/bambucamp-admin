@@ -205,19 +205,19 @@ const DashboardAdminDiscounts = () => {
                     <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Percent/>{t("discount.plural")}</h2>
                   <div className="w-full h-auto flex flex-col xl:flex-row  justify-start xl:justify-between items-center xl:gap-x-4">
                     <div className="w-full xl:w-auto h-auto flex flex-row  justify-between xl:justify-start items-start gap-y-4 gap-x-4">
-                          <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
+                          <div className="max-xl:w-[50%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
                             <input 
                               type="text" 
                               name="criteria_search_value"
-                              placeholder="Buscar Descuento" 
-                              className="w-48 xl:w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
+                              placeholder={t("discount.search_discount")} 
+                              className="w-full xl:w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
                             <InputRadio name="criteria_search" isRound={true} variant="light" value="title" placeholder="Nombre"/>
                           </div>
-                          <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
-                              <label className="md:ml-4 flex items-center">
+                          <div className="max-xl:w-[50%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
+                              <label className="max-xl:w-full md:ml-4 flex items-center">
                                 {t("discount.status")}
-                                <select name="criteria_search_status" className="ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
+                                <select name="criteria_search_status" className="max-xl:w-full ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
                                   <option value="">{t("discount.select_status")}</option>
                                   <option value="ACTIVE">{t("discount.ACTIVE")}</option>
                                   <option value="INACTIVE">{t("discount.INACTIVE")}</option>

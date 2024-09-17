@@ -3,7 +3,7 @@ import axios from 'axios';
 import { User, UserFilters, UserFormData } from '../../lib/interfaces';
 import { serializeUser } from '../serializer';
 
-export const getAllUsers = async(token:string, page:Number, filters?:UserFilters): Promise<{users:User[], totalPages:Number ,currentPage:Number}|null> => {
+export const getAllUsers = async(token:string, page:Number, language:string, filters?:UserFilters): Promise<{users:User[], totalPages:Number ,currentPage:Number}|null> => {
 
   let data:{ users:User[],totalPages:Number,currentPage:Number } | null = null;
   try{
@@ -27,7 +27,7 @@ export const getAllUsers = async(token:string, page:Number, filters?:UserFilters
     const fetchUsers = await axios.get(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -66,12 +66,12 @@ export const getAllUsers = async(token:string, page:Number, filters?:UserFilters
 }
 
 
-export const createUser = async (user: UserFormData, token: string): Promise<boolean> => {
+export const createUser = async (user: UserFormData, token: string, language:string): Promise<boolean> => {
   try {
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/users`, user, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -104,12 +104,12 @@ export const createUser = async (user: UserFormData, token: string): Promise<boo
   }
 };
 
-export const updateUser = async (userId:Number,user: UserFormData, token: string): Promise<boolean> => {
+export const updateUser = async (userId:Number,user: UserFormData, token: string, language:string): Promise<boolean> => {
   try {
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/users/${userId}`, user, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -142,13 +142,13 @@ export const updateUser = async (userId:Number,user: UserFormData, token: string
   }
 };
 
-export const deleteUser = async(idUser:Number, token:string ):Promise<boolean> => {
+export const deleteUser = async(idUser:Number, token:string, language:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/users/${idUser}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -182,13 +182,13 @@ export const deleteUser = async(idUser:Number, token:string ):Promise<boolean> =
 
 }
 
-export const disableUser = async(idUser:Number, token:string ):Promise<boolean> => {
+export const disableUser = async(idUser:Number, token:string, language:string ):Promise<boolean> => {
 
   try {
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/users/${idUser}/disable`,{}, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -222,13 +222,13 @@ export const disableUser = async(idUser:Number, token:string ):Promise<boolean> 
 
 }
 
-export const enableUser = async(idUser:Number, token:string ):Promise<boolean> => {
+export const enableUser = async(idUser:Number, token:string, language:string ):Promise<boolean> => {
 
   try {
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/users/${idUser}/enable`,{}, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
     toast.success(response.data.message);

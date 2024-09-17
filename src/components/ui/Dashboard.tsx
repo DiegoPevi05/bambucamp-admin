@@ -17,37 +17,37 @@ const DashboardButtons: DashboardButtonDataProps[] = [
     "section": "reserves"
   },
   {
-    "title": "Usuarios",
+    "title": "user.plural",
     "icon": <User />,
     "section": "users"
   },
   {
-    "title": "Glampings",
+    "title": "glamping.plural",
     "icon": <Tent />,
     "section": "tents"
   },
   {
-    "title": "Productos",
+    "title": "product.plural",
     "icon": <Pizza />,
     "section": "products"
   },
   {
-    "title": "Experiencias",
+    "title": "experience.plural",
     "icon": <FlameKindling />,
     "section": "experiences"
   },
   {
-    "title":"Descuentos",
+    "title":"discount.plural",
     "icon": <Percent />,
     "section": "discounts"
   },
   {
-    "title": "Promociones",
+    "title": "promotion.plural",
     "icon": <Disc />,
     "section": "promotions"
   },
   {
-    "title": "Preguntas",
+    "title": "faq.plural",
     "icon": <Quote />,
     "section": "questions"
   },

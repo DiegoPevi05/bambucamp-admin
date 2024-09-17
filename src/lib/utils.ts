@@ -52,17 +52,17 @@ export const convertStrToCurrentTimezoneDate = (utcDateString: string): Date => 
 };
 
 export const getLabelService = (key:string) => {
-    if(key == "wifi") return "Wi-Fi"
-    if(key == "parking") return "Estacionamiento"
-    if(key == "pool") return "Piscina"
-    if(key == "breakfast") return "Desayuno"
-    if(key == "lunch" ) return "Almuerzo"
-    if(key == "dinner") return "Cena"
-    if(key == "spa") return "Spa"
-    if(key == "bar") return "Bar"
-    if(key == "hotwater") return "Agua Caliente"
-    if(key == "airconditioning") return "Aire acondicionado"
-    if(key == "grill") return "Parrilla"
+    if(key == "wifi") return "glamping.wi_fi"
+    if(key == "parking") return "glamping.parking"
+    if(key == "pool") return "glamping.pool"
+    if(key == "breakfast") return "glamping.breakfast"
+    if(key == "lunch" ) return "glamping.lunch"
+    if(key == "dinner") return "glamping.dinner"
+    if(key == "spa") return "glamping.spa"
+    if(key == "bar") return "glamping.bar"
+    if(key == "hotwater") return "glamping.hotwater"
+    if(key == "airconditioning") return "glamping.air_conditioner"
+    if(key == "grill") return "glamping.grill"
     return key;
 }
 

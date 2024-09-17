@@ -386,19 +386,19 @@ const DashboardAdminExperiences = () => {
                     <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>{t("experience.plural")}</h2>
                   <div className="w-full h-auto flex flex-col xl:flex-row justify-start xl:justify-between items-center gap-x-4">
                     <div className="w-full xl:w-auto h-auto flex flex-col md:flex-row justify-between xl:justify-start items-start gap-y-4 gap-x-4">
-                          <div className="flex flex-row items-start md:items-center gap-x-2">
+                      <div className="max-xl:w-[50%] flex flex-row items-start md:items-center gap-x-2">
                             <input 
                               type="text" 
                               name="criteria_search_value"
-                              placeholder="Buscar Experiencia" 
-                              className="w-48 xl:w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
+                              placeholder={t("experience.search_experience")} 
+                              className="w-full xl:w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
                             <InputRadio name="criteria_search" variant="light" isRound={true} value="title" placeholder="Nombre"/>
                           </div>
-                          <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
-                              <label className="md:ml-4 flex items-center">
+                      <div className="max-xl:w-[50%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
+                        <label className="max-xl:w-full md:ml-4 flex items-center">
                                 {t("experience.status")}
-                                <select name="criteria_search_status" className="ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
+                                <select name="criteria_search_status" className="max-xl:w-full ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
                                   <option value="">{t("experience.select_status")}</option>
                                   <option value="ACTIVE">{t("experience.ACTIVE")}</option>
                                   <option value="INACTIVE">{t("experience.INACTIVE")}</option>
@@ -448,7 +448,7 @@ const DashboardAdminExperiences = () => {
                                         <td className="">{`${experienceItem.duration} min.`}</td>
                                         <td className="flex flex-row flex-wrap items-start justify-start gap-2">
                                           {experienceItem.images.map((img, index) => (
-                                            <a key={index} href={`${import.meta.env.VITE_BACKEND_URL}/${img}`} target="_blank">
+                                            <a key={index} href={`${img}`} target="_blank">
                                               <Image className="hover:text-tertiary duration-300"/>
                                             </a>
                                           ))}
@@ -681,7 +681,7 @@ const DashboardAdminExperiences = () => {
                                       variants={fadeOnly("",0,0.3)}
                                       className="image-selected"
                                       style={{
-                                        backgroundImage: `url(${import.meta.env.VITE_BACKEND_URL}/${image})`,
+                                        backgroundImage: `url(${image})`,
                                         backgroundSize: 'cover',
                                         position: 'relative'
                                       }}
@@ -716,7 +716,7 @@ const DashboardAdminExperiences = () => {
                           </div>
 
                           <div className="flex flex-row justify-end gap-x-6 w-full">
-                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Volver a lista de Experiencias</Button>
+                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("experience.go_back_experiences_list")}</Button>
                           </div>
 
                       </div>
@@ -1374,7 +1374,7 @@ const DashboardAdminExperiences = () => {
                                       variants={fadeOnly("",0,0.3)}
                                       className="image-selected"
                                       style={{
-                                        backgroundImage: `url(${import.meta.env.VITE_BACKEND_URL}/${image})`,
+                                        backgroundImage: `url(${image})`,
                                         backgroundSize: 'cover',
                                         position: 'relative'
                                       }}

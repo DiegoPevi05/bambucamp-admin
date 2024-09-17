@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Product, ProductFilters, ProductFormData } from '../../lib/interfaces';
 import { serializeProduct, serializeProductToDB } from '../serializer';
 
-export const getAllProducts = async( token: string, page:Number, filters?:ProductFilters ): Promise<{products:Product[], totalPages:Number ,currentPage:Number}|null> => {
+export const getAllProducts = async( token: string, page:Number, language:string, filters?:ProductFilters ): Promise<{products:Product[], totalPages:Number ,currentPage:Number}|null> => {
 
   let data:{ products:Product[],totalPages:Number,currentPage:Number } | null = null;
   try{
@@ -26,7 +26,7 @@ export const getAllProducts = async( token: string, page:Number, filters?:Produc
     const fetchProducts = await axios.get(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -67,7 +67,7 @@ export const getAllProducts = async( token: string, page:Number, filters?:Produc
 
 
 
-export const createProduct = async (product: ProductFormData, token: string): Promise<boolean> => {
+export const createProduct = async (product: ProductFormData, token: string, language:string): Promise<boolean> => {
   try {
 
     // Create a new FormData object
@@ -77,7 +77,7 @@ export const createProduct = async (product: ProductFormData, token: string): Pr
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
     toast.success(response.data.message);
@@ -110,7 +110,7 @@ export const createProduct = async (product: ProductFormData, token: string): Pr
 };
 
 
-export const updateProduct = async (productId:Number,tent: ProductFormData, token: string): Promise<boolean> => {
+export const updateProduct = async (productId:Number,tent: ProductFormData, token: string, language:string): Promise<boolean> => {
   try {
     // Create a new FormData object
     const formData = serializeProductToDB(tent,true);
@@ -119,7 +119,7 @@ export const updateProduct = async (productId:Number,tent: ProductFormData, toke
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -155,13 +155,13 @@ export const updateProduct = async (productId:Number,tent: ProductFormData, toke
 
 
 
-export const deleteProduct = async(idProduct:Number, token:string ):Promise<boolean> => {
+export const deleteProduct = async(idProduct:Number, token:string, language:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/products/${idProduct}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
     toast.success(response.data.message);

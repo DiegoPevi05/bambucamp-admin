@@ -13,10 +13,12 @@ import {  ZodError } from 'zod';
 import { PromotionSchema } from "../db/schemas";
 import Modal from "../components/Modal";
 import { toast } from "sonner";
+import {useTranslation} from "react-i18next";
 
 
 const DashboardAdminPromotions = () => {
 
+    const {t, i18n} = useTranslation();
     const { user } = useAuth();
     const [datasetPromotions,setDataSetPromotions] = useState<{promotions:Promotion[],totalPages:Number,currentPage:Number}>({promotions:[],totalPages:1,currentPage:1});
     const [datasetPromotionsOptions, setDatasetPromotionsOptions] = useState<optionsPromotion>({ tents:[], products:[], experiences:[] });
@@ -44,7 +46,6 @@ const DashboardAdminPromotions = () => {
         setCurrentView("LOADING");
         if(user != null){
             const promotions  = await getAllPromotions(user.token,page,filters);
-            console.log(promotions)
             if(promotions){
                 setDataSetPromotions(promotions);
                 setCurrentView("L");
@@ -82,7 +83,7 @@ const DashboardAdminPromotions = () => {
       const quantityInput = form.querySelector(`input[name="promotion_option_${type}_qty"]`) as HTMLInputElement;
 
       if (!optionInput || !quantityInput) {
-        console.error(`Option input or quantity input not found.`);
+        toast.error(t("promotion.validations.option_not_found"));
         return;
       }
 
@@ -90,7 +91,7 @@ const DashboardAdminPromotions = () => {
       const quantity = Number(quantityInput.value);
 
       if (isNaN(id) || isNaN(quantity) || quantity <= 0 || !id ) {
-        toast.error("Marca una opcion valida");
+        toast.error(t("prmotion.validations.mark_valid_option"));
         return;
       }
 
@@ -126,7 +127,7 @@ const DashboardAdminPromotions = () => {
         quantityInput.value = '';
       } else {
         // Handle invalid input
-        toast.error("Marca una opcion valida");
+        toast.error(t("promotion.validations.mark_valid_option"));
       }
       };
 
@@ -321,7 +322,7 @@ const DashboardAdminPromotions = () => {
                 variants={fadeIn("up","",0.5,0.3)}
                 className="w-full min-h-[300px] flex flex-col justify-center items-center gap-y-4 bg-white pointer-events-none">
                   <div className="loader"></div>
-                  <h1 className="font-primary text-secondary mt-4">{"Cargando..."}</h1>
+                  <h1 className="font-primary text-secondary mt-4">{t("common.loading")}</h1>
             </motion.div>
         )}
 
@@ -336,59 +337,59 @@ const DashboardAdminPromotions = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Disc/>Promociones</h2>
-                    <div className="w-full h-auto flex flex-row justify-between items-center gap-x-4">
-                        <div className="w-auto h-auto flex flex-col md:flex-row justify-start items-start gap-y-4 gap-x-4">
-                          <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Disc/>{t("promotion.plural")}</h2>
+                  <div className="w-full h-auto flex flex-col xl:flex-row justify-between items-center gap-x-4">
+                    <div className="w-full xl:w-auto h-auto flex flex-col md:flex-row  justify-start md:justify-between xl:justify-start items-start gap-y-4 gap-x-4">
+                      <div className="max-xl:w-[50%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
                             <input 
                               type="text" 
                               name="criteria_search_value"
-                              placeholder="Buscar Promocion" 
+                              placeholder={t("promotion.search_promotion")} 
                               className="w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
-                            <InputRadio name="criteria_search" variant="dark" value="title" placeholder="Nombre"/>
+                            <InputRadio name="criteria_search" variant="light" isRound={true} value="title" placeholder={t("promotion.name")}/>
                           </div>
-                          <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
-                              <label className="md:ml-4 flex items-center">
-                                Estatus
-                                <select name="criteria_search_status" className="ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
-                                  <option value="">Seleccionar Estatus</option>
-                                  <option value="ACTIVE">ACTIVO</option>
-                                  <option value="INACTIVE">INACTIVO</option>
+                      <div className="max-xl:w-[50%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
+                            <label className="max-xl:w-full md:ml-4 flex items-center">
+                              {t("promotion.status")}
+                              <select name="criteria_search_status" className="max-xl:w-full ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
+                                  <option value="">{t("promotion.select_status")}</option>
+                                  <option value="ACTIVE">{t("promotion.ACTIVE")}</option>
+                                  <option value="INACTIVE">{t("promotion.INACTIVE")}</option>
                                 </select>
                               </label>
-                              <Button size="sm" variant="dark" effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchExperienceHandler()}>
-                              Buscar
+                              <Button variant="ghostLight" isRound={true} effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchExperienceHandler()}>
+                                {t("common.search")}
                             </Button>
                           </div>
                         </div>
-                        <div className="w-auto h-auto flex flex-row justify-end items-start gap-y-4 gap-x-4">
-                          <Button onClick={()=>{setCurrentView("A"); setImages([]); setExistingImages([]); setIdTents([]); setIdProducts([]); setIdExperiences([]);}} size="sm" variant="dark" effect="default" className="min-w-[300px]" isRound={true}>Agregar Promocion <Disc/></Button>
+                    <div className="w-full xl:w-auto h-auto flex flex-row justify-end items-start gap-y-4 gap-x-4 max-xl:mt-4">
+                          <Button onClick={()=>{setCurrentView("A"); setImages([]); setExistingImages([]); setIdTents([]); setIdProducts([]); setIdExperiences([]);}} size="sm" variant="dark" effect="default" className="min-w-[300px]" isRound={true}>{t("promotion.add_promotion")}<Disc/></Button>
                         </div>
                     </div>
                     <table className="h-full w-full shadow-xl rounded-xl text-center p-4">
-                        <thead className="font-primary text-md bg-primary text-white">
+                      <thead className="font-primary text-sm xl:text-md bg-primary text-white">
                             <tr className="">
                                 <th className="rounded-tl-xl p-2">#</th>
-                                <th className="p-2">Titulo</th>
-                                <th className="p-2">Expira</th>
-                                <th className="p-2">Personas</th>
-                                <th className="p-2">Descuento</th>
-                                <th className="p-2">Total</th>
-                                <th className="p-2">Imagenes</th>
-                                <th className="p-2">Estado</th>
-                                <th className="p-2">Creado</th>
-                                <th className="p-2">Actualizado</th>
-                                <th className="rounded-tr-xl p-2">Acciones</th>
+                                <th className="p-2">{t("promotion.title")}</th>
+                                <th className="p-2">{t("promotion.expire")}</th>
+                                <th className="p-2">{t("promotion.people")}</th>
+                                <th className="p-2">{t("promotion.discount")}</th>
+                                <th className="p-2">{t("promotion.total")}</th>
+                                <th className="p-2">{t("promotion.images")}</th>
+                                <th className="p-2">{t("promotion.status")}</th>
+                                <th className="p-2 max-xl:hidden">{t("promotion.created")}</th>
+                                <th className="p-2 max-xl:hidden">{t("promotion.updated")}</th>
+                                <th className="rounded-tr-xl p-2">{t("promotion.actions")}</th>
                             </tr>
                         </thead>
-                        <tbody className="font-secondary text-sm">
+                      <tbody className="font-secondary text-xs xl:text-sm">
                                 {datasetPromotions.promotions.map((promotionItem,index)=>{
                                     return(
                                     <tr key={"user_key"+index} className="text-slate-400 hover:bg-secondary hover:text-white duration-300 cursor-pointer"> 
                                         <td className="">{promotionItem.id}</td>
                                         <td className="">{promotionItem.title}</td>
-                                        <td className="">{promotionItem.expiredDate !== undefined && promotionItem.expiredDate != null ? formatToISODate(promotionItem.expiredDate) : "None"}</td>
+                                        <td className="">{promotionItem.expiredDate !== undefined && promotionItem.expiredDate != null ? formatToISODate(promotionItem.expiredDate) : t("promotion.none")}</td>
 
                                         <td className="flex flex-row gap-x-4 justify-around">
                                           <div className="flex flex-row gap-x-4"><UserIcon/>{promotionItem.qtypeople}</div>
@@ -399,14 +400,14 @@ const DashboardAdminPromotions = () => {
                                         <td className="">{`$ ${promotionItem.grossImport}`}</td>
                                         <td className="flex flex-row flex-wrap items-start justify-start gap-2">
                                           {promotionItem.images.map((img, index) => (
-                                            <a key={index} href={`${import.meta.env.VITE_BACKEND_URL}/${img}`} target="_blank">
+                                            <a key={index} href={`${img}`} target="_blank">
                                               <Image className="hover:text-tertiary duration-300"/>
                                             </a>
                                           ))}
                                         </td>
                                         <td className="h-full">{promotionItem.status != "ACTIVE" ? "INACTIVO" : "ACTIVO" }</td>
-                                        <td className="h-full">{promotionItem.updatedAt != undefined && promotionItem.updatedAt != null ? formatDate(promotionItem.updatedAt) : "None"}</td>
-                                        <td className="h-full">{promotionItem.createdAt != undefined && promotionItem.createdAt != null ? formatDate(promotionItem.createdAt) : "None"}</td>
+                                      <td className="h-full max-xl:hidden">{promotionItem.updatedAt != undefined && promotionItem.updatedAt != null ? formatDate(promotionItem.updatedAt) : t("promotion.none")}</td>
+                                      <td className="h-full max-xl:hidden">{promotionItem.createdAt != undefined && promotionItem.createdAt != null ? formatDate(promotionItem.createdAt) : t("promotion.none")}</td>
                                         <td className="h-full flex flex-col items-center justify-center">
                                           <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
                                             <button onClick={()=>{setSelectedPromotion(promotionItem); setExistingImages(promotionItem.images); setIdTents(promotionItem.tents); setIdProducts(promotionItem.products); setIdExperiences(promotionItem.experiences); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
@@ -428,11 +429,11 @@ const DashboardAdminPromotions = () => {
                 <Modal isOpen={openDeleteModal} onClose={()=>setOpenDeleteModal(false)}>
                     <div className="w-[400px] h-auto flex flex-col items-center justify-center text-secondary pb-6 px-6 pt-12 text-center">
                         <CircleX className="h-[60px] w-[60px] text-red-400 "/>
-                        <p className="text-primary">Estas seguro de eliminar esta promocion?</p>
-                        <p className="text-sm mt-6 text-secondary">La promocion se eliminara si haces click en aceptar, las reservas no se perderan, pero no se podra usar mas la promocion</p>
+                        <p className="text-primary">{t("promotion.secure_delete_promotion_header")}</p>
+                        <p className="text-sm mt-6 text-secondary">{t("promotion.secure_delete_promotion_description")}</p>
                         <div className="flex flex-row justify-around w-full mt-6">
-                            <Button size="sm" variant="dark" effect="default" isRound={true} onClick={()=>setOpenDeleteModal(false)}> Cancelar  </Button>
-                            <Button size="sm" variant="danger" effect="default" isRound={true} onClick={()=>{deletePromotionHandler()}}> Aceptar </Button>
+                            <Button size="sm" variant="light" effect="default" isRound={true} onClick={()=>setOpenDeleteModal(false)}>{t("common.cancel")}</Button>
+                            <Button size="sm" variant="dark" effect="default" isRound={true} onClick={()=>{deletePromotionHandler()}}>{t("common.accept")} </Button>
                         </div>
                     </div>
                 </Modal>
@@ -512,7 +513,7 @@ const DashboardAdminPromotions = () => {
                                       variants={fadeOnly("",0,0.3)}
                                       className="image-selected"
                                       style={{
-                                        backgroundImage: `url(${import.meta.env.VITE_BACKEND_URL}/${image})`,
+                                        backgroundImage: `url(${image})`,
                                         backgroundSize: 'cover',
                                         position: 'relative'
                                       }}
@@ -1338,7 +1339,7 @@ const DashboardAdminPromotions = () => {
                                       variants={fadeOnly("",0,0.3)}
                                       className="image-selected"
                                       style={{
-                                        backgroundImage: `url(${import.meta.env.VITE_BACKEND_URL}/${image})`,
+                                        backgroundImage: `url(${image})`,
                                         backgroundSize: 'cover',
                                         position: 'relative'
                                       }}

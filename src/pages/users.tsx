@@ -12,10 +12,12 @@ import {fadeIn} from "../lib/motions";
 import { ZodError } from 'zod';
 import { createUserSchema, editUserSchema } from "../db/schemas";
 import Modal from "../components/Modal";
+import {useTranslation} from "react-i18next";
 
 
 const DashboardAdminUsers = () => {
 
+    const {t,i18n} = useTranslation();
     const { user } = useAuth();
     const [datasetUsers,setDataSetUsers] = useState<{users:User[],totalPages:Number,currentPage:Number}>({users:[],totalPages:1,currentPage:1})
     const [currentView,setCurrentView] = useState<string>("LOADING");
@@ -27,7 +29,7 @@ const DashboardAdminUsers = () => {
     const getUsersHandler = async (page:Number, filters?:UserFilters) => {
         setCurrentView("LOADING");
         if(user != null){
-            const users  = await getAllUsers(user.token,page,filters);
+            const users  = await getAllUsers(user.token,page,i18n.language,filters);
             if(users){
                 setDataSetUsers(users);
                 setCurrentView("L");
@@ -97,7 +99,7 @@ const DashboardAdminUsers = () => {
         const fieldsValidated = validateFields('form_create_user');
         if(fieldsValidated != null){
             if(user !== null){
-                const isSuccess = await createUser(fieldsValidated, user.token);
+                const isSuccess = await createUser(fieldsValidated, user.token, i18n.language);
                 if(!isSuccess){
                     setLoadingForm(false);
                     return;
@@ -152,7 +154,7 @@ const DashboardAdminUsers = () => {
 
     const deleteUserHandler = async() => {
         if(user != null && selectedUser != null){
-            const isSuccess = await deleteUser(selectedUser.id,user.token)
+            const isSuccess = await deleteUser(selectedUser.id,user.token, i18n.language)
             if(!isSuccess){
                 return;
             }
@@ -163,7 +165,7 @@ const DashboardAdminUsers = () => {
 
     const disabledUserHandler = async( userId:Number ) => {
         if(user != null){
-            const isSuccess = await disableUser(userId,user.token);
+            const isSuccess = await disableUser(userId,user.token, i18n.language);
             if(!isSuccess){
                 return;
             }
@@ -172,7 +174,7 @@ const DashboardAdminUsers = () => {
     }
     const enabledUserHandler = async(userId:Number) => {
         if(user != null){
-            const isSuccess = await enableUser(userId,user.token);
+            const isSuccess = await enableUser(userId,user.token, i18n.language);
             if(!isSuccess){
                 return;
             }
@@ -186,7 +188,7 @@ const DashboardAdminUsers = () => {
         const fieldsValidated = validateFields('form_update_user');
         if(fieldsValidated != null){
             if(user !== null && selectedUser != null){
-                const isSuccess = await updateUser(selectedUser.id,fieldsValidated, user.token);
+                const isSuccess = await updateUser(selectedUser.id,fieldsValidated, user.token, i18n.language);
                 if(!isSuccess){
                     setLoadingForm(false);
                     return;
@@ -212,7 +214,7 @@ const DashboardAdminUsers = () => {
                 variants={fadeIn("up","",0.5,0.3)}
                 className="w-full min-h-[300px] flex flex-col justify-center items-center gap-y-4 bg-white pointer-events-none">
                   <div className="loader"></div>
-                  <h1 className="font-primary text-secondary mt-4">{"Cargando..."}</h1>
+                  <h1 className="font-primary text-secondary mt-4">{t("common.language")}</h1>
             </motion.div>
         )}
 
@@ -227,68 +229,68 @@ const DashboardAdminUsers = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserIcon/>Usuarios</h2>
-                    <div className="w-full h-auto flex flex-row justify-between items-center gap-x-4">
-                        <div className="w-auto h-auto flex flex-col md:flex-row justify-start items-start gap-y-4 gap-x-4">
-                          <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserIcon/>{t("user.plural")}</h2>
+                    <div className="w-full h-auto flex flex-col xl:flex-row justify-between items-center gap-x-4">
+                        <div className="w-full xl:w-auto h-auto flex flex-col md:flex-row justify-between xl:justify-start items-start gap-y-4 gap-x-4">
+                            <div className="max-xl:w-[60%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
                             <input 
                               type="text" 
                               name="criteria_search_value"
-                              placeholder="Buscar usuario" 
-                              className="w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
+                              placeholder={t("user.search_user")} 
+                                className="w-full xl:w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
-                            <InputRadio name="criteria_search" variant="dark" value="firstname" placeholder="Nombre"/>
-                            <InputRadio name="criteria_search" variant="dark" value="lastname" placeholder="Apellido" />
-                            <InputRadio name="criteria_search" variant="dark" value="email" placeholder="Correo" />
+                            <InputRadio name="criteria_search" variant="light" isRound={true} value="firstname" placeholder={t("user.firstname")} />
+                            <InputRadio name="criteria_search" variant="light" isRound={true} value="lastname" placeholder={t("user.lastname")} />
+                            <InputRadio name="criteria_search" variant="light" isRound={true} value="email" placeholder={t("user.email")} />
                           </div>
-                          <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
-                            <label className="md:ml-4 flex items-center">
-                              Rol
-                              <select name="criteria_search_role" className="ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
-                                <option value="">Seleccionar Rol</option>
-                                <option value="ADMIN">ADMIN</option>
-                                <option value="SUPERVISOR">SUPERVISOR</option>
-                                <option value="CLIENT">CLIENT</option>
+                            <div className="max-xl:w-[40%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
+                            <label className="max-xl:w-full md:ml-4 flex items-center">
+                                {t("user.rol")}
+                                <select name="criteria_search_role" className="max-xl:w-full ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
+                                <option value="">{t("user.select_rol")}</option>
+                                <option value="ADMIN">{t("user.ADMIN")}</option>
+                                <option value="SUPERVISOR">{t("user.SUPERVISOR")}</option>
+                                <option value="CLIENT">{t("user.CLIENT")}</option>
                               </select>
                             </label>
-                              <Button size="sm" variant="dark" effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchUserHandler()}>
-                              Buscar
+                              <Button  variant="ghostLight" isRound={true} effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchUserHandler()}>
+                                {t("common.search")}
                             </Button>
                           </div>
                         </div>
-                        <div className="w-auto h-auto flex flex-row justify-end items-start gap-y-4">
-                            <Button onClick={()=>setCurrentView("A")} size="sm" variant="dark" effect="default" isRound={true}>Agregar Usuario <UserPlus/></Button>
+                        <div className="w-full xl:w-auto h-auto flex flex-row justify-end items-start gap-y-4 max-xl:mt-4">
+                            <Button onClick={()=>setCurrentView("A")} size="sm" variant="dark" effect="default" isRound={true}>{t("user.add_user")}<UserPlus/></Button>
                         </div>
 
                     </div>
                     <table className="h-full w-full shadow-xl rounded-xl text-center p-4">
-                        <thead className="font-primary text-md bg-primary text-white">
+                        <thead className="font-primary text-sm xl:text-md bg-primary text-white">
                             <tr className="">
                                 <th className="rounded-tl-xl p-2">#</th>
-                                <th className="p-2">Nombre</th>
-                                <th className="p-2">Correo</th>
-                                <th className="p-2">Rol</th>
-                                <th className="p-2">Telefono</th>
-                                <th className="p-2">Estado</th>
-                                <th className="p-2">Ultima Conexion</th>
-                                <th className="p-2">Creado</th>
-                                <th className="p-2">Actualizado</th>
-                                <th className="rounded-tr-xl p-2">Acciones</th>
+                                <th className="p-2">{t("user.name")}</th>
+                                <th className="p-2">{t("user.email")}</th>
+                                <th className="p-2">{t("user.rol")}</th>
+                                <th className="p-2">{t("user.phone")}</th>
+                                <th className="p-2">{t("user.status")}</th>
+                                <th className="p-2">{t("user.last_connection")}</th>
+                                <th className="p-2 max-xl:hidden">{t("user.created")}</th>
+                                <th className="p-2 max-xl:hidden">{t("user.updated")}</th>
+                                <th className="rounded-tr-xl p-2">{t("user.actions")}</th>
                             </tr>
                         </thead>
-                        <tbody className="font-secondary text-sm">
+                        <tbody className="font-secondary text-xs xl:text-sm">
                                 {datasetUsers.users.map((userItem,index)=>{
                                     return(
                                     <tr key={"user_key"+index} className="text-slate-400 hover:bg-secondary hover:text-white duration-300 cursor-pointer"> 
                                         <td className="">{userItem.id}</td>
                                         <td className="">{formatFullName(userItem.firstName, userItem.lastName)}</td>
                                         <td className="">{userItem.email}</td>
-                                        <td className="">{userItem.role != "SUPERVISOR" ? (userItem.role  != "CLIENT" ? "ADMIN" :"CLIENTE" ) : "SUPERVISOR" }</td>
-                                        <td className="">{userItem.phoneNumber != undefined && userItem.phoneNumber != null ? userItem.phoneNumber : "None"}</td>
-                                        <td className="">{userItem.isDisabled ? "Inhabilitado" : "Habilitado"}</td>
-                                        <td className="">{userItem.lastLogin != undefined && userItem.lastLogin != null ? formatDate(userItem.lastLogin) : "None"}</td>
-                                        <td className="">{userItem.updatedAt != undefined && userItem.updatedAt != null ? formatDate(userItem.updatedAt) : "None"}</td>
-                                        <td className="">{userItem.createdAt != undefined && userItem.createdAt != null ? formatDate(userItem.createdAt) : "None"}</td>
+                                        <td className="">{userItem.role != "SUPERVISOR" ? (userItem.role  != "CLIENT" ? t("user.ADMIN") : t("user.CLIENT") ) : t("user.SUPERVISOR") }</td>
+                                        <td className="">{userItem.phoneNumber != undefined && userItem.phoneNumber != null ? userItem.phoneNumber : t("user.none")}</td>
+                                        <td className="">{userItem.isDisabled ? t("user.disabled") : t("user.enabled")}</td>
+                                        <td className="">{userItem.lastLogin != undefined && userItem.lastLogin != null ? formatDate(userItem.lastLogin) : t("user.none")}</td>
+                                        <td className="max-xl:hidden">{userItem.updatedAt != undefined && userItem.updatedAt != null ? formatDate(userItem.updatedAt) : t("user.none")}</td>
+                                        <td className="max-xl:hidden">{userItem.createdAt != undefined && userItem.createdAt != null ? formatDate(userItem.createdAt) : t("user.none")}</td>
                                         <td className="flex flex-row flex-wrap gap-x-2">
                                             <button onClick={()=>{setSelectedUser(userItem); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
                                             <button  onClick={()=>{setSelectedUser(userItem); setCurrentView("E")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Pen className="h-5 w-5"/></button>
@@ -314,11 +316,11 @@ const DashboardAdminUsers = () => {
                 <Modal isOpen={openDeleteModal} onClose={()=>setOpenDeleteModal(false)}>
                     <div className="w-full h-auto flex flex-col items-center justify-center text-secondary pb-6 px-6 pt-12">
                       <CircleX className="h-[60px] w-[60px] text-red-400"/>
-                        <p className="text-primary">Estas seguro de eliminar este usuario?</p>
-                        <p className="text-sm mt-6 text-secondary">El usuario se eliminara si haces click en aceptar</p>
+                        <p className="text-primary">{t("user.secure_delete_user_header")}</p>
+                        <p className="text-sm mt-6 text-secondary">{t("user.secure_delete_user_description")}</p>
                         <div className="flex flex-row justify-around w-full mt-6">
-                            <Button size="sm" variant="dark" effect="default" isRound={true} onClick={()=>setOpenDeleteModal(false)}> Cancelar  </Button>
-                            <Button size="sm" variant="danger" effect="default" isRound={true} onClick={()=>{deleteUserHandler()}}> Aceptar </Button>
+                            <Button size="sm" variant="dark" effect="default" isRound={true} onClick={()=>setOpenDeleteModal(false)}>{t("common.cancel")}</Button>
+                            <Button size="sm" variant="danger" effect="default" isRound={true} onClick={()=>{deleteUserHandler()}}>{t("common.accept")}</Button>
                         </div>
                     </div>
                 </Modal>
@@ -335,73 +337,73 @@ const DashboardAdminUsers = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserIcon/> Ver Usuario</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserIcon/>{t("user.see_user")}</h2>
 
                     <div className="w-full h-auto flex flex-col lg:flex-row">
                         <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
                               <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1 gap-x-6">
                                   <div className="flex flex-col justify-start items-start w-[50%] h-auto">
                                     <label htmlFor="isDisabled" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estado de Usuario"}</label>
-                                      <div className={`w-full flex flex-row justify-start items-center h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 gap-x-4 ${ selectedUser?.isDisabled ? "text-tertiary" : "text-primary" }`}> <UserIcon className="h-5 w-5"/> { selectedUser?.isDisabled ? "Inhabilitado" : "Habilitado" }</div>
+                                      <div className={`w-full flex flex-row justify-start items-center h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 gap-x-4 ${ selectedUser?.isDisabled ? "text-tertiary" : "text-primary" }`}> <UserIcon className="h-5 w-5"/> { selectedUser?.isDisabled ? t("user.disabled") : t("user.enabled") }</div>
                                   </div>
                                   <div className="flex flex-col justify-start items-start w-[50%] h-auto">
                                     <label htmlFor="EmailVerified" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estado de Email"}</label>
-                                      <div className={`w-full flex flex-row justify-start items-center h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 gap-x-4 ${ selectedUser?.emailVerified ? "text-primary" : "text-tertiary" }`} > <MailCheck className="h-5 w-5"/> { selectedUser?.emailVerified ? "Verificado" : "No Verificado" }</div>
+                                      <div className={`w-full flex flex-row justify-start items-center h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 gap-x-4 ${ selectedUser?.emailVerified ? "text-primary" : "text-tertiary" }`} > <MailCheck className="h-5 w-5"/> { selectedUser?.emailVerified ? t("user.verified") : t("user.unverified") }</div>
                                   </div>
                               </div>
 
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Correo Electronico"}</label>
-                                <input  name="email" value={selectedUser?.email} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"} disabled/>
+                                <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_email")}</label>
+                                <input  name="email" value={selectedUser?.email} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_email")} />
                               </div>
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Primer Nombre"}</label>
-                                <input name="firstName" value={selectedUser?.firstName} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"} disabled/>
+                                <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_firstname")}</label>
+                                <input name="firstName" value={selectedUser?.firstName} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_firstname")} />
                               </div>
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Apellido"}</label>
-                                <input name="lastName" value={selectedUser?.lastName} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"} disabled/>
+                                <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_lastname")}</label>
+                                <input name="lastName" value={selectedUser?.lastName} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_lastname")} />
                               </div>
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Celular"}</label>
-                                <input name="phoneNumber" value={selectedUser?.phoneNumber} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"} disabled/>
+                                <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_cellphone")}</label>
+                                <input name="phoneNumber" value={selectedUser?.phoneNumber} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_cellphone")} />
                               </div>
                                 <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Rol"}</label>
+                                  <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_rol")}</label>
                                   <select name="role" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                    <option value={selectedUser?.role} selected>{selectedUser?.role != "SUPERVISOR" ? (selectedUser?.role  != "CLIENT" ? "ADMIN" :"CLIENTE" ) : "SUPERVISOR" }</option>
+                                    <option value={selectedUser?.role} selected>{selectedUser?.role != "SUPERVISOR" ? (selectedUser?.role  != "CLIENT" ? t("user.ADMIN") : t("user.CLIENT") ) : t("user.SUPERVISOR") }</option>
                                   </select>
                                 </div>
                         </div>
 
                         <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="createdAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Ultimo Cambio de Contraseña"}</label>
-                                  <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.lastPasswordChanged ? formatDate(selectedUser?.lastPasswordChanged) : "None"}</div>
+                                <label htmlFor="last_password_change" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_last_password_change")}</label>
+                                  <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.lastPasswordChanged ? formatDate(selectedUser?.lastPasswordChanged) : t("user.none")}</div>
                               </div>
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="createdAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Ultimo Inicio de Sesion"}</label>
-                                  <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.lastLogin ? formatDate(selectedUser?.lastLogin) : "None"}</div>
+                                <label htmlFor="last_password_login" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_log_in")}</label>
+                                  <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.lastLogin ? formatDate(selectedUser?.lastLogin) : t("user.none") }</div>
                               </div>
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="createdAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Creado"}</label>
-                                  <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.createdAt ? formatDate(selectedUser?.createdAt) : "None"}</div>
+                                <label htmlFor="createdAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.created")}</label>
+                                  <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.createdAt ? formatDate(selectedUser?.createdAt) : t("user.none") }</div>
                               </div>
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="updatedAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Actualizado"}</label>
+                                <label htmlFor="updatedAt" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.updated")}</label>
 
-                                <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.updatedAt ? formatDate(selectedUser?.updatedAt) : "None"}</div>
+                                <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.updatedAt ? formatDate(selectedUser?.updatedAt) : t("user.none") }</div>
                               </div>
 
                             <div className="flex flex-row justify-end gap-x-6 w-full col-span-2">
-                                <Button type="button" onClick={()=>{setSelectedUser(null); setCurrentView("L")}} size="sm" variant="dark" effect="default" isRound={true}>Voler a la lista de Usuarios</Button>
+                                <Button type="button" onClick={()=>{setSelectedUser(null); setCurrentView("L")}} size="sm" variant="dark" effect="default" isRound={true}>{t("user.go_back_users_list")}</Button>
                             </div>
                         </div>
                     </div>
@@ -420,15 +422,15 @@ const DashboardAdminUsers = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserPlus/>Agregar Usuario</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserPlus/>{t("user.add_user")}</h2>
 
                     <form id="form_create_user" className="w-full h-auto flex flex-col lg:flex-row" onSubmit={(e)=>onSubmitCreation(e)}>
                         <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
 
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Correo Electronico"}</label>
-                                <input name="email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"}/>
+                                <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_email")}</label>
+                                <input name="email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_email")}/>
                                 <div className="w-full h-6">
                                   {errorMessages.email && 
                                     <motion.p 
@@ -436,16 +438,16 @@ const DashboardAdminUsers = () => {
                                       animate="show"
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
-                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{ errorMessages.email }
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{t(errorMessages.email)}
                                     </motion.p>
                                   }
                                 </div>
                               </div>
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="password" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Contraseña"}</label>
+                                <label htmlFor="password" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_password")}</label>
                                 <div className="h-auto w-full relative">
-                                  <input name="password" type={showPassword ? "text" : "password"} className="relative w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Contraseña"}/>
+                                  <input name="password" type={showPassword ? "text" : "password"} className="relative w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_password")}/>
                                   <div onClick={()=>setShowPassword(!showPassword)} className="absolute top-0 right-2 h-full w-8 flex justify-center items-center cursor-pointer z-50">{ showPassword ? <EyeOff/> : <Eye />} </div>
                                 </div>
                                 <div className="w-full h-6">
@@ -456,7 +458,7 @@ const DashboardAdminUsers = () => {
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
                                         className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{
-                                        errorMessages.password
+                                        t(errorMessages.password)
                                         }
                                     </motion.p>
                                   }
@@ -464,8 +466,8 @@ const DashboardAdminUsers = () => {
                               </div>
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Primer Nombre"}</label>
-                                <input name="firstName" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"}/>
+                                <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_firstname")}</label>
+                                <input name="firstName" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_firstname")}/>
                                 <div className="w-full h-6">
                                   {errorMessages.firstName && 
                                     <motion.p 
@@ -474,7 +476,7 @@ const DashboardAdminUsers = () => {
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
                                       className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                        {errorMessages.firstName}
+                                        {t(errorMessages.firstName)}
                                     </motion.p>
                                   }
                                 </div>
@@ -487,8 +489,8 @@ const DashboardAdminUsers = () => {
 
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Apellido"}</label>
-                                <input name="lastName" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"}/>
+                                <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_lastname")}</label>
+                                <input name="lastName" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_lastname")}/>
                                 <div className="w-full h-6">
                                   {errorMessages.lastName && 
                                     <motion.p 
@@ -497,15 +499,15 @@ const DashboardAdminUsers = () => {
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
                                       className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                        {errorMessages.lastName}
+                                        {t(errorMessages.lastName)}
                                     </motion.p>
                                   }
                                 </div>
                               </div>
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Celular"}</label>
-                                <input name="phoneNumber" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"}/>
+                                <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_cellphone")}</label>
+                                <input name="phoneNumber" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_cellphone")}/>
                                 <div className="w-full h-6">
                                   {errorMessages.phoneNumber && 
                                     <motion.p 
@@ -514,17 +516,17 @@ const DashboardAdminUsers = () => {
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
                                       className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                        {errorMessages.phoneNumber}
+                                        {t(errorMessages.phoneNumber)}
                                     </motion.p>
                                   }
                                 </div>
                               </div>
 
                             <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                              <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Rol"}</label>
+                              <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_rol")}</label>
                               <select name="role" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                <option value="CLIENT">CLIENTE</option>
-                                <option value="SUPERVISOR">SUPERVISOR</option>
+                                <option value="CLIENT">{t("user.CLIENT")}</option>
+                                <option value="SUPERVISOR">{t("user.SUPERVISOR")}</option>
                               </select>
                               <div className="w-full h-6">
                                 {errorMessages.role && 
@@ -534,15 +536,15 @@ const DashboardAdminUsers = () => {
                                     exit="hidden"
                                     variants={fadeIn("up","", 0, 1)}
                                     className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                      {errorMessages.role}
+                                      {t(errorMessages.role)}
                                   </motion.p>
                                 }
                               </div>
                             </div>
 
                             <div className="flex flex-row justify-end gap-x-6 w-full mt-auto">
-                                <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                                <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Usuario </Button>
+                                <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("common.cancel")}</Button>
+                                <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}>{t("user.create_user")}</Button>
                             </div>
 
                         </div>
@@ -562,13 +564,13 @@ const DashboardAdminUsers = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserPen/>Editar Usuario</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserPen/>{t("user.edit_user")}</h2>
 
                     <form id='form_update_user' className="w-full h-auto flex flex-col lg:flex-row" onSubmit={(e)=>onSubmitUpdate(e)}>
                         <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Correo Electronico"}</label>
+                                <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_email")}</label>
                                   <input  name="email" value ={selectedUser.email} onChange={(e)=>onChangeSelectedUser(e)}
                                   className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Correo Electronico"}/>
                                 <div className="w-full h-6">
@@ -578,20 +580,20 @@ const DashboardAdminUsers = () => {
                                       animate="show"
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
-                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errorMessages.email}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{t(errorMessages.email)}
                                     </motion.p>
                                   }
                                 </div>
                               </div>
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="password" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Contraseña"}</label>
+                                <label htmlFor="password" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_password")}</label>
                                 <div className="h-auto w-full relative">
                                   <input  name="password"
                                     value={selectedUser.password}
                                       onChange={(e)=>onChangeSelectedUser(e)}
 
-                                    type={showPassword ? "text" : "password"}  className="relative w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Contraseña"}/>
+                                    type={showPassword ? "text" : "password"}  className="relative w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_password")}/>
                                   <div onClick={()=>setShowPassword(!showPassword)} className="absolute top-0 right-2 h-full w-8 flex justify-center items-center cursor-pointer z-50">{ showPassword ? <EyeOff/> : <Eye />} </div>
                                 </div>
                                 <div className="w-full h-6">
@@ -601,16 +603,16 @@ const DashboardAdminUsers = () => {
                                       animate="show"
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
-                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{errorMessages.password}
+                                      className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{t(errorMessages.password)}
                                     </motion.p>
                                   }
                                 </div>
                               </div>
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Primer Nombre"}</label>
+                                <label htmlFor="firstName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_firstname")}</label>
                                   <input  name="firstName" value={selectedUser.firstName} onChange={(e)=>onChangeSelectedUser(e)}
-                                  className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Primer Nombre"}/>
+                                  className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_firstname")}/>
                                 <div className="w-full h-6">
                                   {errorMessages.firstName && 
                                     <motion.p 
@@ -619,7 +621,7 @@ const DashboardAdminUsers = () => {
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
                                       className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                        {errorMessages.firstName}
+                                        {t(errorMessages.firstName)}
                                     </motion.p>
                                   }
                                 </div>
@@ -629,8 +631,8 @@ const DashboardAdminUsers = () => {
 
                         <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Apellido"}</label>
-                                  <input name="lastName" value={selectedUser.lastName} onChange={(e)=>onChangeSelectedUser(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Apellido"}/>
+                                <label htmlFor="lastName" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_lastname")}</label>
+                                  <input name="lastName" value={selectedUser.lastName} onChange={(e)=>onChangeSelectedUser(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_lastname")}/>
                                 <div className="w-full h-6">
                                   {errorMessages.lastName && 
                                     <motion.p 
@@ -639,15 +641,15 @@ const DashboardAdminUsers = () => {
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
                                       className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                        {errorMessages.lastName}
+                                        {t(errorMessages.lastName)}
                                     </motion.p>
                                   }
                                 </div>
                               </div>
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Celular"}</label>
-                                  <input name="phoneNumber" value={selectedUser.phoneNumber} onChange={(e)=>onChangeSelectedUser(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Celular"}/>
+                                <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_cellphone")}</label>
+                                  <input name="phoneNumber" value={selectedUser.phoneNumber} onChange={(e)=>onChangeSelectedUser(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_cellphone")}/>
                                 <div className="w-full h-6">
                                   {errorMessages.phoneNumber && 
                                     <motion.p 
@@ -656,17 +658,17 @@ const DashboardAdminUsers = () => {
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
                                       className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                        {errorMessages.phoneNumber}
+                                        {t(errorMessages.phoneNumber)}
                                     </motion.p>
                                   }
                                 </div>
                               </div>
 
                             <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                              <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Rol"}</label>
+                              <label htmlFor="role" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_rol")}</label>
                                 <select name="role" onChange={(e)=>onChangeSelectedUser(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                <option value="CLIENT" selected={selectedUser.role == "CLIENT"}>CLIENTE</option>
-                                <option value="SUPERVISOR" selected={selectedUser.role == "SUPERVISOR"}>SUPERVISOR</option>
+                                <option value="CLIENT" selected={selectedUser.role == "CLIENT"}>{t("user.CLIENT")}</option>
+                                <option value="SUPERVISOR" selected={selectedUser.role == "SUPERVISOR"}>{t("user.SUPERVISOR")}</option>
                               </select>
                               <div className="w-full h-6">
                                 {errorMessages.role && 
@@ -676,14 +678,14 @@ const DashboardAdminUsers = () => {
                                     exit="hidden"
                                     variants={fadeIn("up","", 0, 1)}
                                     className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                      {errorMessages.role}
+                                      {t(errorMessages.role)}
                                   </motion.p>
                                 }
                               </div>
                             </div>
                             <div className="flex flex-row justify-end gap-x-6 w-full mt-auto">
-                                <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                                <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Guardar </Button>
+                                <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("common.cancel")}</Button>
+                                <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}>{t("user.save_changes")}</Button>
                             </div>
                         </div>
                     </form>

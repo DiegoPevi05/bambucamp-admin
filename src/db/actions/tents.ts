@@ -4,7 +4,7 @@ import { Tent, TentFilters, TentFormData } from '../../lib/interfaces';
 import { serializeTent } from '../serializer';
 import { serializeTentToDB } from '../serializer';
 
-export const getAllTents = async( token: string, page:Number, filters?:TentFilters ): Promise<{tents:Tent[], totalPages:Number ,currentPage:Number}|null> => {
+export const getAllTents = async( token: string, page:Number, language:string, filters?:TentFilters ): Promise<{tents:Tent[], totalPages:Number ,currentPage:Number}|null> => {
 
   let data:{ tents:Tent[],totalPages:Number,currentPage:Number } | null = null;
   try{
@@ -27,7 +27,7 @@ export const getAllTents = async( token: string, page:Number, filters?:TentFilte
     const fetchTents = await axios.get(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -68,7 +68,7 @@ export const getAllTents = async( token: string, page:Number, filters?:TentFilte
 
 
 
-export const createTent = async (tent: TentFormData, token: string): Promise<boolean> => {
+export const createTent = async (tent: TentFormData, token: string, language:string): Promise<boolean> => {
   try {
 
     // Create a new FormData object
@@ -78,7 +78,7 @@ export const createTent = async (tent: TentFormData, token: string): Promise<boo
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -113,7 +113,7 @@ export const createTent = async (tent: TentFormData, token: string): Promise<boo
 };
 
 
-export const updateTent = async (userId:Number,tent: TentFormData, token: string): Promise<boolean> => {
+export const updateTent = async (userId:Number,tent: TentFormData, token: string, language:string): Promise<boolean> => {
   try {
     // Create a new FormData object
     const formData = serializeTentToDB(tent,true);
@@ -122,7 +122,7 @@ export const updateTent = async (userId:Number,tent: TentFormData, token: string
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -157,13 +157,13 @@ export const updateTent = async (userId:Number,tent: TentFormData, token: string
 
 
 
-export const deleteTent = async(idTent:Number, token:string ):Promise<boolean> => {
+export const deleteTent = async(idTent:Number, token:string, language:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/tents/${idTent}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
