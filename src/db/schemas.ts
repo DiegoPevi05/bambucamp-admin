@@ -114,44 +114,44 @@ const DiscountCodeSchema = z.object({
 });
 
 const TentPromotion = z.object({
-  idTent: z.number().positive({ message: 'El id debe ser un número positivo' }),
-  name: z.string().nonempty({message:'El nombre del item no debe estar vacio'}),
-  quantity:z.number().positive({ message: 'La cantidad debe ser un número positivo' }),
-  price: z.number().positive({ message: 'El precio debe ser un número positivo' })
+  idTent: z.number().positive({ message: 'promotion.validations.tent_id_positive' }),
+  name: z.string().nonempty({message:'promotion.validations.tent_name_required'}),
+  quantity:z.number().positive({ message: 'promotion.validations.tent_quantity_positive' }),
+  price: z.number().positive({ message: 'promotion.validations.tent_price_positive' })
 });
 
 const ProductPromotion = z.object({
-  idProduct: z.number().positive({ message: 'El id debe ser un número positivo' }),
-  name: z.string().nonempty({message:'El nombre del item no debe estar vacio'}),
-  quantity:z.number().positive({ message: 'La cantidad debe ser un número positivo' }),
-  price: z.number().positive({ message: 'El precio debe ser un número positivo' })
+  idProduct: z.number().positive({ message: 'promotion.validations.product_id_positive' }),
+  name: z.string().nonempty({message:'promotion.validations.product_name_required'}),
+  quantity:z.number().positive({ message: 'promotion.validations.product_quantity_positive' }),
+  price: z.number().positive({ message: 'promotion.validations.product_price_positive' })
 });
 
 const ExperiencePromotion = z.object({
-  idExperience: z.number().positive({ message: 'El id debe ser un número positivo' }),
-  name: z.string().nonempty({message:'El nombre del item no debe estar vacio'}),
-  quantity:z.number().positive({ message: 'La cantidad debe ser un número positivo' }),
-  price: z.number().positive({ message: 'El precio debe ser un número positivo' })
+  idExperience: z.number().positive({ message: 'promotion.validations.experience_id_positive' }),
+  name: z.string().nonempty({message:'promotion.validations.experience_name_required'}),
+  quantity:z.number().positive({ message: 'promotion.validations.experience_quantity_positive' }),
+  price: z.number().positive({ message: 'promotion.validations.experience_price_positive' })
 });
 
 const PromotionSchema = z.object({
-  title: z.string().nonempty({ message: 'El título es requerido' }),
-  description: z.string().nonempty({ message: 'La descripción es requerida' }),
+  title: z.string().nonempty({ message: 'promotion.validations.title_required' }),
+  description: z.string().nonempty({ message: 'promotion.validations.description_required' }),
   existing_images: z.array(z.string()).default([]),
   images: z.array(imageFileSchema).default([]),
-  status: z.string().nonempty({ message: 'El estado es requerido' }),
+  status: z.string().nonempty({ message: 'promotion.validations.status_required' }),
   expiredDate: z.date(),
-  qtypeople: z.number().gt(1, { message: 'Debe ser almenos para una persona la actividad.' }),
+  qtypeople: z.number().min(1, { message: 'promotion.validations.qtypeople_min' }),
   qtykids: z.number(),
-  netImport: z.number().gt(1, { message: 'Debe ser mayor que 0 el importe.' }),
-  discount: z.number().gt(1, { message: 'Debe ser mayor que 0 el descuento.' }),
-  grossImport: z.number().gt(1, { message: 'Debe ser mayor que 0 el total.' }),
-  stock: z.number().gt(1, { message: 'Debe ser mayor que 0 el stock.' }),
+  netImport: z.number().min(1, { message: 'promotion.validations.net_import_min' }),
+  discount: z.number().min(1, { message: 'promotion.validations.discount_min' }),
+  grossImport: z.number().min(1, { message: 'promotion.validations.gross_import_min' }),
+  stock: z.number().min(1, { message: 'promotion.validations.stock_min' }),
   tents: z.array(TentPromotion),
   products: z.array(ProductPromotion),
   experiences: z.array(ExperiencePromotion),
 }).refine(data => data.existing_images.length > 0 || data.images.length > 0, {
-  message: 'Debe haber al menos una imagen',
+  message: 'promotion.validations.images_min',
   path: ['images'] // This can be any path to indicate where the error should appear
 });
 

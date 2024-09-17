@@ -249,18 +249,18 @@ const DashboardAdminReviews = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full lg:gap-y-4">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.author_review")}</label>
+                            <label htmlFor="name" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.author_review")}</label>
                             <input name="name" value={selectedReview.name} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.author_review")}/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.title_review")}</label>
+                            <label htmlFor="title" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.title_review")}</label>
                             <input name="title" value={selectedReview.title} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.title_review")}/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <div className="h-3 sm:h-6 flex flex-row justify-center items-center">
-                              <label htmlFor="stars" className="font-primary text-secondary text-xs sm:text-lg ">{t("review.stars")}</label>
+                              <label htmlFor="stars" className="font-primary text-secondary text-xs xl:text-lg ">{t("review.stars")}</label>
                               <span className="w-auto h-auto flex flex-row ml-2 gap-x-1">
                                 {[...Array(5)].map((_, index) => (
                                   <span key={index}>
@@ -273,7 +273,7 @@ const DashboardAdminReviews = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="review" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{t("review.review")}</label>
+                            <label htmlFor="review" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6 mb-2">{t("review.review")}</label>
                             <textarea name="review" className="w-full h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.review")} value={selectedReview.review}/>
                           </div>
 
@@ -282,23 +282,23 @@ const DashboardAdminReviews = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] lg:gap-y-4">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="day" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.day_review")}</label>
+                            <label htmlFor="day" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.day_review")}</label>
                             <input name="day" type="date" value={selectedReview.day.toISOString().split('T')[0]} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.day_review")}/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="href" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.link_review")}</label>
+                            <label htmlFor="href" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.link_review")}</label>
                             <input name="href"  value={selectedReview.href} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.link_review")}/>
                           </div>
 
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="profile_image_url" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.profile_image_review")}</label>
+                            <label htmlFor="profile_image_url" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.profile_image_review")}</label>
                             <input name="profile_image_url"  value={selectedReview.profile_image_url} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.profile_image_review")}/>
                           </div>
 
 
-                          <div className="flex flex-row justify-end gap-x-6 w-full">
+                          <div className="flex flex-row justify-end gap-x-6 w-full mt-12">
                               <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("review.go_back_review_list")}</Button>
                           </div>
 
@@ -326,7 +326,7 @@ const DashboardAdminReviews = () => {
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.author_review")}</label>
+                        <label htmlFor="name" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.author_review")}</label>
                         <input name="name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.author_review")}/>
                         <div className="w-full h-6">
                           {errorMessages.name && (
@@ -343,7 +343,7 @@ const DashboardAdminReviews = () => {
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.title_review")}</label>
+                        <label htmlFor="title" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.title_review")}</label>
                         <input name="title" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.title_review")}/>
                         <div className="w-full h-6">
                           {errorMessages.title && (
@@ -361,7 +361,7 @@ const DashboardAdminReviews = () => {
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                         <div className="h-3 sm:h-6 flex flex-row justify-center items-center">
-                          <label htmlFor="stars" className="font-primary text-secondary text-xs sm:text-lg ">{t("review.stars")}</label>
+                          <label htmlFor="stars" className="font-primary text-secondary text-xs xl:text-lg ">{t("review.stars")}</label>
                           <span className="w-auto h-auto flex flex-row ml-2 gap-x-1">
                             {[...Array(5)].map((_, index) => (
                               <span key={index}>
@@ -386,7 +386,7 @@ const DashboardAdminReviews = () => {
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="review" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{t("review.review")}</label>
+                        <label htmlFor="review" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6 mb-2">{t("review.review")}</label>
                         <textarea name="review" className="w-full h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.review")}/>
                         <div className="w-full h-6">
                           {errorMessages.review && (
@@ -406,7 +406,7 @@ const DashboardAdminReviews = () => {
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="day" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.day_review")}</label>
+                        <label htmlFor="day" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.day_review")}</label>
                         <input name="day" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"review.day_review"}/>
                         <div className="w-full h-6">
                           {errorMessages.day && (
@@ -423,7 +423,7 @@ const DashboardAdminReviews = () => {
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="href" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.link_review")}</label>
+                        <label htmlFor="href" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.link_review")}</label>
                         <input name="href" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.link_review")}/>
                         <div className="w-full h-6">
                           {errorMessages.href && (
@@ -440,7 +440,7 @@ const DashboardAdminReviews = () => {
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="profile_image_url" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("review.profile_image_review")}</label>
+                        <label htmlFor="profile_image_url" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.profile_image_review")}</label>
                         <input name="profile_image_url" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.profile_image_review")}/>
                         <div className="w-full h-6">
                           {errorMessages.profile_image_url && (

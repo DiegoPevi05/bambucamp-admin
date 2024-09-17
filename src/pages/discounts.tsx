@@ -307,17 +307,17 @@ const DashboardAdminDiscounts = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="code" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_name")}</label>
+                            <label htmlFor="code" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_name")}</label>
                             <input name="code" value={selectedDiscountCode.code} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_name")}/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_quantity")}</label>
+                            <label htmlFor="stock" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_quantity")}</label>
                             <input name="stock" value={selectedDiscountCode.stock} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_quantity")}/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_discount")}</label>
+                            <label htmlFor="discount" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_discount")}</label>
                             <input name="code" value={selectedDiscountCode.discount} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_discount")} />
                           </div>
 
@@ -326,18 +326,18 @@ const DashboardAdminDiscounts = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="expiredDate" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_expired_date")}</label>
+                            <label htmlFor="expiredDate" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_expired_date")}</label>
                             <input name="expiredDate" type="date" value={selectedDiscountCode.expiredDate.toISOString().split('T')[0]} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_expired_date")} />
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_status")}</label>
+                            <label htmlFor="status" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_status")}</label>
                             <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                               <option value={selectedDiscountCode.status}>{selectedDiscountCode.status == "ACTIVE" ? t("discount.ACTIVE") : t("discount.INACTIVE")}</option>
                             </select>
                           </div>
 
-                          <div className="flex flex-row justify-end gap-x-6 w-full mt-4">
+                          <div className="flex flex-row justify-end gap-x-6 w-full mt-12">
                               <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("discount.go_back_discount_list")}</Button>
                           </div>
 
@@ -365,7 +365,7 @@ const DashboardAdminDiscounts = () => {
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="code" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_name")}</label>
+                        <label htmlFor="code" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_name")}</label>
                         <input name="code" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_name")}/>
                         <div className="w-full h-6">
                           {errorMessages.code && (
@@ -383,7 +383,7 @@ const DashboardAdminDiscounts = () => {
 
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_quantity")}</label>
+                        <label htmlFor="stock" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_quantity")}</label>
                         <input name="stock" type="number" step="1" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_quantity")}/>
                         <div className="w-full h-6">
                           {errorMessages.stock && (
@@ -400,7 +400,7 @@ const DashboardAdminDiscounts = () => {
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_discount")}</label>
+                        <label htmlFor="discount" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_discount")}</label>
                         <input name="discount" type="number" step="1" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_discount")}/>
                         <div className="w-full h-6">
                           {errorMessages.discount && (
@@ -421,7 +421,7 @@ const DashboardAdminDiscounts = () => {
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="expiredDate" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_expired_date")}</label>
+                        <label htmlFor="expiredDate" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_expired_date")}</label>
                         <input name="expiredDate" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_expired_date")}/>
                         <div className="w-full h-6">
                           {errorMessages.expiredDate && (
@@ -439,7 +439,7 @@ const DashboardAdminDiscounts = () => {
 
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_status")}</label>
+                        <label htmlFor="status" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_status")}</label>
                         <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                           <option value="ACTIVE">{t("discount.ACTIVE")}</option>
                           <option value="INACTIVE">{t("discount.INACTIVE")}</option>
@@ -485,7 +485,7 @@ const DashboardAdminDiscounts = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="code" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_name")}</label>
+                            <label htmlFor="code" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_name")}</label>
                             <input name="code" value={selectedDiscountCode.code}  onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_name")}/>
                             <div className="w-full h-6">
                               {errorMessages.code && (
@@ -502,7 +502,7 @@ const DashboardAdminDiscounts = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_quantity")}</label>
+                            <label htmlFor="stock" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_quantity")}</label>
                             <input name="stock" type="number" step="1" value={selectedDiscountCode.stock}  onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_quantity")}/>
                             <div className="w-full h-6">
                               {errorMessages.stock && (
@@ -519,7 +519,7 @@ const DashboardAdminDiscounts = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_discount")}</label>
+                            <label htmlFor="discount" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_discount")}</label>
                             <input name="discount" type="number" step="1" value={selectedDiscountCode.discount}  onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_discount")}/>
                             <div className="w-full h-6">
                               {errorMessages.discount && (
@@ -539,7 +539,7 @@ const DashboardAdminDiscounts = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="expiredDate" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_expired_date")}</label>
+                            <label htmlFor="expiredDate" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_expired_date")}</label>
                             <input name="expiredDate" type="date" value={selectedDiscountCode.expiredDate.toISOString().split('T')[0]}  onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("discount.discount_code_expired_date")}/>
                             <div className="w-full h-6">
                               {errorMessages.expiredDate && (
@@ -557,7 +557,7 @@ const DashboardAdminDiscounts = () => {
 
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("discount.discount_code_status")}</label>
+                            <label htmlFor="status" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("discount.discount_code_status")}</label>
                             <select name="status" onChange={(e)=>onChangeSelectedDiscountCode(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                               <option value="ACTIVE" selected={selectedDiscountCode.status == "ACTIVE"}>{t("discount.ACTIVE")}</option>
                               <option value="INACTIVE" selected={selectedDiscountCode.status == "INACTIVE"}>{t("discount.INACTIVE")}</option>

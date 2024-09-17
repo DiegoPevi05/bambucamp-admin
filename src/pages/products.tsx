@@ -459,7 +459,7 @@ const DashboardAdminProducts = () => {
                     <>
                       <form id="form_create_product_category" className="h-auto w-full flex flex-row items-end justify-between gap-x-2" onSubmit={(e)=>onSubmitCreationCategory(e)}>
                         <div className="flex flex-col items-start justify-start w-full">
-                          <label htmlFor="category" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.new_category")}</label>
+                          <label htmlFor="category" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.new_category")}</label>
                             <input name="category" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.category_name")}/>
                         </div>
                         <div className="flex flex-col items-center justify-center w-auto h-auto">
@@ -472,7 +472,7 @@ const DashboardAdminProducts = () => {
                         </div>
                       </form>
                       <div className="mt-12 h-[200px] w-full flex flex-col justify-start items-start overflow-y-scroll gap-y-2">
-                        <label htmlFor="category" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.categories")}</label>
+                        <label htmlFor="category" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.categories")}</label>
                         { datasetProductsCategory.map((category,index)=>{
                           return(
                             <div key={"category_product"+index} className="w-[90%] h-auto flex flex-row items-center justify-center border border-2 border-slate-200 rounded-md p-2 mx-auto">
@@ -538,7 +538,7 @@ const DashboardAdminProducts = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_category")}</label>
+                                <label htmlFor="categoryId" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_category")}</label>
 
                                 <select name="categoryId" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                                   <option value={selectedProduct.category.id}>{selectedProduct.category.name}</option>
@@ -546,31 +546,31 @@ const DashboardAdminProducts = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_name")}</label>
+                            <label htmlFor="name" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_name")}</label>
                             <input name="name" value={selectedProduct.name} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_name")} />
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_description")}</label>
+                            <label htmlFor="description" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_description")}</label>
                             <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("product.product_description")}>{ selectedProduct.description }</textarea>
                           </div>
 
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_price")}</label>
+                              <label htmlFor="price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_price")}</label>
                               <input name="price" value={selectedProduct.price} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_price")} />
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_stock")}</label>
+                              <label htmlFor="stock" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_stock")}</label>
                               <input name="stock" value={selectedProduct.stock} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_stock")} />
                             </div>
                           </div>
 
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_custom_price")}</label>
+                            <label htmlFor="price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_custom_price")}</label>
                             <div className="w-full h-auto flex flex-col items-start justify-start">
                               <AnimatePresence>
                                 {selectedProduct.custom_price.map((price, index) => (
@@ -603,14 +603,14 @@ const DashboardAdminProducts = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.status")}</label>
+                            <label htmlFor="status" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.status")}</label>
                             <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                               <option value={selectedProduct.status}>{selectedProduct.status == "ACTIVE" ? t("product.ACTIVE") : t("product.INACTIVE")}</option>
                             </select>
                           </div>
                           
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_images")}</label>
+                            <label htmlFor="image" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_images")}</label>
                               <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
                                 <AnimatePresence>
                                   {selectedProduct.images.map((image, index) => (
@@ -634,7 +634,7 @@ const DashboardAdminProducts = () => {
                               </div>
                           </div>
 
-                          <div className="flex flex-row justify-end gap-x-6 w-full">
+                          <div className="flex flex-row justify-end gap-x-6 w-full mt-12">
                               <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("product.go_back_products_list")}</Button>
                           </div>
 
@@ -662,7 +662,7 @@ const DashboardAdminProducts = () => {
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                   <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_category")}</label>
+                        <label htmlFor="categoryId" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_category")}</label>
 
                         <select name="categoryId" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                           { datasetProductsCategory.map((category,index)=>{
@@ -688,7 +688,7 @@ const DashboardAdminProducts = () => {
 
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_name")}</label>
+                        <label htmlFor="name" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_name")}</label>
                         <input name="name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_name")}/>
                         <div className="w-full h-6">
                           {errorMessages.name && (
@@ -705,7 +705,7 @@ const DashboardAdminProducts = () => {
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_description")}</label>
+                        <label htmlFor="description" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_description")}</label>
                         <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("product.product_description")}/>
                         <div className="w-full h-6">
                           {errorMessages.description && (
@@ -723,7 +723,7 @@ const DashboardAdminProducts = () => {
 
                       <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                         <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_price")}</label>
+                          <label htmlFor="price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_price")}</label>
                           <input name="price" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"product.product_price"}/>
 
                           <div className="w-full h-6">
@@ -741,7 +741,7 @@ const DashboardAdminProducts = () => {
                         </div>
 
                         <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_stock")}</label>
+                          <label htmlFor="stock" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_stock")}</label>
                           <input name="stock" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_stock")}/>
 
                           <div className="w-full h-6">
@@ -761,20 +761,20 @@ const DashboardAdminProducts = () => {
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                        <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_custom_price")}</label>
+                        <label htmlFor="price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_custom_price")}</label>
                         <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_custom_price_from")}</label>
+                              <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_custom_price_from")}</label>
                               <input name="custom_price_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_custom_price_from")}/>
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_custom_price_to")}</label>
+                              <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_custom_price_to")}</label>
                               <input name="custom_price_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_custom_price_to")}/>
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_custom_price_price")}</label>
+                              <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_custom_price_price")}</label>
                               <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_custom_price_price")}/>
                             </div>
                           <Button onClick={()=>handleAddCustomPrice("form_create_product")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
@@ -832,7 +832,7 @@ const DashboardAdminProducts = () => {
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.status")}</label>
+                        <label htmlFor="status" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.status")}</label>
                         <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                           <option value="ACTIVE">{t("product.ACTIVE")}</option>
                           <option value="INACTIVE">{t("product.INACTIVE")}</option>
@@ -853,7 +853,7 @@ const DashboardAdminProducts = () => {
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_images")}</label>
+                        <label htmlFor="image" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_images")}</label>
                           <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
                             <AnimatePresence>
                               {images.map((image, index) => (
@@ -927,7 +927,7 @@ const DashboardAdminProducts = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_category")}</label>
+                                <label htmlFor="categoryId" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_category")}</label>
                                 <select name="categoryId" onChange={(e)=>onChangeSelectedProduct(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                                   { datasetProductsCategory.map((category,index)=>{
                                     return(
@@ -950,7 +950,7 @@ const DashboardAdminProducts = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_name")}</label>
+                            <label htmlFor="name" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_name")}</label>
                             <input name="name" value={selectedProduct.name}  onChange={(e)=>onChangeSelectedProduct(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_name")}/>
                             <div className="w-full h-6">
                               {errorMessages.name && (
@@ -967,7 +967,7 @@ const DashboardAdminProducts = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_description")}</label>
+                            <label htmlFor="description" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_description")}</label>
                             <textarea name="description"  onChange={(e)=>onChangeSelectedProduct(e)} className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("product.product_description")}>{selectedProduct.description}</textarea>
                             <div className="w-full h-6">
                               {errorMessages.description && (
@@ -985,7 +985,7 @@ const DashboardAdminProducts = () => {
 
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_price")}</label>
+                              <label htmlFor="price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_price")}</label>
                               <input name="price" value={selectedProduct.price}  onChange={(e)=>onChangeSelectedProduct(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_price")}/>
 
                               <div className="w-full h-6">
@@ -1004,7 +1004,7 @@ const DashboardAdminProducts = () => {
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
 
-                              <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_stock")}</label>
+                              <label htmlFor="stock" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_stock")}</label>
                               <input name="stock" value={selectedProduct.stock}  onChange={(e)=>onChangeSelectedProduct(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_stock")}/>
 
                               <div className="w-full h-6">
@@ -1023,20 +1023,20 @@ const DashboardAdminProducts = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_custom_price")}</label>
+                            <label htmlFor="price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_custom_price")}</label>
                             <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_custom_price_from")}</label>
+                                  <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_custom_price_from")}</label>
                                   <input name="custom_price_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_custom_price_from")}/>
                                 </div>
 
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_custom_price_to")}</label>
+                                  <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_custom_price_to")}</label>
                                   <input name="custom_price_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_custom_price_to")}/>
                                 </div>
 
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_custom_price_price")}</label>
+                                  <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_custom_price_price")}</label>
                                   <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("product.product_custom_price_price")}/>
                                 </div>
                                 <Button onClick={()=>handleAddCustomPrice("form_update_product")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
@@ -1091,7 +1091,7 @@ const DashboardAdminProducts = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.status")}</label>
+                            <label htmlFor="status" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.status")}</label>
                             <select name="status" onChange={(e)=>onChangeSelectedProduct(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                               <option value="ACTIVE" selected={selectedProduct.status == "ACTIVE"}>{t("product.ACTIVE")}</option>
                               <option value="INACTIVE" selected={selectedProduct.status == "INACTIVE"}>{t("product.INACTIVE")}</option>
@@ -1111,7 +1111,7 @@ const DashboardAdminProducts = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("product.product_images")}</label>
+                            <label htmlFor="image" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("product.product_images")}</label>
                               <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
                                 <AnimatePresence>
                                   {existingImages.map((image, index) => (

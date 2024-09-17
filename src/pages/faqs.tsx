@@ -205,12 +205,12 @@ const DashboardAdminFaqs = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="question" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("faq.question")}</label>
+                            <label htmlFor="question" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("faq.question")}</label>
                             <input name="question" value={selectedFaq.question} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("faq.question")}/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="answer" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{t("faq.answer_question")}</label>
+                            <label htmlFor="answer" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6 mb-2">{t("faq.answer_question")}</label>
                             <textarea name="answer" value={selectedFaq.answer} className="w-full h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("faq.answer_question")}/>
                           </div>
 
@@ -218,7 +218,7 @@ const DashboardAdminFaqs = () => {
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
-                          <div className="flex flex-row justify-end gap-x-6 w-full">
+                          <div className="flex flex-row justify-end gap-x-6 w-full mt-12">
                               <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("faq.go_back_question_list")}</Button>
                           </div>
 
@@ -246,7 +246,7 @@ const DashboardAdminFaqs = () => {
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="question" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("faq.question")}</label>
+                        <label htmlFor="question" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("faq.question")}</label>
                         <input name="question" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("faq.question")}/>
                         <div className="w-full h-6">
                           {errorMessages.question && (
@@ -263,7 +263,7 @@ const DashboardAdminFaqs = () => {
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="answer" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{t("faq.answer_question")}</label>
+                        <label htmlFor="answer" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6 mb-2">{t("faq.answer_question")}</label>
                         <textarea name="answer" className="w-full h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("faq.answer_question")}/>
                         <div className="w-full h-6">
                           {errorMessages.answer && (

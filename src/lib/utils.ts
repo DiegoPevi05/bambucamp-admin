@@ -28,8 +28,8 @@ export const getExperiencesNames = (reserve:Reserve) => {
   return reserve.experiences.map((experience) => experience.name).join(", ");
 }
 
-export const formatPrice = (price:number) => {
-  return price.toLocaleString("en-US", {style: "currency", currency: "USD"});
+export const formatPrice = (price: number) => {
+  return price.toLocaleString("es-PE", { style: "currency", currency: "PEN" });
 };
 
 export const formatDate = (date:Date) => {

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Promotion, PromotionFilters, PromotionFormData, optionsPromotion } from '../../lib/interfaces';
 import { serializePromotion, serializePromotionToDB, serializePromotionOptions } from '../serializer';
 
-export const getAllPromotionOptions = async(token:string):Promise<optionsPromotion|null> => {
+export const getAllPromotionOptions = async(token:string, language:string):Promise<optionsPromotion|null> => {
   let data:optionsPromotion | null = null;
   try{
 
@@ -13,7 +13,7 @@ export const getAllPromotionOptions = async(token:string):Promise<optionsPromoti
     const fetchPromotionsOptions = await axios.get(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -50,7 +50,7 @@ export const getAllPromotionOptions = async(token:string):Promise<optionsPromoti
   return data;
 }
 
-export const getAllPromotions = async( token: string, page:Number, filters?:PromotionFilters ): Promise<{promotions:Promotion[], totalPages:Number ,currentPage:Number}|null> => {
+export const getAllPromotions = async( token: string, page:Number, language:string, filters?:PromotionFilters ): Promise<{promotions:Promotion[], totalPages:Number ,currentPage:Number}|null> => {
 
   let data:{ promotions:Promotion[],totalPages:Number,currentPage:Number } | null = null;
   try{
@@ -73,10 +73,9 @@ export const getAllPromotions = async( token: string, page:Number, filters?:Prom
     const fetchPromotions = await axios.get(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
-    console.log(fetchPromotions);
 
     data = {
       promotions: fetchPromotions.data.promotions.map((promotion: any) => serializePromotion(promotion)),
@@ -86,7 +85,6 @@ export const getAllPromotions = async( token: string, page:Number, filters?:Prom
 
 
   }catch(error){
-    console.log(error)
     if (axios.isAxiosError(error)) {
       const statusCode = error.response?.status;
       const errorData = error.response?.data;
@@ -116,7 +114,7 @@ export const getAllPromotions = async( token: string, page:Number, filters?:Prom
 
 
 
-export const createPromotion = async (promotion: PromotionFormData, token: string): Promise<boolean> => {
+export const createPromotion = async (promotion: PromotionFormData, token: string, language:string): Promise<boolean> => {
   try {
 
     // Create a new FormData object
@@ -126,7 +124,7 @@ export const createPromotion = async (promotion: PromotionFormData, token: strin
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
     toast.success(response.data.message);
@@ -159,7 +157,7 @@ export const createPromotion = async (promotion: PromotionFormData, token: strin
 };
 
 
-export const updatePromotion = async (promotionId:Number,promotion: PromotionFormData, token: string): Promise<boolean> => {
+export const updatePromotion = async (promotionId:Number,promotion: PromotionFormData, token: string, language:string): Promise<boolean> => {
   try {
     // Create a new FormData object
     const formData = serializePromotionToDB(promotion,true);
@@ -168,7 +166,7 @@ export const updatePromotion = async (promotionId:Number,promotion: PromotionFor
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -203,13 +201,13 @@ export const updatePromotion = async (promotionId:Number,promotion: PromotionFor
 
 
 
-export const deletePromotion = async(idPromotion:Number, token:string ):Promise<boolean> => {
+export const deletePromotion = async(idPromotion:Number, token:string, language:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/promotions/${idPromotion}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 

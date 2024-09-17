@@ -427,27 +427,27 @@ const DashboardAdminGlapings = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_header")}</label>
+                            <label htmlFor="header" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_header")}</label>
                             <input name="header" value={selectedTent.header} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_header")} />
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_name")}</label>
+                            <label htmlFor="title" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_name")}</label>
                             <input name="title" value={selectedTent.title} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_name")} />
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_description")}</label>
+                            <label htmlFor="description" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_description")}</label>
                             <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("glamping.glamping_description")}>{ selectedTent.description }</textarea>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_price")}</label>
+                            <label htmlFor="price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_price")}</label>
                             <input name="price" value={selectedTent.price} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_price")} />
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price")}</label>
+                            <label htmlFor="price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price")}</label>
                             <div className="w-full h-auto flex flex-col items-start justify-start">
                               <AnimatePresence>
                                 {selectedTent.custom_price.map((price, index) => (
@@ -479,7 +479,7 @@ const DashboardAdminGlapings = () => {
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.status")}</label>
+                            <label htmlFor="status" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.status")}</label>
                             <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                               <option value={selectedTent.status}>{selectedTent.status == "ACTIVE" ? t("glamping.ACTIVE") : t("glamping.INACTIVE")}</option>
                             </select>
@@ -489,30 +489,30 @@ const DashboardAdminGlapings = () => {
                           
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                                <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people")}</label>
+                                <label htmlFor="qtypeople" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people")}</label>
                                 <input name="qtypeople" value={selectedTent.qtypeople} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people")} />
                               </div>
 
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                                <label htmlFor="qtykids" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_kids")}</label>
+                                <label htmlFor="qtykids" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_kids")}</label>
                                 <input name="qtykids" value={selectedTent.qtykids} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_kids")} />
                               </div>
                           </div>
 
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                                <label htmlFor="aditional_people_price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_price")}</label>
+                                <label htmlFor="aditional_people_price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_price")}</label>
                                 <input name="aditional_people_price" value={selectedTent.aditional_people_price} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people_price")} />
                               </div>
 
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                                <label htmlFor="max_aditional_people" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_aditional")}</label>
+                                <label htmlFor="max_aditional_people" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_aditional")}</label>
                                 <input name="max_aditional_people" value={selectedTent.max_aditional_people} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people_aditional")} />
                               </div>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="services" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.services")}</label>
+                            <label htmlFor="services" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.services")}</label>
                               <div id="input_tent_create_services" className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-2 gap-y-4 gap-x-6">
 
                                 <div className="checkbox-wrapper-13">
@@ -573,7 +573,7 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_images")}</label>
+                            <label htmlFor="image" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_images")}</label>
                               <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
                                 <AnimatePresence>
                                   {selectedTent.images.map((image, index) => (
@@ -597,7 +597,7 @@ const DashboardAdminGlapings = () => {
                               </div>
                           </div>
 
-                          <div className="flex flex-row justify-end gap-x-6 w-full">
+                          <div className="flex flex-row justify-end gap-x-6 w-full mt-12">
                               <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("glamping.go_back_glampings_list")}</Button>
                           </div>
 
@@ -625,7 +625,7 @@ const DashboardAdminGlapings = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_header")}</label>
+                            <label htmlFor="header" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_header")}</label>
                             <input name="header" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_header")}/>
                               <div className="w-full h-6">
                                 {errorMessages.header && (
@@ -642,7 +642,7 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_name")}</label>
+                            <label htmlFor="title" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_name")}</label>
                             <input name="title" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_name")}/>
                             <div className="w-full h-6">
                               {errorMessages.title && (
@@ -659,7 +659,7 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_description")}</label>
+                            <label htmlFor="description" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_description")}</label>
                             <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("glamping.glamping_description")}/>
                             <div className="w-full h-6">
                               {errorMessages.description && (
@@ -676,7 +676,7 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_price")}</label>
+                            <label htmlFor="price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_price")}</label>
                             <input name="price" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_price")}/>
 
                             <div className="w-full h-6">
@@ -694,20 +694,20 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price")}</label>
+                            <label htmlFor="price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price")}</label>
                             <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price_from")}</label>
+                                  <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price_from")}</label>
                                   <input name="custom_price_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_custom_price_from")}/>
                                 </div>
 
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price_to")}</label>
+                                  <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price_to")}</label>
                                   <input name="custom_price_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_custom_price_to")}/>
                                 </div>
 
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price_price")}</label>
+                                  <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price_price")}</label>
                                   <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_custom_price_price")}/>
                                 </div>
                               <Button onClick={()=>handleAddCustomPrice("form_create_tent")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
@@ -763,7 +763,7 @@ const DashboardAdminGlapings = () => {
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.status")}</label>
+                            <label htmlFor="status" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.status")}</label>
                             <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                               <option value="ACTIVE">{t("glamping.ACTIVE")}</option>
                               <option value="INACTIVE">{t("glamping.INACTIVe")}</option>
@@ -787,7 +787,7 @@ const DashboardAdminGlapings = () => {
                           
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                                <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people")}</label>
+                                <label htmlFor="qtypeople" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people")}</label>
                                 <input name="qtypeople" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people")}/>
 
                                 <div className="w-full h-6">
@@ -805,7 +805,7 @@ const DashboardAdminGlapings = () => {
                               </div>
 
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                                <label htmlFor="qtykids" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_kids")}</label>
+                                <label htmlFor="qtykids" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_kids")}</label>
                                 <input name="qtykids" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_kids")}/>
                                 <div className="w-full h-6">
                                   {errorMessages.qtykids && (
@@ -824,7 +824,7 @@ const DashboardAdminGlapings = () => {
 
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                                <label htmlFor="aditional_people_price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_price")}</label>
+                                <label htmlFor="aditional_people_price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_price")}</label>
                                 <input name="aditional_people_price" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people_price")}/>
 
                                 <div className="w-full h-6">
@@ -842,7 +842,7 @@ const DashboardAdminGlapings = () => {
                               </div>
 
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                                <label htmlFor="max_aditional_people" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_aditional")}</label>
+                                <label htmlFor="max_aditional_people" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_aditional")}</label>
                                 <input name="max_aditional_people" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people_aditional")}/>
                                 <div className="w-full h-6">
                                   {errorMessages.max_aditional_people && (
@@ -860,7 +860,7 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="services" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.services")}</label>
+                            <label htmlFor="services" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.services")}</label>
                               <div id="input_tent_create_services" className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-2 gap-y-4 gap-x-6">
 
                                 <div className="checkbox-wrapper-13">
@@ -921,7 +921,7 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_images")}</label>
+                            <label htmlFor="image" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_images")}</label>
                               <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
                                 <AnimatePresence>
                                   {images.map((image, index) => (
@@ -995,7 +995,7 @@ const DashboardAdminGlapings = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_header")}</label>
+                            <label htmlFor="header" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_header")}</label>
                             <input name="header" value={selectedTent.header}  onChange={(e)=>onChangeSelectedTent(e)}  className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_header")}/>
                             <div className="w-full h-6">
                               {errorMessages.header && (
@@ -1012,7 +1012,7 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_name")}</label>
+                            <label htmlFor="title" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_name")}</label>
                             <input name="title" value={selectedTent.title}  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_name")}/>
                             <div className="w-full h-6">
                               {errorMessages.title && (
@@ -1029,7 +1029,7 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_description")}</label>
+                            <label htmlFor="description" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_description")}</label>
                             <textarea name="description"  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("glamping.glamping_description")}>{selectedTent.description}</textarea>
                             <div className="w-full h-6">
                               {errorMessages.description && (
@@ -1046,7 +1046,7 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_price")}</label>
+                            <label htmlFor="price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_price")}</label>
                             <input name="price" value={selectedTent.price}  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_price")}/>
 
                             <div className="w-full h-6">
@@ -1064,20 +1064,20 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price")}</label>
+                            <label htmlFor="price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price")}</label>
                             <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price_from")}</label>
+                                  <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price_from")}</label>
                                   <input name="custom_price_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_custom_price_from")}/>
                                 </div>
 
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price_to")}</label>
+                                  <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price_to")}</label>
                                   <input name="custom_price_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_custom_price_to")}/>
                                 </div>
 
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price_price")}</label>
+                                  <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_custom_price_price")}</label>
                                   <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_custom_price_price")}/>
                                 </div>
                                 <Button onClick={()=>handleAddCustomPrice("form_update_tent")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
@@ -1131,7 +1131,7 @@ const DashboardAdminGlapings = () => {
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.status")}</label>
+                            <label htmlFor="status" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.status")}</label>
                             <select name="status" onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                               <option value="ACTIVE" selected={selectedTent.status == "ACTIVE"}>{t("glamping.ACTIVE")}</option>
                               <option value="INACTIVE" selected={selectedTent.status == "INACTIVE"}>{t("glamping.INACTIVE")}</option>
@@ -1154,7 +1154,7 @@ const DashboardAdminGlapings = () => {
                           
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                                <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people")}</label>
+                                <label htmlFor="qtypeople" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people")}</label>
                                 <input name="qtypeople" value={selectedTent.qtypeople}  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people")}/>
 
                                 <div className="w-full h-6">
@@ -1172,7 +1172,7 @@ const DashboardAdminGlapings = () => {
                               </div>
 
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                                <label htmlFor="qtykids" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_kids")}</label>
+                                <label htmlFor="qtykids" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_kids")}</label>
                                 <input name="qtykids" value={selectedTent.qtykids}  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_kids")}/>
 
                                 <div className="w-full h-6">
@@ -1192,7 +1192,7 @@ const DashboardAdminGlapings = () => {
 
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                                <label htmlFor="aditional_people_price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_price")}</label>
+                                <label htmlFor="aditional_people_price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_price")}</label>
                                 <input name="aditional_people_price" value={selectedTent.aditional_people_price}  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people_price")}/>
 
                                 <div className="w-full h-6">
@@ -1210,7 +1210,7 @@ const DashboardAdminGlapings = () => {
                               </div>
 
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                                <label htmlFor="max_aditional_people" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_aditional")}</label>
+                                <label htmlFor="max_aditional_people" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_aditional")}</label>
                                 <input name="max_aditional_people" value={selectedTent.max_aditional_people}  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people_aditional")}/>
 
                                 <div className="w-full h-6">
@@ -1229,7 +1229,7 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="services" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.services")}</label>
+                            <label htmlFor="services" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.services")}</label>
                               <div id="input_tent_create_services" className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-2 gap-y-4 gap-x-6">
 
                                 <div className="checkbox-wrapper-13">
@@ -1290,7 +1290,7 @@ const DashboardAdminGlapings = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("glamping.glamping_images")}</label>
+                            <label htmlFor="image" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_images")}</label>
                               <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
                                 <AnimatePresence>
                                   {existingImages.map((image, index) => (
