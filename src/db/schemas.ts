@@ -37,7 +37,7 @@ const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
 const imageFileSchema = z.instanceof(File).refine((file) => {
   return allowedMimeTypes.includes(file.type) && file.size <= 2 * 1024 * 1024;
 }, {
-  message: 'Debe ser un archivo de imagen válido (JPEG, PNG, WEBP) y no mayor de 2MB',
+  message: 'common.validations.image_file',
 });
 
 const TentSchema = z.object({
@@ -87,21 +87,21 @@ const ProductSchema = z.object({
 });
 
 const ExperienceSchema = z.object({
-  categoryId:z.number().positive({ message:'El producto debe tener una categoria' }),
-  header: z.string().nonempty({ message: 'El encabezado es requerido' }),
-  name: z.string().nonempty({ message: 'El título es requerido' }),
-  description: z.string().nonempty({ message: 'La descripción es requerida' }),
+  categoryId:z.number().positive({ message:'experience.validations.experience_category_id_invalid' }),
+  header: z.string().nonempty({ message: 'experience.validations.header_required' }),
+  name: z.string().nonempty({ message: 'experience.validations.name_required' }),
+  description: z.string().nonempty({ message: 'experience.validations.description_required' }),
   existing_images: z.array(z.string()).default([]),
   images: z.array(imageFileSchema).default([]),
-  duration: z.number().gt(1, { message: 'La duracion de la experiencia debe ser mayor que 1 min' }),
-  limit_age: z.number().gt(1, { message: 'Debe haber un limite de edad minima.' }),
-  qtypeople: z.number().gt(1, { message: 'Debe ser alemnos para una persona la actividad.' }),
+  duration: z.number().min(1, { message: 'experience.validations.duration_min' }),
+  limit_age: z.number().min(1, { message: 'experience.validations.limit_age_min' }),
+  qtypeople: z.number().min(1, { message: 'experience.validations.qtypeople_min' }),
   suggestions: z.array(z.string()).default([]),
-  price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
+  price: z.number().min(0,{ message: 'experience.validations.price_min' }),
   custom_price: z.array(CustomPriceSchema),
-  status: z.string().nonempty({ message: 'El estado es requerido' }),
+  status: z.string().nonempty({ message: 'experience.validations.status_required' }),
 }).refine(data => data.existing_images.length > 0 || data.images.length > 0, {
-  message: 'Debe haber al menos una imagen',
+  message: 'experience.validations.images_min',
   path: ['images'] // This can be any path to indicate where the error should appear
 });
 

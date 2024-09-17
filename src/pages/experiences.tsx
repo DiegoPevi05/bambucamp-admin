@@ -14,10 +14,12 @@ import {  ZodError } from 'zod';
 import { ExperienceSchema } from "../db/schemas";
 import Modal from "../components/Modal";
 import { toast } from "sonner";
+import {useTranslation} from "react-i18next";
 
 
 const DashboardAdminExperiences = () => {
 
+    const {t,i18n} = useTranslation();
     const { user } = useAuth();
     const [datasetExperiences,setDataSetExperiences] = useState<{experiences:Experience[],totalPages:Number,currentPage:Number}>({experiences:[],totalPages:1,currentPage:1});
     const [datasetExperiencesCategory, setDatasetExperiencesCategory] = useState<ExperienceCategory[]>([]);
@@ -40,7 +42,7 @@ const DashboardAdminExperiences = () => {
     const getExperiencesHandler = async (page:Number, filters?:ExperienceFilters) => {
         setCurrentView("LOADING");
         if(user != null){
-            const experiences  = await getAllExperiences(user.token,page,filters);
+            const experiences  = await getAllExperiences(user.token,page,i18n.language,filters);
             if(experiences){
                 setDataSetExperiences(experiences);
                 setCurrentView("L");
@@ -88,7 +90,7 @@ const DashboardAdminExperiences = () => {
         dateTo.setHours(12, 0, 0, 0);
 
         if(dateFrom > dateTo){
-          toast.error("La fecha de inicio debe ser menor que la fecha de Fin");
+          toast.error(t("experience.validations.start_date_lower_than_end_date"));
           return;
         };   
 
@@ -101,7 +103,7 @@ const DashboardAdminExperiences = () => {
         priceInput.value = '';
       } else {
         // Handle invalid input
-        toast.error("Ingresa una fecha valida por favor");
+        toast.error(t("experience.validations.input_valid_date"));
       }
     };
 
@@ -119,7 +121,7 @@ const DashboardAdminExperiences = () => {
       if (suggestion) {
 
         if(suggestion.length == 0){
-          toast.error("La sugerencia no puede estar vacia");
+          toast.error(t("experience.validations.suggestions_empty"));
           return;
         };   
 
@@ -130,7 +132,7 @@ const DashboardAdminExperiences = () => {
 
       } else {
         // Handle invalid input
-        toast.error("Ingresa una sugerencia para poder grabarla");
+        toast.error(t("experience.validations.suggestions_error"));
       }
     };
 
@@ -190,7 +192,7 @@ const DashboardAdminExperiences = () => {
         const fieldsValidated = validateFields('form_create_experience');
         if(fieldsValidated != null){
           if(user !== null){
-            const isSuccess = await createExperience(fieldsValidated, user.token);
+            const isSuccess = await createExperience(fieldsValidated, user.token,i18n.language);
             if(!isSuccess){
               setLoadingForm(false);
               return;
@@ -238,7 +240,7 @@ const DashboardAdminExperiences = () => {
 
     const deleteExperienceHandler = async() => {
         if(user != null && selectedExperience != null){
-            const isSuccess = await deleteExperience(selectedExperience.id,user.token)
+            const isSuccess = await deleteExperience(selectedExperience.id,user.token,i18n.language)
             if(!isSuccess){
               return;
             }
@@ -267,7 +269,7 @@ const DashboardAdminExperiences = () => {
         if(fieldsValidated != null){
           fieldsValidated.existing_images = JSON.stringify(existingImages);
           if(user !== null && selectedExperience != null){
-              const isSuccess = await updateExperience(selectedExperience.id,fieldsValidated, user.token);
+              const isSuccess = await updateExperience(selectedExperience.id,fieldsValidated, user.token, i18n.language);
               if(!isSuccess){
                 setLoadingForm(false);
                 return;
@@ -309,7 +311,7 @@ const DashboardAdminExperiences = () => {
         const category = (form.querySelector('input[name="category"]') as HTMLInputElement).value;
 
         if(category.length == 0){
-          toast.error("La categoria debe tener un nombre");
+          toast.error(t("experience.validations.category_name"));
           return;
         };
 
@@ -366,7 +368,7 @@ const DashboardAdminExperiences = () => {
                 variants={fadeIn("up","",0.5,0.3)}
                 className="w-full min-h-[300px] flex flex-col justify-center items-center gap-y-4 bg-white pointer-events-none">
                   <div className="loader"></div>
-                  <h1 className="font-primary text-secondary mt-4">{"Cargando..."}</h1>
+                  <h1 className="font-primary text-secondary mt-4">{t("common.loading")}</h1>
             </motion.div>
         )}
 
@@ -381,7 +383,7 @@ const DashboardAdminExperiences = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>Experiencias</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>{t("experience.plural")}</h2>
                   <div className="w-full h-auto flex flex-col xl:flex-row justify-start xl:justify-between items-center gap-x-4">
                     <div className="w-full xl:w-auto h-auto flex flex-col md:flex-row justify-between xl:justify-start items-start gap-y-4 gap-x-4">
                           <div className="flex flex-row items-start md:items-center gap-x-2">
@@ -391,19 +393,19 @@ const DashboardAdminExperiences = () => {
                               placeholder="Buscar Experiencia" 
                               className="w-48 xl:w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
-                            <InputRadio name="criteria_search" variant="dark" value="title" placeholder="Nombre"/>
+                            <InputRadio name="criteria_search" variant="light" isRound={true} value="title" placeholder="Nombre"/>
                           </div>
                           <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
                               <label className="md:ml-4 flex items-center">
-                                Estatus
+                                {t("experience.status")}
                                 <select name="criteria_search_status" className="ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
-                                  <option value="">Seleccionar Estatus</option>
-                                  <option value="ACTIVE">ACTIVO</option>
-                                  <option value="INACTIVE">INACTIVO</option>
+                                  <option value="">{t("experience.select_status")}</option>
+                                  <option value="ACTIVE">{t("experience.ACTIVE")}</option>
+                                  <option value="INACTIVE">{t("experience.INACTIVE")}</option>
                                 </select>
                               </label>
-                              <Button size="sm" variant="dark" effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchExperienceHandler()}>
-                              Buscar
+                              <Button variant="ghostLight" isRound={true} effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchExperienceHandler()}>
+                                {t("common.search")}
                             </Button>
                           </div>
                         </div>
@@ -414,25 +416,25 @@ const DashboardAdminExperiences = () => {
                                 onClick={()=>setOpenModalCategories(true)}
                                 className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-primary hover:text-white rounded-xl duration-300 hover:border-primary"
                               >
-                                Categorias
+                                {t("experience.categories")}
                               </button>
                             </div>
-                          <Button onClick={()=>{setCurrentView("A"); setImages([]); setCustomPrices([]); setSuggestions([]); setExistingImages([])}} size="sm" variant="dark" effect="default" className="min-w-[300px]" isRound={true}>Agregar Experiencia <FlameKindlingIcon/></Button>
+                          <Button onClick={()=>{setCurrentView("A"); setImages([]); setCustomPrices([]); setSuggestions([]); setExistingImages([])}} size="sm" variant="dark" effect="default" className="min-w-[300px]" isRound={true}>{t("experience.add_experience")}<FlameKindlingIcon/></Button>
                         </div>
                     </div>
                     <table className="h-full w-full shadow-xl rounded-xl text-center p-4">
                       <thead className="font-primary text-sm xl:text-md bg-primary text-white">
                             <tr className="">
                                 <th className="rounded-tl-xl p-2">#</th>
-                                <th className="p-2">Categoria</th>
-                                <th className="p-2">Nombre</th>
-                                <th className="p-2">Precio</th>
-                                <th className="p-2">Duracion</th>
-                                <th className="p-2">Imagenes</th>
-                                <th className="p-2">Estado</th>
-                                <th className="p-2 max-xl:hidden">Creado</th>
-                                <th className="p-2 max-xl:hidden">Actualizado</th>
-                                <th className="rounded-tr-xl p-2">Acciones</th>
+                                <th className="p-2">{t("experience.category")}</th>
+                                <th className="p-2">{t("experience.name")}</th>
+                                <th className="p-2">{t("experience.price")}</th>
+                                <th className="p-2">{t("experience.duration")}</th>
+                                <th className="p-2">{t("experience.images")}</th>
+                                <th className="p-2">{t("experience.status")}</th>
+                                <th className="p-2 max-xl:hidden">{t("experience.created")}</th>
+                                <th className="p-2 max-xl:hidden">{t("experience.updated")}</th>
+                                <th className="rounded-tr-xl p-2">{t("experience.actions")}</th>
                             </tr>
                         </thead>
                       <tbody className="font-secondary text-xs xl:text-sm">
@@ -451,9 +453,9 @@ const DashboardAdminExperiences = () => {
                                             </a>
                                           ))}
                                         </td>
-                                        <td className="h-full">{experienceItem.status != "ACTIVE" ? "INACTIVO" : "ACTIVO" }</td>
-                                      <td className="h-full max-xl:hidden">{experienceItem.updatedAt != undefined && experienceItem.updatedAt != null ? formatDate(experienceItem.updatedAt) : "None"}</td>
-                                      <td className="h-full max-xl:hidden">{experienceItem.createdAt != undefined && experienceItem.createdAt != null ? formatDate(experienceItem.createdAt) : "None"}</td>
+                                        <td className="h-full">{experienceItem.status != "ACTIVE" ? t("experience.INACTIVE") : t("experience.ACTIVE") }</td>
+                                      <td className="h-full max-xl:hidden">{experienceItem.updatedAt != undefined && experienceItem.updatedAt != null ? formatDate(experienceItem.updatedAt) : t("experience.none")}</td>
+                                      <td className="h-full max-xl:hidden">{experienceItem.createdAt != undefined && experienceItem.createdAt != null ? formatDate(experienceItem.createdAt) : t("experience.none")}</td>
                                         <td className="h-full flex flex-col items-center justify-center">
                                           <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
                                             <button onClick={()=>{setSelectedExperience(experienceItem); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
@@ -475,11 +477,11 @@ const DashboardAdminExperiences = () => {
                 <Modal isOpen={openDeleteModal} onClose={()=>setOpenDeleteModal(false)}>
                     <div className="w-[400px] h-auto flex flex-col items-center justify-center text-secondary pb-6 px-6 pt-12 text-center">
                         <CircleX className="h-[60px] w-[60px] text-red-400 "/>
-                        <p className="text-primary">Estas seguro de eliminar esta experiencia?</p>
-                        <p className="text-sm mt-6 text-secondary">La experiencia se eliminara si haces click en aceptar, las reservas no se perderan, pero no se podra reservar mas la experiencia</p>
+                        <p className="text-primary">{t("experience.secure_delete_experience_header")}</p>
+                        <p className="text-sm mt-6 text-secondary">{t("experience.secure_delete_experience_description")}</p>
                         <div className="flex flex-row justify-around w-full mt-6">
-                            <Button size="sm" variant="dark" effect="default" isRound={true} onClick={()=>setOpenDeleteModal(false)}> Cancelar  </Button>
-                            <Button size="sm" variant="danger" effect="default" isRound={true} onClick={()=>{deleteExperienceHandler()}}> Aceptar </Button>
+                            <Button size="sm" variant="dark" effect="default" isRound={true} onClick={()=>setOpenDeleteModal(false)}>{t("common.cancel")}</Button>
+                            <Button size="sm" variant="danger" effect="default" isRound={true} onClick={()=>{deleteExperienceHandler()}}>{t("common.accept")}</Button>
                         </div>
                     </div>
                 </Modal>
@@ -489,14 +491,14 @@ const DashboardAdminExperiences = () => {
                     {loadingCategory ? 
                       <>
                         <div className="loader"></div>
-                        <h1 className="font-primary text-white mt-4">{"Cargando..."}</h1>
+                        <h1 className="font-primary text-white mt-4">{t("common.loading")}</h1>
                       </>
                     :
                     <>
                       <form id="form_create_experience_category" className="h-auto w-full flex flex-row items-end justify-between gap-x-2" onSubmit={(e)=>onSubmitCreationCategory(e)}>
                         <div className="flex flex-col items-start justify-start w-full">
-                          <label htmlFor="category" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nueva Categoria"}</label>
-                            <input name="category" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de Categoria"}/>
+                          <label htmlFor="category" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.new_category")}</label>
+                            <input name="category" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.category_name")}/>
                         </div>
                         <div className="flex flex-col items-center justify-center w-auto h-auto">
                           <button
@@ -508,13 +510,13 @@ const DashboardAdminExperiences = () => {
                         </div>
                       </form>
                       <div className="mt-12 h-[200px] w-full flex flex-col justify-start items-start overflow-y-scroll gap-y-2">
-                        <label htmlFor="category" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Categorias"}</label>
+                        <label htmlFor="category" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.categories")}</label>
                         { datasetExperiencesCategory.map((category,index)=>{
                           return(
                             <div key={"category_experience"+index} className="w-[90%] h-auto flex flex-row items-center justify-center border border-2 border-slate-200 rounded-md p-2 mx-auto">
                               <div className="flex flex-col items-center justify-center w-full">
                                 {selectedCategory?.id == category.id ?
-                                  <input name="name" value={selectedCategory.name} onChange={(e)=>onChangeSelectedCategory(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de Categoria"}/>
+                                  <input name="name" value={selectedCategory.name} onChange={(e)=>onChangeSelectedCategory(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.category_name")}/>
                                 :
                                 <label className="w-full text-left text-sm">{category.name}</label>
                                 }
@@ -560,21 +562,21 @@ const DashboardAdminExperiences = () => {
 
         {currentView == "V" && selectedExperience && (
                 <motion.div 
-                    key={"New-View"}
+                    key={"View"}
                     initial="hidden"
                     animate="show"
                     exit="hidden"
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>Ver Experiencia</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>{t("experience.see_experiences")}</h2>
 
                   <div className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" >
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Categoria"}</label>
+                                <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_category")}</label>
 
                                 <select name="categoryId" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                                   <option value={selectedExperience.category.id}>{selectedExperience.category.name}</option>
@@ -582,43 +584,43 @@ const DashboardAdminExperiences = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Encabezado"}</label>
-                            <input name="header" value={selectedExperience.header} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Encabezado"} disabled/>
+                            <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_header")}</label>
+                            <input name="header" value={selectedExperience.header} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_category")} />
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre"}</label>
-                            <input name="name" value={selectedExperience.name} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre"} disabled/>
+                            <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_name")}</label>
+                            <input name="name" value={selectedExperience.name} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_name")} />
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
-                            <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}>{ selectedExperience.description }</textarea>
+                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_description")}</label>
+                            <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("experience.experience_description")}>{ selectedExperience.description }</textarea>
                           </div>
 
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio Fijo"}</label>
-                              <input name="price" value={selectedExperience.price} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"} disabled/>
+                              <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_price")}</label>
+                              <input name="price" value={selectedExperience.price} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_price")} />
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="duration" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Duracion en minutos"}</label>
-                              <input name="duration" value={selectedExperience.duration} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Duracion"} disabled/>
+                              <label htmlFor="duration" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_duration")}</label>
+                              <input name="duration" value={selectedExperience.duration} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_duration")} />
                             </div>
                           </div>
 
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="limit_age" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Limite de Edad"}</label>
-                              <input name="limit_age" value={selectedExperience.limit_age} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Limite de Edad"} disabled/>
+                              <label htmlFor="limit_age" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_limit_age")}</label>
+                              <input name="limit_age" value={selectedExperience.limit_age} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_limit_age")} />
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Limite de Edad"}</label>
-                              <input name="qtypeople" value={selectedExperience.qtypeople} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Limite de Edad"} disabled/>
+                              <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_qty_people")}</label>
+                              <input name="qtypeople" value={selectedExperience.qtypeople} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_qty_people")} />
                             </div>
                           </div>
 
@@ -629,7 +631,7 @@ const DashboardAdminExperiences = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
                           
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precios Personalizados"}</label>
+                            <label htmlFor="custom_price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_custom_price")}</label>
                             <div className="w-full h-auto flex flex-col items-start justify-start">
                               <AnimatePresence>
                                 {selectedExperience.custom_price.map((price, index) => (
@@ -643,13 +645,13 @@ const DashboardAdminExperiences = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Desde: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
+                                              {t("experience.experience_custom_price_from")}: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Hasta: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
+                                              {t("experience.experience_custom_price_to")}: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Precio: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
+                                              {t("experience.experience_custom_price_price")}: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
                                             </span>
                                           </motion.div>
                                         ))}
@@ -659,14 +661,14 @@ const DashboardAdminExperiences = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
+                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.status")}</label>
                             <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              <option value={selectedExperience.status}>{selectedExperience.status == "ACTIVE" ? "ACTIVO" : "INACTIVO"}</option>
+                              <option value={selectedExperience.status}>{selectedExperience.status == "ACTIVE" ? t("experience.ACTIVE") : t("experience.INACTIVE")}</option>
                             </select>
                           </div>
                           
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
+                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_images")}</label>
                               <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
                                 <AnimatePresence>
                                   {selectedExperience.images.map((image, index) => (
@@ -691,7 +693,7 @@ const DashboardAdminExperiences = () => {
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Sugerencias de la experiencia"}</label>
+                            <label htmlFor="suggestions" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_suggestions")}</label>
                             <div className="w-full h-auto">
                               <AnimatePresence>
                                 {selectedExperience.suggestions.map((suggestion, index) => (
@@ -734,14 +736,14 @@ const DashboardAdminExperiences = () => {
                 viewport={{ once: true }}
                 variants={fadeIn("up","",0.5,0.3)}
                 className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>Agregar Experiencia</h2>
+                <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>{t("experience.add_experience")}</h2>
 
               <form id="form_create_experience" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
 
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                   <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Categoria"}</label>
+                        <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_category")}</label>
 
                         <select name="categoryId" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                           { datasetExperiencesCategory.map((category,index)=>{
@@ -766,8 +768,8 @@ const DashboardAdminExperiences = () => {
                   </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Encabezado de la Experiencia"}</label>
-                        <input name="header" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Encabezado de la Experiencia"}/>
+                        <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_header")}</label>
+                        <input name="header" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_header")}/>
                         <div className="w-full h-6">
                           {errorMessages.header && (
                             <motion.p 
@@ -776,7 +778,7 @@ const DashboardAdminExperiences = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.header}
+                              {t(errorMessages.header)}
                             </motion.p>
                           )}
                         </div>
@@ -784,8 +786,8 @@ const DashboardAdminExperiences = () => {
 
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre de la Experiencia"}</label>
-                        <input name="name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre del Experiencia"}/>
+                        <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_name")}</label>
+                        <input name="name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_name")}/>
                         <div className="w-full h-6">
                           {errorMessages.name && (
                             <motion.p 
@@ -794,15 +796,15 @@ const DashboardAdminExperiences = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.name}
+                              {t(errorMessages.name)}
                             </motion.p>
                           )}
                         </div>
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
-                        <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}/>
+                        <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_description")}</label>
+                        <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("experience.experience_description")}/>
                         <div className="w-full h-6">
                           {errorMessages.description && (
                             <motion.p 
@@ -811,7 +813,7 @@ const DashboardAdminExperiences = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.description}
+                              {t(errorMessages.description)}
                             </motion.p>
                           )}
                         </div>
@@ -819,8 +821,8 @@ const DashboardAdminExperiences = () => {
 
                       <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                         <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio Fijo"}</label>
-                          <input name="price" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"}/>
+                          <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_price")}</label>
+                          <input name="price" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_price")}/>
 
                           <div className="w-full h-6">
                             {errorMessages.price && (
@@ -830,15 +832,15 @@ const DashboardAdminExperiences = () => {
                                 exit="hidden"
                                 variants={fadeIn("up","", 0, 1)}
                                 className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.price}
+                                {t(errorMessages.price)}
                               </motion.p>
                             )}
                           </div>
                         </div>
 
                         <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="duration" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Duracion en minutos"}</label>
-                          <input name="duration" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Duracion"}/>
+                          <label htmlFor="duration" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_duration")}</label>
+                          <input name="duration" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_duration")}/>
 
                           <div className="w-full h-6">
                             {errorMessages.duration && (
@@ -848,7 +850,7 @@ const DashboardAdminExperiences = () => {
                                 exit="hidden"
                                 variants={fadeIn("up","", 0, 1)}
                                 className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.duration}
+                                {t(errorMessages.duration)}
                               </motion.p>
                             )}
                           </div>
@@ -858,8 +860,8 @@ const DashboardAdminExperiences = () => {
 
                       <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                         <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="limit_age" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Limite de Edad"}</label>
-                          <input name="limit_age" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Limite de edad"}/>
+                          <label htmlFor="limit_age" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_limit_age")}</label>
+                          <input name="limit_age" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_limit_age")}/>
 
                           <div className="w-full h-6">
                             {errorMessages.limit_age && (
@@ -869,15 +871,15 @@ const DashboardAdminExperiences = () => {
                                 exit="hidden"
                                 variants={fadeIn("up","", 0, 1)}
                                 className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.limit_age}
+                                {t(errorMessages.limit_age)}
                               </motion.p>
                             )}
                           </div>
                         </div>
 
                         <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de personas"}</label>
-                          <input name="qtypeople" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de personas"}/>
+                          <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_qty_people")}</label>
+                          <input name="qtypeople" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_qty_people")}/>
 
                           <div className="w-full h-6">
                             {errorMessages.qtypeople && (
@@ -887,7 +889,7 @@ const DashboardAdminExperiences = () => {
                                 exit="hidden"
                                 variants={fadeIn("up","", 0, 1)}
                                 className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.qtypeople}
+                                {t(errorMessages.qtypeople)}
                               </motion.p>
                             )}
                           </div>
@@ -902,21 +904,21 @@ const DashboardAdminExperiences = () => {
                 <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                        <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precios Personalizados"}</label>
+                        <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_custom_price")}</label>
                         <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Desde"}</label>
-                              <input name="custom_price_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Desde"}/>
+                              <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_custom_price_from")}</label>
+                              <input name="custom_price_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_custom_price_from")}/>
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Hasta"}</label>
-                              <input name="custom_price_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+                              <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_custom_price_to")}</label>
+                              <input name="custom_price_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_custom_price_to")}/>
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio"}</label>
-                              <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+                              <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_custom_price_price")}</label>
+                              <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_custom_price_price")}/>
                             </div>
                           <Button onClick={()=>handleAddCustomPrice("form_create_experience")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                         </div>
@@ -934,20 +936,20 @@ const DashboardAdminExperiences = () => {
                                         className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                       >
                                         <span className="w-[30%]">
-                                          Desde: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
+                                          {t("experience.experience_custom_price_from")}: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
                                         </span>
                                         <span className="w-[30%]">
-                                          Hasta: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
+                                          {t("experience.experience_custom_price_to")}: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
                                         </span>
                                         <span className="w-[30%]">
-                                          Precio: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
+                                          {t("experience.experience_custom_price_price")}: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
                                         </span>
                                         <button
                                           type="button"
                                           onClick={() => handleRemoveCustomPrice(index)}
                                           className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
                                         >
-                                          Borrar
+                                          {t("experience.experience_custom_price_delete_btn")}
                                         </button>
                                       </motion.div>
                                     ))}
@@ -962,7 +964,7 @@ const DashboardAdminExperiences = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.customPrices}
+                              {t(errorMessages.customPrices)}
                             </motion.p>
                           )}
                         </div>
@@ -970,10 +972,10 @@ const DashboardAdminExperiences = () => {
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
+                        <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.status")}</label>
                         <select name="status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                          <option value="ACTIVE">ACTIVO</option>
-                          <option value="INACTIVE">INACTIVO</option>
+                          <option value="ACTIVE">{t("experience.ACTIVE")}</option>
+                          <option value="INACTIVE">{t("experience.INACTIVE")}</option>
                         </select>
 
                         <div className="w-full h-6">
@@ -984,14 +986,14 @@ const DashboardAdminExperiences = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.status}
+                              {t(errorMessages.status)}
                             </motion.p>
                           )}
                         </div>
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
+                        <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_images")}</label>
                           <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
                             <AnimatePresence>
                               {images.map((image, index) => (
@@ -1033,17 +1035,17 @@ const DashboardAdminExperiences = () => {
                                 exit="hidden"
                                 variants={fadeIn("up","", 0, 1)}
                                 className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.images}
+                                {t(errorMessages.images)}
                               </motion.p>
                             )}
                           </div>
                       </div>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                        <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Sugerencias de la experiencia"}</label>
+                        <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_suggestions")}</label>
                         <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-[75%] h-auto gap-y-2 sm:gap-y-1">
-                              <textarea name="suggestion_input" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Sugerencias"}/>
+                              <textarea name="suggestion_input" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_suggestions")}/>
                             </div>
                             <Button onClick={()=>handleAddSuggestion("form_create_experience")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                         </div>
@@ -1068,7 +1070,7 @@ const DashboardAdminExperiences = () => {
                                           onClick={() => handleRemoveSuggestion(index)}
                                           className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
                                         >
-                                          Borrar
+                                          {t("experience.experience_suggestion_delete_btn")}
                                         </button>
                                       </motion.div>
                                     ))}
@@ -1083,7 +1085,7 @@ const DashboardAdminExperiences = () => {
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.suggestions}
+                              {t(errorMessages.suggestions)}
                             </motion.p>
                           )}
                         </div>
@@ -1091,8 +1093,8 @@ const DashboardAdminExperiences = () => {
                       </div>
 
                       <div className="flex flex-row justify-end gap-x-6 w-full">
-                          <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                          <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Experiencia </Button>
+                          <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("common.cancel")}</Button>
+                          <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}>{t("experience.create_experience")} </Button>
                       </div>
 
                   </div>
@@ -1109,14 +1111,14 @@ const DashboardAdminExperiences = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>Editar Experiencia</h2>
+                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><FlameKindlingIcon/>{t("experience.edit_experience")}</h2>
 
                   <form id="form_update_experience" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitUpdate(e)}>
 
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                                <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Categoria"}</label>
+                                <label htmlFor="categoryId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_category")}</label>
                                 <select name="categoryId" onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
                                   { datasetExperiencesCategory.map((category,index)=>{
                                     return(
@@ -1132,15 +1134,15 @@ const DashboardAdminExperiences = () => {
                                       exit="hidden"
                                       variants={fadeIn("up","", 0, 1)}
                                       className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                      {errorMessages.categoryId}
+                                      {t(errorMessages.categoryId)}
                                     </motion.p>
                                   )}
                                 </div>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Encabezado de la Experiencia"}</label>
-                            <input name="header" value={selectedExperience.header}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Encabezado de la Experiencia"}/>
+                            <label htmlFor="header" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_header")}</label>
+                            <input name="header" value={selectedExperience.header}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_header")}/>
                             <div className="w-full h-6">
                               {errorMessages.header && (
                                 <motion.p 
@@ -1149,15 +1151,15 @@ const DashboardAdminExperiences = () => {
                                   exit="hidden"
                                   variants={fadeIn("up","", 0, 1)}
                                   className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.header}
+                                  {t(errorMessages.header)}
                                 </motion.p>
                               )}
                             </div>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Nombre de la Experiencia"}</label>
-                            <input name="name" value={selectedExperience.name}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Nombre de la Experiencia"}/>
+                            <label htmlFor="name" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_name")}</label>
+                            <input name="name" value={selectedExperience.name}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_name")}/>
                             <div className="w-full h-6">
                               {errorMessages.name && (
                                 <motion.p 
@@ -1166,15 +1168,15 @@ const DashboardAdminExperiences = () => {
                                   exit="hidden"
                                   variants={fadeIn("up","", 0, 1)}
                                   className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.name}
+                                  {t(errorMessages.name)}
                                 </motion.p>
                               )}
                             </div>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
-                            <textarea name="description"  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}>{selectedExperience.description}</textarea>
+                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_description")}</label>
+                            <textarea name="description"  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("experience.experience_description")}>{selectedExperience.description}</textarea>
                             <div className="w-full h-6">
                               {errorMessages.description && (
                                 <motion.p 
@@ -1183,7 +1185,7 @@ const DashboardAdminExperiences = () => {
                                   exit="hidden"
                                   variants={fadeIn("up","", 0, 1)}
                                   className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.description}
+                                  {t(errorMessages.description)}
                                 </motion.p>
                               )}
                             </div>
@@ -1191,8 +1193,8 @@ const DashboardAdminExperiences = () => {
 
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio Fijo"}</label>
-                              <input name="price" value={selectedExperience.price}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Precio Fijo"}/>
+                              <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_price")}</label>
+                              <input name="price" value={selectedExperience.price}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_price")}/>
 
                               <div className="w-full h-6">
                                 {errorMessages.price && (
@@ -1202,7 +1204,7 @@ const DashboardAdminExperiences = () => {
                                     exit="hidden"
                                     variants={fadeIn("up","", 0, 1)}
                                     className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.price}
+                                    {t(errorMessages.price)}
                                   </motion.p>
                                 )}
                               </div>
@@ -1210,8 +1212,8 @@ const DashboardAdminExperiences = () => {
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
 
-                              <label htmlFor="duration" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Duracion en minutos"}</label>
-                              <input name="duration" value={selectedExperience.duration}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Duracion"}/>
+                              <label htmlFor="duration" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_duration")}</label>
+                              <input name="duration" value={selectedExperience.duration}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_duration")}/>
 
                               <div className="w-full h-6">
                                 {errorMessages.duration && (
@@ -1221,7 +1223,7 @@ const DashboardAdminExperiences = () => {
                                     exit="hidden"
                                     variants={fadeIn("up","", 0, 1)}
                                     className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.duration}
+                                    {t(errorMessages.duration)}
                                   </motion.p>
                                 )}
                               </div>
@@ -1230,8 +1232,8 @@ const DashboardAdminExperiences = () => {
 
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="limit_age" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Limite de edad"}</label>
-                              <input name="limit_age" value={selectedExperience.limit_age}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Limite de edad"}/>
+                              <label htmlFor="limit_age" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_limit_age")}</label>
+                              <input name="limit_age" value={selectedExperience.limit_age}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_limit_age")}/>
 
                               <div className="w-full h-6">
                                 {errorMessages.limit_age && (
@@ -1241,7 +1243,7 @@ const DashboardAdminExperiences = () => {
                                     exit="hidden"
                                     variants={fadeIn("up","", 0, 1)}
                                     className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.limit_age}
+                                    {t(errorMessages.limit_age)}
                                   </motion.p>
                                 )}
                               </div>
@@ -1249,8 +1251,8 @@ const DashboardAdminExperiences = () => {
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
 
-                              <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de personas"}</label>
-                              <input name="qtypeople" value={selectedExperience.qtypeople}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de personas"}/>
+                              <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_qty_people")}</label>
+                              <input name="qtypeople" value={selectedExperience.qtypeople}  onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_qty_people")}/>
 
                               <div className="w-full h-6">
                                 {errorMessages.qtypeople && (
@@ -1260,7 +1262,7 @@ const DashboardAdminExperiences = () => {
                                     exit="hidden"
                                     variants={fadeIn("up","", 0, 1)}
                                     className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.qtypeople}
+                                    {t(errorMessages.qtypeople)}
                                   </motion.p>
                                 )}
                               </div>
@@ -1273,21 +1275,21 @@ const DashboardAdminExperiences = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precios Personalizados"}</label>
+                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_custom_price")}</label>
                             <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Desde"}</label>
-                                  <input name="custom_price_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Desde"}/>
+                                  <label htmlFor="custom_price_date_from" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_custom_price_from")}</label>
+                                  <input name="custom_price_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_custom_price_from")}/>
                                 </div>
 
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Hasta"}</label>
-                                  <input name="custom_price_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+                                  <label htmlFor="custom_price_date_to" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_custom_price_to")}</label>
+                                  <input name="custom_price_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_custom_price_to")}/>
                                 </div>
 
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precio"}</label>
-                                  <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
+                                  <label htmlFor="custom_price_value" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_custom_price_price")}</label>
+                                  <input name="custom_price_value" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_custom_price_price")}/>
                                 </div>
                                 <Button onClick={()=>handleAddCustomPrice("form_update_experience")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                             </div>
@@ -1304,20 +1306,20 @@ const DashboardAdminExperiences = () => {
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
                                             <span className="w-[30%]">
-                                              Desde: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
+                                              {t("experience.experience_custom_price_from")}: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateFrom)}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Hasta: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
+                                              {t("experience.experience_custom_price_to")}: <label className="text-tertiary ml-2 text-xs">{formatDate(price.dateTo)}</label>
                                             </span>
                                             <span className="w-[30%]">
-                                              Precio: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
+                                              {t("experience.experience_custom_price_price")}: <label className="text-tertiary ml-2">S/{price.price.toFixed(2)}</label>
                                             </span>
                                             <button
                                               type="button"
                                               onClick={() => handleRemoveCustomPrice(index)}
                                               className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
                                             >
-                                              Borrar
+                                              {t("experience.experience_custom_price_delete_btn")}
                                             </button>
                                           </motion.div>
                                         ))}
@@ -1331,7 +1333,7 @@ const DashboardAdminExperiences = () => {
                                   exit="hidden"
                                   variants={fadeIn("up","", 0, 1)}
                                   className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.customPrices}
+                                  {t(errorMessages.customPrices)}
                                 </motion.p>
                               )}
                             </div>
@@ -1339,10 +1341,10 @@ const DashboardAdminExperiences = () => {
 
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
+                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.status")}</label>
                             <select name="status" onChange={(e)=>onChangeSelectedExperience(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              <option value="ACTIVE" selected={selectedExperience.status == "ACTIVE"}>ACTIVO</option>
-                              <option value="INACTIVE" selected={selectedExperience.status == "INACTIVE"}>INACTIVO</option>
+                              <option value="ACTIVE" selected={selectedExperience.status == "ACTIVE"}>{t("experience.ACTIVE")}</option>
+                              <option value="INACTIVE" selected={selectedExperience.status == "INACTIVE"}>{t("experience.INACTIVE")}</option>
                             </select>
                             <div className="w-full h-6">
                               {errorMessages.status && (
@@ -1352,14 +1354,14 @@ const DashboardAdminExperiences = () => {
                                   exit="hidden"
                                   variants={fadeIn("up","", 0, 1)}
                                   className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.status}
+                                  {t(errorMessages.status)}
                                 </motion.p>
                               )}
                             </div>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
+                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_images")}</label>
                               <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
                                 <AnimatePresence>
                                   {existingImages.map((image, index) => (
@@ -1424,17 +1426,17 @@ const DashboardAdminExperiences = () => {
                                     exit="hidden"
                                     variants={fadeIn("up","", 0, 1)}
                                     className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.images}
+                                    {t(errorMessages.images)}
                                   </motion.p>
                                 )}
                               </div>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Sugerencias de la experiencia"}</label>
+                            <label htmlFor="price" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("experience.experience_suggestions")}</label>
                             <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[75%] h-auto gap-y-2 sm:gap-y-1">
-                                  <textarea name="suggestion_input" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Sugerencias"}/>
+                                  <textarea name="suggestion_input" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("experience.experience_suggestions")}/>
                                 </div>
                                 <Button onClick={()=>handleAddSuggestion("form_update_experience")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                             </div>
@@ -1459,7 +1461,7 @@ const DashboardAdminExperiences = () => {
                                               onClick={() => handleRemoveSuggestion(index)}
                                               className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
                                             >
-                                              Borrar
+                                              {t("experience.experience_suggestion_delete_btn")}
                                             </button>
                                           </motion.div>
                                         ))}
@@ -1474,7 +1476,7 @@ const DashboardAdminExperiences = () => {
                                   exit="hidden"
                                   variants={fadeIn("up","", 0, 1)}
                                   className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.suggestions}
+                                  {t(errorMessages.suggestions)}
                                 </motion.p>
                               )}
                             </div>
@@ -1482,8 +1484,8 @@ const DashboardAdminExperiences = () => {
                           </div>
 
                           <div className="flex flex-row justify-end gap-x-6 w-full">
-                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                              <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Guardar Cambios </Button>
+                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("common.cancel")}</Button>
+                              <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}>{t("experience.save_changes")} </Button>
                           </div>
 
                       </div>

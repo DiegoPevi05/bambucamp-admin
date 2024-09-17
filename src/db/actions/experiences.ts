@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Experience, ExperienceFilters, ExperienceFormData } from '../../lib/interfaces';
 import { serializeExperience, serializeExperienceToDB } from '../serializer';
 
-export const getAllExperiences = async( token: string, page:Number, filters?:ExperienceFilters ): Promise<{experiences:Experience[], totalPages:Number ,currentPage:Number}|null> => {
+export const getAllExperiences = async( token: string, page:Number,language:string, filters?:ExperienceFilters ): Promise<{experiences:Experience[], totalPages:Number ,currentPage:Number}|null> => {
 
   let data:{ experiences:Experience[],totalPages:Number,currentPage:Number } | null = null;
   try{
@@ -26,7 +26,7 @@ export const getAllExperiences = async( token: string, page:Number, filters?:Exp
     const fetchProducts = await axios.get(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -67,7 +67,7 @@ export const getAllExperiences = async( token: string, page:Number, filters?:Exp
 
 
 
-export const createExperience = async (experience: ExperienceFormData, token: string): Promise<boolean> => {
+export const createExperience = async (experience: ExperienceFormData, token: string, language:string): Promise<boolean> => {
   try {
 
     // Create a new FormData object
@@ -77,7 +77,7 @@ export const createExperience = async (experience: ExperienceFormData, token: st
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -111,7 +111,7 @@ export const createExperience = async (experience: ExperienceFormData, token: st
 };
 
 
-export const updateExperience = async (experienceId:Number,experience: ExperienceFormData, token: string): Promise<boolean> => {
+export const updateExperience = async (experienceId:Number,experience: ExperienceFormData, token: string, language:string): Promise<boolean> => {
   try {
     // Create a new FormData object
     const formData = serializeExperienceToDB(experience,true);
@@ -120,7 +120,7 @@ export const updateExperience = async (experienceId:Number,experience: Experienc
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -155,13 +155,13 @@ export const updateExperience = async (experienceId:Number,experience: Experienc
 
 
 
-export const deleteExperience = async(idExperience:Number, token:string ):Promise<boolean> => {
+export const deleteExperience = async(idExperience:Number, token:string, language:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/experiences/${idExperience}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 

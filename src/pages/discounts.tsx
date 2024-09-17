@@ -212,7 +212,7 @@ const DashboardAdminDiscounts = () => {
                               placeholder="Buscar Descuento" 
                               className="w-48 xl:w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
-                            <InputRadio name="criteria_search" variant="dark" value="title" placeholder="Nombre"/>
+                            <InputRadio name="criteria_search" isRound={true} variant="light" value="title" placeholder="Nombre"/>
                           </div>
                           <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
                               <label className="md:ml-4 flex items-center">
@@ -223,7 +223,7 @@ const DashboardAdminDiscounts = () => {
                                   <option value="INACTIVE">{t("discount.INACTIVE")}</option>
                                 </select>
                               </label>
-                              <Button size="sm" variant="dark" effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchDiscountCodeHandler()}>
+                              <Button variant="ghostLight" isRound={true} effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchDiscountCodeHandler()}>
                                 {t("common.search")}
                             </Button>
                           </div>
