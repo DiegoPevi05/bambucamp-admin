@@ -26,6 +26,7 @@ const DashboardAdminPromotions = () => {
     const [idProducts,setIdProducts] = useState<optProductPromotionDto[]>([]);
     const [idExperiences,setIdExperiences] = useState<optExperiencePromotionDto[]>([]);
 
+
     const [currentView,setCurrentView] = useState<string>("LOADING");
 
     useEffect(()=>{
@@ -116,7 +117,7 @@ const DashboardAdminPromotions = () => {
 
       if (data && label) {
         if(type =="tent") {
-          setIdTents([...idTents, { idTent:id, name: label, quantity, price }]);
+          setIdTents([...idTents, { idTent:id, name: label, nights:quantity, price }]);
         }else if(type == "product"){
           setIdProducts([...idProducts, { idProduct:id, name:label, quantity, price }]);
         }else if(type =="experience"){
@@ -443,7 +444,7 @@ const DashboardAdminPromotions = () => {
 
         {currentView == "V" && selectedPromotion && (
                 <motion.div 
-                    key={"New-View"}
+                    key={"View"}
                     initial="hidden"
                     animate="show"
                     exit="hidden"
@@ -458,24 +459,24 @@ const DashboardAdminPromotions = () => {
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="title" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_title")}</label>
-                            <input name="title" value={selectedPromotion.title} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_title")} />
+                            <input name="title" value={selectedPromotion.title} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_title")} readOnly/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="description" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_description")}</label>
-                            <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("promotion.promotion_description")}>{ selectedPromotion.description }</textarea>
+                            <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("promotion.promotion_description")} value={selectedPromotion.description} readOnly/>
                           </div>
 
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                               <label htmlFor="expiredDate" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_expired_date")}</label>
-                              <input name="expiredDate" type="date" value={formatToISODate(selectedPromotion.expiredDate)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_expired_date")} />
+                              <input name="expiredDate" type="date" value={formatToISODate(selectedPromotion.expiredDate)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_expired_date")} readOnly/>
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                               <label htmlFor="stock" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_quantity")}</label>
-                              <input name="stock" value={selectedPromotion.stock} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_quantity")} />
+                              <input name="stock" value={selectedPromotion.stock} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_quantity")} readOnly/>
                             </div>
                           </div>
 
@@ -483,12 +484,12 @@ const DashboardAdminPromotions = () => {
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                               <label htmlFor="qtypeople" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_qty_people")}</label>
-                              <input name="qtypeople" value={selectedPromotion.qtypeople} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_qty_people")} />
+                              <input name="qtypeople" value={selectedPromotion.qtypeople} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_qty_people")} readOnly/>
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                               <label htmlFor="qtykids" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_qty_kids")}</label>
-                              <input name="qtykids" value={selectedPromotion.qtykids} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_qty_kids")} />
+                              <input name="qtykids" value={selectedPromotion.qtykids} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_qty_kids")} readOnly/>
                             </div>
                           </div>
 
@@ -542,22 +543,18 @@ const DashboardAdminPromotions = () => {
                                             variants={fadeIn("up","",0,0.3)}
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
-                                            <span className="w-[30%]">
-                                              Glamping: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
+                                            <span className="w-[40%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">Glamping:</span>
+                                              <label className="text-tertiary xl:ml-2 text-xs">{item.name}</label>
                                             </span>
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_glampings_quantity")}: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_glampings_nights")}:</span>
+                                              <label className="text-tertiary xl:ml-2 text-xs">{item.nights}</label>
                                             </span>
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_glampings_price")}: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_glampings_price")}:</span>
+                                              <label className="text-tertiary ml-2">{formatPrice(item.price)}</label>
                                             </span>
-                                            <button
-                                              type="button"
-                                              onClick={() => handleRemovePromotionOption(index,"tent")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              {t("promotion.promotion_delete_button")}
-                                            </button>
                                           </motion.div>
                                         ))}
                               </AnimatePresence>
@@ -578,23 +575,18 @@ const DashboardAdminPromotions = () => {
                                             variants={fadeIn("up","",0,0.3)}
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_products_name")}: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
+                                            <span className="w-[40%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_products_name")}:</span>
+                                              <label className="text-tertiary xl:ml-2 text-xs">{item.name}</label>
                                             </span>
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_products_quantity")}: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_products_quantity")}:</span>
+                                              <label className="text-tertiary xl:ml-2 text-xs">{item.quantity}</label>
                                             </span>
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_products_price")}: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_products_price")}: </span>
+                                              <label className="text-tertiary xl:ml-2">{formatPrice(item.price)}</label>
                                             </span>
-                                            <button
-                                              type="button"
-
-                                              onClick={() => handleRemovePromotionOption(index,"product")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              {t("promotion.promotion_delete_button")}
-                                            </button>
                                           </motion.div>
                                         ))}
                               </AnimatePresence>
@@ -615,23 +607,18 @@ const DashboardAdminPromotions = () => {
                                             variants={fadeIn("up","",0,0.3)}
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_experiences_name")}: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
+                                            <span className="w-[40%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_experiences_name")}: </span>
+                                              <label className="text-tertiary xl:ml-2 text-xs">{item.name}</label>
                                             </span>
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_experiences_quantity")}: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_experiences_quantity")}:</span>
+                                              <label className="text-tertiary xl:ml-2 text-xs">{item.quantity}</label>
                                             </span>
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_experiences_price")}: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_experiences_price")}: </span>
+                                              <label className="text-tertiary xl:ml-2">{formatPrice(item.price)}</label>
                                             </span>
-                                            <button
-                                              type="button"
-
-                                              onClick={() => handleRemovePromotionOption(index,"experience")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              {t("promotion.promotion_delete_button")}
-                                            </button>
                                           </motion.div>
                                         ))}
                               </AnimatePresence>
@@ -642,12 +629,12 @@ const DashboardAdminPromotions = () => {
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                               <label htmlFor="importe_calculado" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_total_calculated_import")}</label>
-                              <input name="importe_calculado" value={ `$ ${getTotalPromotionCalculated(idTents,idProducts,idExperiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  />
+                              <input name="importe_calculado" value={ `$ ${getTotalPromotionCalculated(idTents,idProducts,idExperiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  readOnly/>
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                               <label htmlFor="discount" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_discount")}</label>
-                              <input name="discount" value={selectedPromotion.discount} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"promotion.promotion_discount"} />
+                              <input name="discount" value={selectedPromotion.discount} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"promotion.promotion_discount"} readOnly/>
                             </div>
 
                           </div>
@@ -656,12 +643,12 @@ const DashboardAdminPromotions = () => {
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                               <label htmlFor="netImport" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_net_import")}</label>
-                              <input name="netImport" value={selectedPromotion.netImport} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_net_import")} />
+                              <input name="netImport" value={selectedPromotion.netImport} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_net_import")} readOnly/>
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                               <label htmlFor="grossImport" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_gross_import")}</label>
-                              <input name="grossImport" value={selectedPromotion.grossImport} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"promotion.promotion_gross_import"} />
+                              <input name="grossImport" value={selectedPromotion.grossImport} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"promotion.promotion_gross_import"} readOnly/>
                             </div>
 
                           </div>
@@ -712,7 +699,7 @@ const DashboardAdminPromotions = () => {
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                         <label htmlFor="description" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_description")}</label>
-                        <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"promotion.promotion_description"}/>
+                        <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("promotion.promotion_description")}/>
                         <div className="w-full h-6">
                           {errorMessages.description && (
                             <motion.p 
@@ -895,8 +882,8 @@ const DashboardAdminPromotions = () => {
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="promotion_option_qty" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_glampings_quantity")}</label>
-                              <input name="promotion_option_tent_qty" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_glampings_quantity")}/>
+                              <label htmlFor="promotion_option_qty" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_glampings_nights")}</label>
+                              <input name="promotion_option_tent_qty" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_glampings_nights")}/>
                             </div>
                             <Button onClick={()=>handleAddPromotionOption("form_create_promotion","tent")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                         </div>
@@ -913,14 +900,17 @@ const DashboardAdminPromotions = () => {
                                         variants={fadeIn("up","",0,0.3)}
                                         className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                       >
-                                        <span className="w-[30%]">
-                                          Glamping: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
+                                        <span className="w-[30%] flex flex-col xl:flex-row">
+                                          <span className="text-xs">Glamping:</span>
+                                          <label className="text-tertiary xl:ml-2 text-xs">{item.name}</label>
                                         </span>
-                                        <span className="w-[30%]">
-                                          {t("promotion.promotion_glampings_quantity")}: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
+                                        <span className="w-[30%] flex flex-col xl:flex-row">
+                                          <span className="text-xs">{t("promotion.promotion_glampings_nights")}:</span>
+                                          <label className="text-tertiary xl:ml-2 text-xs">{item.nights}</label>
                                         </span>
-                                        <span className="w-[30%]">
-                                          {t("promotion.promotion_glampings_price")}: <label className="text-tertiary ml-2">{formatPrice(item.price)}</label>
+                                        <span className="w-[30%] flex flex-col xl:flex-row">
+                                          <span className="text-xs">{t("promotion.promotion_glampings_price")}:</span>
+                                          <label className="text-tertiary ml-2">{formatPrice(item.price)}</label>
                                         </span>
                                         <button
                                           type="button"
@@ -982,14 +972,17 @@ const DashboardAdminPromotions = () => {
                                         variants={fadeIn("up","",0,0.3)}
                                         className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                       >
-                                        <span className="w-[30%]">
-                                          {t("promotion.promotion_products_name")}: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
+                                        <span className="w-[30%] flex flex-col xl:flex-row">
+                                          <span className="text-xs">{t("promotion.promotion_products_name")}:</span>
+                                          <label className="text-tertiary xl:ml-2 text-xs">{item.name}</label>
                                         </span>
-                                        <span className="w-[30%]">
-                                          {t("promotion.promotion_products_quantity")}: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
+                                        <span className="w-[30%] flex flex-col xl:flex-row">
+                                          <span className="text-xs">{t("promotion.promotion_products_quantity")}:</span>
+                                          <label className="text-tertiary xl:ml-2 text-xs">{item.quantity}</label>
                                         </span>
-                                        <span className="w-[30%]">
-                                          {t("promotion.promotion_products_price")}: <label className="text-tertiary ml-2">{formatPrice(item.price)}</label>
+                                        <span className="w-[30%] flex flex-col xl:flex-row">
+                                          <span className="text-xs">{t("promotion.promotion_products_price")}: </span>
+                                          <label className="text-tertiary xl:ml-2">{formatPrice(item.price)}</label>
                                         </span>
                                         <button
                                           type="button"
@@ -1052,14 +1045,17 @@ const DashboardAdminPromotions = () => {
                                         variants={fadeIn("up","",0,0.3)}
                                         className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                       >
-                                        <span className="w-[30%]">
-                                          {t("promotion.promotion_experiences_name")}: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
+                                        <span className="w-[30%] flex flex-col xl:flex-row">
+                                          <span className="text-xs">{t("promotion.promotion_experiences_name")}: </span>
+                                          <label className="text-tertiary xl:ml-2 text-xs">{item.name}</label>
                                         </span>
-                                        <span className="w-[30%]">
-                                          {t("promotion.promotion_experiences_quantity")}: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
+                                        <span className="w-[30%] flex flex-col xl:flex-row">
+                                          <span className="text-xs">{t("promotion.promotion_experiences_quantity")}:</span>
+                                          <label className="text-tertiary xl:ml-2 text-xs">{item.quantity}</label>
                                         </span>
-                                        <span className="w-[30%]">
-                                          {t("promotion.promotion_experiences_price")}: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
+                                        <span className="w-[30%] flex flex-col xl:flex-row">
+                                          <span className="text-xs">{t("promotion.promotion_experiences_price")}: </span>
+                                          <label className="text-tertiary xl:ml-2">{formatPrice(item.price)}</label>
                                         </span>
                                         <button
                                           type="button"
@@ -1212,7 +1208,7 @@ const DashboardAdminPromotions = () => {
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="description" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_description")}</label>
-                            <textarea name="description"  onChange={(e)=>onChangeSelectedPromotion(e)} className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("promotion.promotion_description")}>{selectedPromotion.description}</textarea>
+                            <textarea name="description"  onChange={(e)=>onChangeSelectedPromotion(e)} className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("promotion.promotion_description")} value={selectedPromotion.description}/>
                             <div className="w-full h-6">
                               {errorMessages.description && (
                                 <motion.p 
@@ -1307,9 +1303,9 @@ const DashboardAdminPromotions = () => {
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="status" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.status")}</label>
-                            <select name="status" onChange={(e)=>onChangeSelectedPromotion(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              <option value="ACTIVE" selected={selectedPromotion.status == "ACTIVE"}>{t("promotion.ACTIVE")}</option>
-                              <option value="INACTIVE" selected={selectedPromotion.status == "INACTIVE"}>{t("promotion.INACTIVE")}</option>
+                            <select name="status" onChange={(e)=>onChangeSelectedPromotion(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" value={selectedPromotion.status}>
+                              <option value="ACTIVE">{t("promotion.ACTIVE")}</option>
+                              <option value="INACTIVE">{t("promotion.INACTIVE")}</option>
                             </select>
                             <div className="w-full h-6">
                               {errorMessages.status && (
@@ -1417,8 +1413,8 @@ const DashboardAdminPromotions = () => {
                                 </div>
 
                                 <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_qty" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_glampings_quantity")}</label>
-                                  <input name="promotion_option_tent_qty" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"promotion.promotion_glampings_quantity"}/>
+                                  <label htmlFor="promotion_option_qty" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_glampings_nights")}</label>
+                                  <input name="promotion_option_tent_qty" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("promotion.promotion_glampings_nights")}/>
                                 </div>
                                 <Button onClick={()=>handleAddPromotionOption("form_update_promotion","tent")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
                             </div>
@@ -1435,14 +1431,17 @@ const DashboardAdminPromotions = () => {
                                             variants={fadeIn("up","",0,0.3)}
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
-                                            <span className="w-[30%]">
-                                              Glamping <label className="text-tertiary ml-2 text-xs">{item.name}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">Glamping:</span>
+                                              <label className="text-tertiary xl:ml-2 text-xs">{item.name}</label>
                                             </span>
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_glampings_quantity")}: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_glampings_nights")}:</span>
+                                              <label className="text-tertiary xl:ml-2 text-xs">{item.nights}</label>
                                             </span>
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_glampings_price")}: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_glampings_price")}:</span>
+                                              <label className="text-tertiary ml-2">{formatPrice(item.price)}</label>
                                             </span>
                                             <button
                                               type="button"
@@ -1504,14 +1503,17 @@ const DashboardAdminPromotions = () => {
                                             variants={fadeIn("up","",0,0.3)}
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_products_name")}: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_products_name")}:</span>
+                                              <label className="text-tertiary xl:ml-2 text-xs">{item.name}</label>
                                             </span>
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_products_quantity")}: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_products_quantity")}:</span>
+                                              <label className="text-tertiary xl:ml-2 text-xs">{item.quantity}</label>
                                             </span>
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_products_price")}: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_products_price")}: </span>
+                                              <label className="text-tertiary xl:ml-2">{formatPrice(item.price)}</label>
                                             </span>
                                             <button
                                               type="button"
@@ -1574,14 +1576,17 @@ const DashboardAdminPromotions = () => {
                                             variants={fadeIn("up","",0,0.3)}
                                             className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
                                           >
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_experiences_name")}: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_experiences_name")}: </span>
+                                              <label className="text-tertiary xl:ml-2 text-xs">{item.name}</label>
                                             </span>
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_experiences_quantity")}: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_experiences_quantity")}:</span>
+                                              <label className="text-tertiary xl:ml-2 text-xs">{item.quantity}</label>
                                             </span>
-                                            <span className="w-[30%]">
-                                              {t("promotion.promotion_experiences_price")}: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
+                                            <span className="w-[30%] flex flex-col xl:flex-row">
+                                              <span className="text-xs">{t("promotion.promotion_experiences_price")}: </span>
+                                              <label className="text-tertiary xl:ml-2">{formatPrice(item.price)}</label>
                                             </span>
                                             <button
                                               type="button"

@@ -227,7 +227,7 @@ export interface optTentPromotionDto {
   idTent:number;
   name:string;
   price:number;
-  quantity:number;
+  nights:number;
 }
 
 export interface optTentPromotionPublicDto extends optTentPromotionDto {

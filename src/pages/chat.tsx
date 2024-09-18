@@ -77,7 +77,6 @@ const DashboardAdminWebChat: React.FC = () => {
   const handleChannelSelect = async(channelId: string) => {
     setCurrentChannel(channelId);
     if(user){
-      console.log("this is executed")
       const messages = await getMessages(user.token,channelId);
       if(messages){
         setMessages(messages);

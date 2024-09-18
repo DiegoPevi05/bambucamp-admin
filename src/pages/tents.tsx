@@ -428,22 +428,22 @@ const DashboardAdminGlapings = () => {
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="header" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_header")}</label>
-                            <input name="header" value={selectedTent.header} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_header")} />
+                            <input name="header" value={selectedTent.header} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_header")} readOnly/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="title" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_name")}</label>
-                            <input name="title" value={selectedTent.title} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_name")} />
+                            <input name="title" value={selectedTent.title} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_name")} readOnly/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="description" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_description")}</label>
-                            <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("glamping.glamping_description")}>{ selectedTent.description }</textarea>
+                            <textarea name="description" className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("glamping.glamping_description")} value={selectedTent.description} readOnly/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_price")}</label>
-                            <input name="price" value={selectedTent.price} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_price")} />
+                            <input name="price" value={selectedTent.price} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_price")} readOnly/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
@@ -490,24 +490,24 @@ const DashboardAdminGlapings = () => {
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                                 <label htmlFor="qtypeople" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people")}</label>
-                                <input name="qtypeople" value={selectedTent.qtypeople} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people")} />
+                                <input name="qtypeople" value={selectedTent.qtypeople} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people")} readOnly/>
                               </div>
 
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                                 <label htmlFor="qtykids" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_kids")}</label>
-                                <input name="qtykids" value={selectedTent.qtykids} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_kids")} />
+                                <input name="qtykids" value={selectedTent.qtykids} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_kids")} readOnly/>
                               </div>
                           </div>
 
                           <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                                 <label htmlFor="aditional_people_price" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_price")}</label>
-                                <input name="aditional_people_price" value={selectedTent.aditional_people_price} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people_price")} />
+                                <input name="aditional_people_price" value={selectedTent.aditional_people_price} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people_price")} readOnly/>
                               </div>
 
                               <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                                 <label htmlFor="max_aditional_people" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_qty_people_aditional")}</label>
-                                <input name="max_aditional_people" value={selectedTent.max_aditional_people} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people_aditional")} />
+                                <input name="max_aditional_people" value={selectedTent.max_aditional_people} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("glamping.glamping_qty_people_aditional")} readOnly/>
                               </div>
                           </div>
 
@@ -516,57 +516,57 @@ const DashboardAdminGlapings = () => {
                               <div id="input_tent_create_services" className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-2 gap-y-4 gap-x-6">
 
                                 <div className="checkbox-wrapper-13">
-                                  <input name="wifi" type="checkbox" aria-hidden="true" checked={selectedTent.services.wifi}/>
+                                  <input name="wifi" type="checkbox" aria-hidden="true" checked={selectedTent.services.wifi} readOnly/>
                                   <label htmlFor="wifi">{t("glamping.wi_fi")}</label>
                                 </div>
 
                                 <div className="checkbox-wrapper-13">
-                                  <input name="parking"  type="checkbox" aria-hidden="true" checked={selectedTent.services.parking} />
+                                  <input name="parking"  type="checkbox" aria-hidden="true" checked={selectedTent.services.parking} readOnly/>
                                   <label htmlFor="parking">{t("glamping.parking")}</label>
                                 </div>
 
                                 <div className="checkbox-wrapper-13">
-                                  <input name="pool"  type="checkbox" aria-hidden="true" checked={selectedTent.services.pool}/>
+                                  <input name="pool"  type="checkbox" aria-hidden="true" checked={selectedTent.services.pool} readOnly/>
                                   <label htmlFor="pool">{t("glamping.pool")}</label>
                                 </div>
 
                                 <div className="checkbox-wrapper-13">
-                                  <input name="breakfast"  type="checkbox" aria-hidden="true" checked={selectedTent.services.breakfast} />
+                                  <input name="breakfast"  type="checkbox" aria-hidden="true" checked={selectedTent.services.breakfast} readOnly/>
                                   <label htmlFor="breakfast">{t("glamping.breakfast")}</label>
                                 </div>
 
                                 <div className="checkbox-wrapper-13">
-                                  <input name="lunch"  type="checkbox" aria-hidden="true" checked={selectedTent.services.lunch}/>
+                                  <input name="lunch"  type="checkbox" aria-hidden="true" checked={selectedTent.services.lunch} readOnly/>
                                   <label htmlFor="lunch">{t("glamping.lunch")}</label>
                                 </div>
 
                                 <div className="checkbox-wrapper-13">
-                                  <input name="dinner"  type="checkbox" aria-hidden="true" checked={selectedTent.services.dinner}/>
+                                  <input name="dinner"  type="checkbox" aria-hidden="true" checked={selectedTent.services.dinner} readOnly/>
                                   <label htmlFor="dinner">{t("glamping.dinner")}</label>
                                 </div>
 
                                 <div className="checkbox-wrapper-13">
-                                  <input name="spa"  type="checkbox" aria-hidden="true" checked={selectedTent.services.spa}/>
+                                  <input name="spa"  type="checkbox" aria-hidden="true" checked={selectedTent.services.spa} readOnly/>
                                   <label htmlFor="spa">{t("glamping.spa")}</label>
                                 </div>
 
                                 <div className="checkbox-wrapper-13">
-                                  <input name="bar"  type="checkbox" aria-hidden="true" checked={selectedTent.services.bar}/>
+                                  <input name="bar"  type="checkbox" aria-hidden="true" checked={selectedTent.services.bar} readOnly/>
                                   <label htmlFor="bar">{t("glamping.bar")}</label>
                                 </div>
 
                                 <div className="checkbox-wrapper-13">
-                                  <input name="hotwater"  type="checkbox" aria-hidden="true" checked={selectedTent.services.hotwater}/>
+                                  <input name="hotwater"  type="checkbox" aria-hidden="true" checked={selectedTent.services.hotwater} readOnly/>
                                   <label htmlFor="hotwater">{t("glamping.hotwater")}</label>
                                 </div>
 
                                 <div className="checkbox-wrapper-13">
-                                  <input name="airconditioning" type="checkbox" aria-hidden="true" checked={selectedTent.services.airconditioning}/>
+                                  <input name="airconditioning" type="checkbox" aria-hidden="true" checked={selectedTent.services.airconditioning} readOnly/>
                                   <label htmlFor="airconditioning">{t("glamping.air_conditioner")}</label>
                                 </div>
 
                                 <div className="checkbox-wrapper-13">
-                                  <input name="grill" type="checkbox" aria-hidden="true" checked={selectedTent.services.grill}/>
+                                  <input name="grill" type="checkbox" aria-hidden="true" checked={selectedTent.services.grill} readOnly/>
                                   <label htmlFor="grill">{t("glamping.grill")}</label>
                                 </div>
                               </div>
@@ -1030,7 +1030,7 @@ const DashboardAdminGlapings = () => {
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="description" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.glamping_description")}</label>
-                            <textarea name="description"  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("glamping.glamping_description")}>{selectedTent.description}</textarea>
+                            <textarea name="description"  onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={t("glamping.glamping_description")} value={selectedTent.description}/>
                             <div className="w-full h-6">
                               {errorMessages.description && (
                                 <motion.p 
@@ -1132,9 +1132,9 @@ const DashboardAdminGlapings = () => {
                     <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="status" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("glamping.status")}</label>
-                            <select name="status" onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              <option value="ACTIVE" selected={selectedTent.status == "ACTIVE"}>{t("glamping.ACTIVE")}</option>
-                              <option value="INACTIVE" selected={selectedTent.status == "INACTIVE"}>{t("glamping.INACTIVE")}</option>
+                            <select name="status" onChange={(e)=>onChangeSelectedTent(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" value={selectedTent.status}>
+                              <option value="ACTIVE" >{t("glamping.ACTIVE")}</option>
+                              <option value="INACTIVE" >{t("glamping.INACTIVE")}</option>
                             </select>
                             <div className="w-full h-6">
                               {errorMessages.status && (

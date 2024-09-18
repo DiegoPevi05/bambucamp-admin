@@ -206,12 +206,12 @@ const DashboardAdminFaqs = () => {
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="question" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("faq.question")}</label>
-                            <input name="question" value={selectedFaq.question} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("faq.question")}/>
+                            <input name="question" value={selectedFaq.question} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("faq.question")} readOnly/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="answer" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6 mb-2">{t("faq.answer_question")}</label>
-                            <textarea name="answer" value={selectedFaq.answer} className="w-full h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("faq.answer_question")}/>
+                            <textarea name="answer" value={selectedFaq.answer} className="w-full h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("faq.answer_question")} readOnly/>
                           </div>
 
                       </div>

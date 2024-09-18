@@ -250,12 +250,12 @@ const DashboardAdminReviews = () => {
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="name" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.author_review")}</label>
-                            <input name="name" value={selectedReview.name} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.author_review")}/>
+                            <input name="name" value={selectedReview.name} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.author_review")} readOnly/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="title" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.title_review")}</label>
-                            <input name="title" value={selectedReview.title} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.title_review")}/>
+                            <input name="title" value={selectedReview.title} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.title_review")} readOnly/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
@@ -269,12 +269,12 @@ const DashboardAdminReviews = () => {
                                 ))}
                               </span>
                             </div>
-                            <input name="stars" type="number" max="5" min="1" step="1" value={selectedReview.stars} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.stars")}/>
+                            <input name="stars" type="number" max="5" min="1" step="1" value={selectedReview.stars} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.stars")} readOnly/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="review" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6 mb-2">{t("review.review")}</label>
-                            <textarea name="review" className="w-full h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.review")} value={selectedReview.review}/>
+                            <textarea name="review" className="w-full h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.review")} value={selectedReview.review} readOnly/>
                           </div>
 
                       </div>
@@ -283,18 +283,18 @@ const DashboardAdminReviews = () => {
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="day" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.day_review")}</label>
-                            <input name="day" type="date" value={selectedReview.day.toISOString().split('T')[0]} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.day_review")}/>
+                            <input name="day" type="date" value={selectedReview.day.toISOString().split('T')[0]} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.day_review")} readOnly/>
                           </div>
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="href" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.link_review")}</label>
-                            <input name="href"  value={selectedReview.href} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.link_review")}/>
+                            <input name="href"  value={selectedReview.href} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.link_review")} readOnly/>
                           </div>
 
 
                           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                             <label htmlFor="profile_image_url" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("review.profile_image_review")}</label>
-                            <input name="profile_image_url"  value={selectedReview.profile_image_url} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.profile_image_review")}/>
+                            <input name="profile_image_url"  value={selectedReview.profile_image_url} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("review.profile_image_review")} readOnly/>
                           </div>
 
 
