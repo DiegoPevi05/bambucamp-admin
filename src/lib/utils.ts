@@ -79,7 +79,7 @@ export const getTotalPromotionCalculated = (tents: optTentPromotionDto[], produc
 
   // Sum prices for tents
   if (tents && tents.length > 0) {
-    total += tents.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+    total += tents.reduce((sum, item) => sum + (item.nights * item.price), 0);
   }
 
   // Sum prices for products

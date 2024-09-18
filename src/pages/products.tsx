@@ -3,7 +3,7 @@ import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { Eye, Pen, X, ChevronLeft, ChevronRight, Pizza, CircleX, Image, RefreshCw } from "lucide-react";
 import Button from "../components/ui/Button";
 import { InputRadio } from "../components/ui/Input";
-import {  formatDate, createImagesArray } from "../lib/utils";
+import {  formatDate, createImagesArray, formatPrice } from "../lib/utils";
 import { getAllProducts, createProduct, deleteProduct, updateProduct } from "../db/actions/products";
 import { getAllProductsCategory , createProductCategory, deleteProductCategory, updateProductCategory} from "../db/actions/categories";
 import { useAuth } from "../contexts/AuthContext";
@@ -178,19 +178,14 @@ const DashboardAdminProducts = () => {
         // Get the input value
         const searchValue = (document.querySelector('input[name="criteria_search_value"]') as HTMLInputElement).value.trim();
 
-        // Get the selected criteria from radio buttons
-        const selectedCriteria = (
-        document.querySelector('input[name="criteria_search"]:checked') as HTMLInputElement
-        )?.value;
-
         // Get the selected role from the select dropdown
         const selectedStatus = (document.querySelector('select[name="criteria_search_status"]') as HTMLSelectElement).value;
 
 
         // Construct filters based on input values and selected criteria
         const filters: ProductFilters = {};
-        if (selectedCriteria && searchValue) {
-            filters[selectedCriteria as keyof ProductFilters] = searchValue;
+        if ( searchValue) {
+            filters["name"] = searchValue;
         }
 
         if (selectedStatus) {
@@ -350,12 +345,16 @@ const DashboardAdminProducts = () => {
                     <div className="w-full xl:w-auto h-auto flex flex-col md:flex-row justify-start md:justify-between xl:justify-start items-start gap-y-4 gap-x-4">
                           <div className="max-xl:w-[50%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
                             <input 
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  searchProductHandler();
+                                }
+                              }}
                               type="text" 
                               name="criteria_search_value"
                               placeholder={t("product.search_product")}
                               className="w-full xl:w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
-                            <InputRadio name="criteria_search" variant="light" isRound={true} value="title" placeholder="Nombre"/>
                           </div>
                           <div className="max-xl:w-[50%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
                             <label className="max-xl:w-full md:ml-4 flex items-center">
@@ -406,7 +405,7 @@ const DashboardAdminProducts = () => {
                                         <td className="">{productItem.id}</td>
                                         <td className="">{productItem.category.name}</td>
                                         <td className="">{productItem.name}</td>
-                                        <td className="">{productItem.price}</td>
+                                        <td className="">{formatPrice(productItem.price)}</td>
                                         <td className="flex flex-row flex-wrap items-start justify-start gap-2">
                                           {productItem.images.map((img, index) => (
                                             <a key={index} href={`${img}`} target="_blank">

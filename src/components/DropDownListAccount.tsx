@@ -1,16 +1,17 @@
 import { User as UserIT } from "../lib/interfaces";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {  fadeOnly } from "../lib/motions";
-import { CalendarCheck, User, DoorClosed, ChevronDown, PanelTop } from "lucide-react";
+import {  User, DoorClosed, ChevronDown } from "lucide-react";
+import {useTranslation} from "react-i18next";
 interface DropDownProps {
   user: UserIT | null;
   variant?: string;
 }
 
 const DropDownListAccount = (props:DropDownProps) => {
+  const {t} = useTranslation();
   const { user, variant  } = props;
   const { logout } = useAuth();
 
@@ -34,7 +35,7 @@ const DropDownListAccount = (props:DropDownProps) => {
             className={`${variant =="dark" ? "top-[40px] bg-secondary border-secondary" : "top-[110%] bg-primary border-primary"} absolute  w-[140px] h-auto flex flex-col justify-start items-start  divide-y divide-white rounded-md border-4`}>
             <span  onClick={() => logout()} className="rounded-b-md w-full h-auto flex flex-row justify-center items-center gap-x-2 hover:bg-white cursor-pointer group py-2">
               <DoorClosed className="text-white group-hover:scale-[1.05]  group-hover:text-tertiary ease-in-out duration-300 transition-all cursor-pointer"/>
-              <p className="text-white text-sm group-hover:scale-[1.05]  group-hover:text-tertiary ease-in-out duration-300 transition-all cursor-pointer">{"Cerrar Sesion"}</p>
+              <p className="text-white text-sm group-hover:scale-[1.05]  group-hover:text-tertiary ease-in-out duration-300 transition-all cursor-pointer">{t("auth.log_out")}</p>
             </span>
           </motion.div>
         }

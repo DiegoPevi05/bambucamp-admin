@@ -231,20 +231,25 @@ const DashboardAdminUsers = () => {
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
                     <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><UserIcon/>{t("user.plural")}</h2>
                     <div className="w-full h-auto flex flex-col xl:flex-row justify-between items-center gap-x-4">
-                        <div className="w-full xl:w-auto h-auto flex flex-col md:flex-row justify-between xl:justify-start items-start gap-y-4 gap-x-4">
-                            <div className="max-xl:w-[60%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
+                        <div className="w-full xl:w-auto h-auto flex flex-col xl:flex-row justify-start items-start gap-y-4 gap-x-4">
+                            <div className="max-xl:w-full flex flex-col md:flex-row items-start md:items-center gap-x-2">
                             <input 
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  searchUserHandler();
+                                }
+                              }}
                               type="text" 
                               name="criteria_search_value"
                               placeholder={t("user.search_user")} 
-                                className="w-full xl:w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
+                                className="w-[50%] xl:w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
-                            <InputRadio name="criteria_search" variant="light" isRound={true} value="firstname" placeholder={t("user.firstname")} />
+                            <InputRadio name="criteria_search" variant="light" isRound={true} value="firstname" placeholder={t("user.firstname")} defaultChecked/>
                             <InputRadio name="criteria_search" variant="light" isRound={true} value="lastname" placeholder={t("user.lastname")} />
                             <InputRadio name="criteria_search" variant="light" isRound={true} value="email" placeholder={t("user.email")} />
                           </div>
-                            <div className="max-xl:w-[40%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
-                            <label className="max-xl:w-full md:ml-4 flex items-center">
+                            <div className="max-xl:w-full flex flex-col md:flex-row items-start md:items-center gap-x-2">
+                            <label className="max-xl:w-[50%] md:ml-4 flex items-center">
                                 {t("user.rol")}
                                 <select name="criteria_search_role" className="max-xl:w-full ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
                                 <option value="">{t("user.select_rol")}</option>

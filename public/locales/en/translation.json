@@ -490,6 +490,7 @@
 	"auth": {
 		"log_in_header": "Sign in to the admin panel",
 		"log_in": "Sign In",
+		"log_out": "Sign out",
 		"email": "Email",
 		"password": "Password",
 		"validations": {

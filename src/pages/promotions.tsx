@@ -6,7 +6,7 @@ import { InputRadio } from "../components/ui/Input";
 import {  formatDate, createImagesArray, formatToISODate, getTotalPromotionCalculated, formatPrice } from "../lib/utils";
 import { getAllPromotions, getAllPromotionOptions, createPromotion, updatePromotion, deletePromotion } from "../db/actions/promotions";
 import { useAuth } from "../contexts/AuthContext";
-import { Promotion, ProductFilters, PromotionFormData, optionsPromotion, optTentPromotionDto, optProductPromotionDto, optExperiencePromotionDto, ImageInterface } from "../lib/interfaces";
+import { Promotion, ProductFilters, PromotionFormData, optionsPromotion, optTentPromotionDto, optProductPromotionDto, optExperiencePromotionDto, ImageInterface, PromotionFilters } from "../lib/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
 import {fadeIn, fadeOnly} from "../lib/motions";
 import {  ZodError } from 'zod';
@@ -217,20 +217,14 @@ const DashboardAdminPromotions = () => {
     const searchExperienceHandler = async() => {
         // Get the input value
         const searchValue = (document.querySelector('input[name="criteria_search_value"]') as HTMLInputElement).value.trim();
-
-        // Get the selected criteria from radio buttons
-        const selectedCriteria = (
-        document.querySelector('input[name="criteria_search"]:checked') as HTMLInputElement
-        )?.value;
-
         // Get the selected role from the select dropdown
         const selectedStatus = (document.querySelector('select[name="criteria_search_status"]') as HTMLSelectElement).value;
 
 
         // Construct filters based on input values and selected criteria
-        const filters: ProductFilters = {};
-        if (selectedCriteria && searchValue) {
-            filters[selectedCriteria as keyof ProductFilters] = searchValue;
+        const filters: PromotionFilters = {};
+        if (searchValue) {
+            filters["title"] = searchValue;
         }
 
         if (selectedStatus) {
@@ -343,12 +337,16 @@ const DashboardAdminPromotions = () => {
                     <div className="w-full xl:w-auto h-auto flex flex-col md:flex-row  justify-start md:justify-between xl:justify-start items-start gap-y-4 gap-x-4">
                       <div className="max-xl:w-[50%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
                             <input 
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  searchExperienceHandler();
+                                }
+                              }}
                               type="text" 
                               name="criteria_search_value"
                               placeholder={t("promotion.search_promotion")} 
-                              className="w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
+                              className="w-full xl:w-96 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
-                            <InputRadio name="criteria_search" variant="light" isRound={true} value="title" placeholder={t("promotion.name")}/>
                           </div>
                       <div className="max-xl:w-[50%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
                             <label className="max-xl:w-full md:ml-4 flex items-center">
@@ -374,7 +372,7 @@ const DashboardAdminPromotions = () => {
                                 <th className="rounded-tl-xl p-2">#</th>
                                 <th className="p-2">{t("promotion.title")}</th>
                                 <th className="p-2">{t("promotion.expire")}</th>
-                                <th className="p-2">{t("promotion.people")}</th>
+                                <th className="p-2 max-xl:hidden">{t("promotion.people")}</th>
                                 <th className="p-2">{t("promotion.discount")}</th>
                                 <th className="p-2">{t("promotion.total")}</th>
                                 <th className="p-2">{t("promotion.images")}</th>
@@ -392,13 +390,13 @@ const DashboardAdminPromotions = () => {
                                         <td className="">{promotionItem.title}</td>
                                         <td className="">{promotionItem.expiredDate !== undefined && promotionItem.expiredDate != null ? formatToISODate(promotionItem.expiredDate) : t("promotion.none")}</td>
 
-                                        <td className="flex flex-row gap-x-4 justify-around">
+                                        <td className="max-xl:hidden flex flex-row gap-x-4 justify-around">
                                           <div className="flex flex-row gap-x-4"><UserIcon/>{promotionItem.qtypeople}</div>
                                           <div className="flex flex-row gap-x-4"><Blocks/>{promotionItem.qtykids}</div>
                                         </td>
 
                                         <td className="">{promotionItem.discount}</td>
-                                        <td className="">{`$ ${promotionItem.grossImport}`}</td>
+                                        <td className="">{`${formatPrice(promotionItem.grossImport)}`}</td>
                                         <td className="flex flex-row flex-wrap items-start justify-start gap-2">
                                           {promotionItem.images.map((img, index) => (
                                             <a key={index} href={`${img}`} target="_blank">
@@ -629,7 +627,7 @@ const DashboardAdminPromotions = () => {
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                               <label htmlFor="importe_calculado" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_total_calculated_import")}</label>
-                              <input name="importe_calculado" value={ `$ ${getTotalPromotionCalculated(idTents,idProducts,idExperiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  readOnly/>
+                              <input name="importe_calculado" value={ `${formatPrice(getTotalPromotionCalculated(idTents,idProducts,idExperiences))}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  readOnly/>
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
@@ -1089,7 +1087,7 @@ const DashboardAdminPromotions = () => {
 
                         <div className="flex flex-col justify-start itemst-start gap-x-6 w-[50%] h-auto gap-y-2 sm:gap-y-1">
                           <label htmlFor="importe_calculado" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_total_calculated_import")}</label>
-                          <input name="importe_calculado" value={ `$ ${getTotalPromotionCalculated(idTents,idProducts,idExperiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  disabled/>
+                          <input name="importe_calculado" value={ `${formatPrice(getTotalPromotionCalculated(idTents,idProducts,idExperiences))}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  disabled/>
                         </div>
 
                         <div className="flex flex-col justify-start itemst-start gap-x-6 w-[40%] h-auto gap-y-2 sm:gap-y-1">
@@ -1620,7 +1618,7 @@ const DashboardAdminPromotions = () => {
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-[50%] h-auto gap-y-2 sm:gap-y-1">
                               <label htmlFor="importe_calculado" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("promotion.promotion_total_calculated_import")}</label>
-                              <input name="importe_calculado" value={ `$ ${getTotalPromotionCalculated(idTents,idProducts,idExperiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  disabled/>
+                              <input name="importe_calculado" value={ `${formatPrice(getTotalPromotionCalculated(idTents,idProducts,idExperiences))}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  disabled/>
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-[40%] h-auto gap-y-2 sm:gap-y-1">

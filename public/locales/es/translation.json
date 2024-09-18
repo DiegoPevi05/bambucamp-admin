@@ -18,7 +18,7 @@
 		"search_user": "Buscar Usuario",
 		"firstname": "Nombre",
 		"lastname": "Apellido",
-		"email": "Correo Electrónico",
+		"email": "Email",
 		"rol": "Rol",
 		"select_rol": "Seleccionar Rol",
 		"ADMIN": "ADMIN",
@@ -490,6 +490,7 @@
 	"auth": {
 		"log_in_header": "Ingresar al panel de administrador",
 		"log_in": "Ingresar",
+		"log_out": "Cerrar Sesión",
 		"email": "Email",
 		"password": "Contraseña",
 		"validations": {

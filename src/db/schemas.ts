@@ -116,7 +116,7 @@ const DiscountCodeSchema = z.object({
 const TentPromotion = z.object({
   idTent: z.number().positive({ message: 'promotion.validations.tent_id_positive' }),
   name: z.string().nonempty({message:'promotion.validations.tent_name_required'}),
-  quantity:z.number().positive({ message: 'promotion.validations.tent_quantity_positive' }),
+  nights:z.number().positive({ message: 'promotion.validations.tent_quantity_positive' }),
   price: z.number().positive({ message: 'promotion.validations.tent_price_positive' })
 });
 
