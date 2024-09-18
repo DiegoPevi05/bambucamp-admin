@@ -401,7 +401,10 @@ const serializeReserveTent = (data:any):ReserveTentDto => {
 
   let reserveTent:ReserveTentDto|null = null;
 
-  const tent_db_parsed = serializeTent(data.tentDB);
+  let tent_db_parsed = null  
+  if(data.tentDB){
+    tent_db_parsed = serializeTent(data.tentDB);
+  }
 
   reserveTent = {
     id:data.id,
@@ -422,7 +425,12 @@ const serializeReserveProduct = (data:any):ReserveProductDto => {
 
   let reserveProduct:ReserveProductDto|null = null;
 
-  const product_db_parsed = serializeProduct(data.productDB);
+  let product_db_parsed = null
+
+  if(data.productDB){
+    product_db_parsed = serializeProduct(data.productDB);
+  }
+
 
   reserveProduct = {
     id:data.id,
@@ -440,7 +448,10 @@ const serializeReserveExperience = (data:any):ReserveExperienceDto => {
 
   let reserveExperience:ReserveExperienceDto|null = null;
 
-  const experience_db_parsed = serializeExperience(data.experienceDB);
+  let experience_db_parsed = null 
+  if(data.experienceDB){
+    experience_db_parsed = serializeExperience(data.experienceDB);
+  }
 
   reserveExperience = {
     id:data.id,

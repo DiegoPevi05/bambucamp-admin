@@ -1,8 +1,8 @@
 import Dashboard from "../components/ui/Dashboard";
 import { useState, useEffect, FormEvent } from "react";
-import { Eye, Pen, X, ChevronLeft, ChevronRight, Calendar, CircleX,   FlameKindling, Tent, Pizza, Search  } from "lucide-react";
+import { Eye, Pen, X, ChevronLeft, ChevronRight, Calendar, CircleX,   FlameKindling, Tent, Pizza, Search, Plus  } from "lucide-react";
 import Button from "../components/ui/Button";
-import {  formatDate, formatToISODate, getTotalReserveCalculated, getCurrentCustomPrice,  calculatePrice } from "../lib/utils";
+import {  formatDate, formatToISODate, getTotalReserveCalculated, getCurrentCustomPrice,  calculatePrice, formatPrice, getReserveDates, formatDateToYYYYMMDD } from "../lib/utils";
 import { getAllReserveOptions, getAllReserves, createReserve, updateReserve, deleteReserve } from "../db/actions/reserves";
 import { getAllUsers } from "../db/actions/users";
 import { useAuth } from "../contexts/AuthContext";
@@ -14,10 +14,12 @@ import { ReserveFormDataSchema } from "../db/schemas";
 import Modal from "../components/Modal";
 import { toast } from "sonner";
 import {InputRadio} from "../components/ui/Input";
+import {useTranslation} from "react-i18next";
 
 
 const DashboardAdminReserves = () => {
 
+    const {t,i18n} = useTranslation();
     const { user } = useAuth();
     const [datasetReserves,setDataSetReserves] = useState<{reserves:Reserve[],totalPages:Number,currentPage:Number}>({reserves:[],totalPages:1,currentPage:1});
     const [datasetReservesOptions, setDatasetReservesOptions] = useState<optionsReserve>({ tents:[], products:[], experiences:[], promotions:[], discounts:[] });
@@ -48,7 +50,7 @@ const DashboardAdminReserves = () => {
             const reserves  = await getAllReserves(user.token,page,filters);
             if(reserves){
                 setDataSetReserves(reserves);
-                setCurrentView("L");
+                setCurrentView("A");
             }
         }
     }
@@ -484,78 +486,80 @@ const DashboardAdminReserves = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Calendar/>Reservas</h2>
-                    <div className="w-full h-auto flex flex-row justify-between items-center gap-x-4">
-                        <div className="w-auto h-auto flex flex-col md:flex-row justify-start items-start gap-y-4 gap-x-4">
-                          <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
+                  <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Calendar/>Reservas</h2>
+                  <div className="w-full h-auto flex flex-col xl:flex-row justify-start xl:justify-between items-center gap-x-4">
+                    <div className="w-full xl:w-auto h-auto flex flex-col md:flex-row  justify-start md:justify-between xl:justify-start items-start gap-y-4 gap-x-4">
+                          <div className="max-xl:w-[50%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
                             <input 
                               type="date" 
                               name="criteria_search_value_date_from"
                               placeholder="Desde" 
-                              className="w-48 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
+                              className="w-[50%] xl:w-48 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
                             <input 
                               type="date" 
                               name="criteria_search_value_date_to"
                               placeholder="Hasta" 
-                              className="w-48 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
+                              className="w-[50%] xl:w-48 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
                           </div>
-                          <div className="flex flex-col md:flex-row items-start md:items-center gap-x-2">
-                              <label className="md:ml-4 flex items-center">
+                        <div className="max-xl:w-[50%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
+                              <label className="max-xl:w-full md:ml-4 flex items-center text-xs">
                                 Estado de Pago
-                                <select name="criteria_search_status" className="ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
+                                <select name="criteria_search_status" className="max-xl:w-full ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
                                   <option value="">Seleccionar Estatus</option>
                                   <option value="PAID">PAGADO</option>
                                   <option value="PENDING">PENDIENTE</option>
                                   <option value="DEBT">DEBE</option>
                                 </select>
                               </label>
-                              <Button size="sm" variant="dark" effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchReserveHandler()}>
+                              <Button variant="light" isRound={true} effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchReserveHandler()}>
                               Buscar
                             </Button>
                           </div>
                         </div>
-                        <div className="w-auto h-auto flex flex-row justify-end items-start gap-y-4 gap-x-4">
+                    <div className="w-full xl:w-auto h-auto flex flex-row justify-end items-start gap-y-4 gap-x-4 max-xl:mt-4">
                           <Button onClick={()=>{setCurrentView("A"); setTents([]); setProducts([]); setExperiences([]);}} size="sm" variant="dark" effect="default" className="min-w-[300px]" isRound={true}>Agregar Reserva <Calendar/></Button>
                         </div>
                     </div>
                     <table className="h-full w-full shadow-xl rounded-xl text-center p-4">
-                        <thead className="font-primary text-md bg-primary text-white">
+                      <thead className="font-primary text-sm xl:text-md bg-primary text-white">
                             <tr className="">
                                 <th className="rounded-tl-xl p-2">#</th>
-                                <th className="p-2">Usuario</th>
+                                <th className="p-2">External ID</th>
                                 <th className="p-2">Desde</th>
                                 <th className="p-2">Hasta</th>
-                                <th className="p-2">Servicios y Productos</th>
+                                <th className="p-2 max-xl:hidden">Servicios y Productos</th>
                                 <th className="p-2">Importe Total</th>
                                 <th className="p-2">Cancelado</th>
+                                <th className="p-2">Estado de Reserva</th>
                                 <th className="p-2">Estado de Pago</th>
-                                <th className="p-2">Creado</th>
-                                <th className="p-2">Actualizado</th>
+                                <th className="p-2 max-xl:hidden">Creado</th>
+                                <th className="p-2 max-xl:hidden">Actualizado</th>
                                 <th className="rounded-tr-xl p-2">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody className="font-secondary text-sm">
+                        <tbody className="font-secondary text-xs xl:text-sm">
                                 {datasetReserves.reserves.map((reserveItem,index)=>{
                                     return(
                                     <tr key={"user_key"+index} className="text-slate-400 hover:bg-secondary hover:text-white duration-300 cursor-pointer"> 
                                         <td className="">{reserveItem.id}</td>
-                                        <td className="">{reserveItem.userId}</td>
+                                        <td className="">{reserveItem.external_id}</td>
 
-                                        <td className="">{reserveItem.dateFrom !== undefined && reserveItem.dateFrom != null ? formatDate(reserveItem.dateFrom) : "None"}</td>
-                                        <td className="">{reserveItem.dateFrom !== undefined && reserveItem.dateTo != null ? formatDate(reserveItem.dateTo) : "None"}</td>
+                                        <td className="">{formatDateToYYYYMMDD(getReserveDates(reserveItem.tents).dateFrom)}</td>
+                                        <td className="">{formatDateToYYYYMMDD(getReserveDates(reserveItem.tents).dateTo)}</td>
 
-                                        <td className="flex flex-row gap-x-4 justify-around">
+                                        <td className="max-xl:hidden flex flex-row gap-x-4 justify-around">
                                           <div className="flex flex-row gap-x-2"><Tent/>{reserveItem.tents.length}</div>
                                           <div className="flex flex-row gap-x-2"><FlameKindling/>{reserveItem.experiences.length}</div>
                                           <div className="flex flex-row gap-x-2"><Pizza/>{reserveItem.products.length}</div>
                                         </td>
-                                        <td className="">{`$ ${reserveItem.grossImport}`}</td>
-                                      <td className="h-full">{reserveItem.canceled_status ? "CANCELADA": "ACTIVA" }</td>
-                                        <td className="h-full">{reserveItem.paymentStatus != "PAID" ?  ( reserveItem.paymentStatus != "DEBT" ? "PENDIENTE" : "SIN PAGAR" ) : "PAGADO" }</td>
-                                        <td className="h-full">{reserveItem.updatedAt != undefined && reserveItem.updatedAt != null ? formatDate(reserveItem.updatedAt) : "None"}</td>
-                                        <td className="h-full">{reserveItem.createdAt != undefined && reserveItem.createdAt != null ? formatDate(reserveItem.createdAt) : "None"}</td>
+                                        <td className="">{`${formatPrice(reserveItem.gross_import)}`}</td>
+                                        <td className="h-full">{reserveItem.canceled_status ? "Si": "No" }</td>
+                                        <td className="h-full">{reserveItem.reserve_status != "CONFIRMED" ?  ( reserveItem.reserve_status != "NOT_CONFIRMED" ? "COMPLETADA" : "SIN CONFIRMAR" ) : "CONFIRMADA" }</td>
+                                        <td className="h-full">{reserveItem.payment_status != "PAID" ?  ( reserveItem.payment_status != "DEBT" ? "PENDIENTE" : "SIN PAGAR" ) : "PAGADO" }</td>
+                                        <td className="h-full max-xl:hidden">{reserveItem.updatedAt != undefined && reserveItem.updatedAt != null ? formatDate(reserveItem.updatedAt) : "None"}</td>
+                                        <td className="h-full max-xl:hidden">{reserveItem.createdAt != undefined && reserveItem.createdAt != null ? formatDate(reserveItem.createdAt) : "None"}</td>
                                         <td className="h-full flex flex-col items-center justify-center">
                                           <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
                                             <button onClick={()=>{setSelectedReserve(reserveItem);  setTents(reserveItem.tents); setProducts(reserveItem.products); setExperiences(reserveItem.experiences); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
@@ -918,7 +922,7 @@ const DashboardAdminReserves = () => {
 
               <form id="form_create_reserve" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
 
-                <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
+                <div className="flex flex-col justify-start items-start w-full">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto my-1 gap-y-2 sm:gap-y-1">
                         <label htmlFor="search_user_email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Buscar Usuario"}</label>
@@ -959,170 +963,45 @@ const DashboardAdminReserves = () => {
                           )}
                         </div>
                       </div>
-
-                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de personas"}</label>
-                          <input name="qtypeople" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de personas"}/>
-
-                          <div className="w-full h-6">
-                            {errorMessages.qtypeople && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.qtypeople}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="qtykids"  className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad  de niños"}</label>
-                          <input name="qtykids" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de niños"}/>
-
-                          <div className="w-full h-6">
-                            {errorMessages.qtykids && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.qtykids}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-
+                      <div className="w-full h-auto flex flex-row justify-end mb-4">
+                        <Button variant="ghostLight" rightIcon={<Plus/>} isRound={true} effect="default">Add Item</Button>
                       </div>
-
-                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="dateFrom" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Desde"}</label>
-                          <input name="dateFrom" type="date" onChange={()=>getDateRangeFromForm("form_create_reserve")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
-
-                          <div className="w-full h-6">
-                            {errorMessages.dateFrom && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.dateFrom}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="dateTo" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Hasta"}</label>
-                          <input name="dateTo" type="date" onChange={()=>getDateRangeFromForm("form_create_reserve")} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"}/>
-
-                          <div className="w-full h-6">
-                            {errorMessages.dateTo && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.dateTo}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-
-                      </div>
-
-                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="payment_status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estado de Pago"}</label>
-                          <select name="payment_status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                            <option value="PAID">PAGADO</option>
-                            <option value="DEBT">DEBE</option>
-                            <option value="PENDING">PENDIENTE</option>
-                          </select>
-
-                          <div className="w-full h-6">
-                            {errorMessages.paymentStatus && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.paymentStatus}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="additional_people" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de Personas adicionales"}</label>
-                          <input name="additional_people" type="number" step="0.01" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de Personas adicionales"}/>
-
-                          <div className="w-full h-6">
-                            {errorMessages.additionalPeople && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.additionalPeople}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-
-                      </div>
-
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1  gap-y-2">
-
-                        <label htmlFor="canceled_reason" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{"Cancelacion"}</label>
-
-                          <div className="checkbox-wrapper-13 px-2">
-                            <input name="canceled_status" type="checkbox" aria-hidden="true" />
-                            <label htmlFor="canceled_status">Reserva Cancelada?</label>
-                          </div>
-
-                          <div className="w-full h-6">
-                            {errorMessages.canceled_status && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.canceled_status}
-                              </motion.p>
-                            )}
-                          </div>
-
-                          <textarea name="canceled_reason" className="w-full h-8 sm:h-20 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Razon de cancelacion"}></textarea>
-
-                          <div className="w-full h-6">
-                            {errorMessages.canceled_reason && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.canceled_reason}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-                  </div>
-
-                <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
+                      <table className="h-auto w-full shadow-xl rounded-xl text-center border-collapse table-fixed">
+                        <thead className="font-primary text-xs xl:text-sm bg-secondary text-white rounded-t-xl">
+                              <tr className="">
+                                  <th className="w-[5%] rounded-tl-xl">#</th>
+                                  <th className="w-[5%]">ID</th>
+                                  <th className="w-[45%]">Concept</th>
+                                  <th className="w-[15%]">Unit</th>
+                                  <th className="w-[10%]">Qty</th>
+                                  <th className="w-[10%]">Unit Price</th>
+                                  <th className="w-[10%] rounded-tr-xl">Price</th>
+                              </tr>
+                          </thead>
+                          <tbody className="font-secondary text-xs xl:text-sm">
+                              <tr key={"reserve_key"} className="text-slate-400 cursor-pointer"> 
+                                  <td className="border border-slate-300 text-center">{"0"}</td>
+                                  <td className="border border-slate-300 text-center">{"1"}</td>
+                                  <td className="border border-slate-300 text-left">{"Bambucamp Sallary | From:12-01-2024 To: 12-02-2024"}</td>
+                                  <td className="border border-slate-300 text-center">{"Noches"}</td>
+                                  <td className="border border-slate-300 text-center">{"2"}</td>
+                                  <td className="border border-slate-300 text-center">{"120"}</td>
+                                  <td className="border border-slate-300 text-center">{"240"}</td>
+                              </tr>
+                              <tr key={"reserve_key_net_import"} className="text-slate-400"> 
+                                  <td className="border-2 border-t-secondary border-b-secondary" colSpan={6}>Net Import</td>
+                                  <td className="border-2 border-t-secondary border-b-secondary">{formatPrice(340)}</td>
+                              </tr>
+                              <tr key={"reserve_key_total"} className="text-slate-400"> 
+                                  <td className="border-2 border-t-secondary border-b-secondary" colSpan={6}>Discount</td>
+                                  <td className="border-2 border-t-secondary border-b-secondary">{formatPrice(100)}</td>
+                              </tr>
+                              <tr key={"reserve_key_gross_import"} className="text-slate-400"> 
+                                  <td className="" colSpan={6}>Gross Import</td>
+                                  <td className="">{formatPrice(240)}</td>
+                              </tr>
+                          </tbody>
+                      </table>
 
                       <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-2  gap-y-2">
                         <label htmlFor="criteria_reserve" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{"Criterio de Reserva"}</label>
@@ -1623,6 +1502,88 @@ const DashboardAdminReserves = () => {
                         </div>
 
                       </div>
+
+                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+
+                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                          <label htmlFor="payment_status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estado de Pago"}</label>
+                          <select name="payment_status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                            <option value="PAID">PAGADO</option>
+                            <option value="DEBT">DEBE</option>
+                            <option value="PENDING">PENDIENTE</option>
+                          </select>
+
+                          <div className="w-full h-6">
+                            {errorMessages.paymentStatus && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {errorMessages.paymentStatus}
+                              </motion.p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                          <label htmlFor="additional_people" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de Personas adicionales"}</label>
+                          <input name="additional_people" type="number" step="0.01" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de Personas adicionales"}/>
+
+                          <div className="w-full h-6">
+                            {errorMessages.additionalPeople && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {errorMessages.additionalPeople}
+                              </motion.p>
+                            )}
+                          </div>
+                        </div>
+
+                      </div>
+
+                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1  gap-y-2">
+
+                        <label htmlFor="canceled_reason" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{"Cancelacion"}</label>
+
+                          <div className="checkbox-wrapper-13 px-2">
+                            <input name="canceled_status" type="checkbox" aria-hidden="true" />
+                            <label htmlFor="canceled_status">Reserva Cancelada?</label>
+                          </div>
+
+                          <div className="w-full h-6">
+                            {errorMessages.canceled_status && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {errorMessages.canceled_status}
+                              </motion.p>
+                            )}
+                          </div>
+
+                          <textarea name="canceled_reason" className="w-full h-8 sm:h-20 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Razon de cancelacion"}></textarea>
+
+                          <div className="w-full h-6">
+                            {errorMessages.canceled_reason && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {errorMessages.canceled_reason}
+                              </motion.p>
+                            )}
+                          </div>
+                        </div>
 
                       <div className="flex flex-row justify-end gap-x-6 w-full">
                           <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
