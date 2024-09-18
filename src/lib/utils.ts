@@ -222,6 +222,17 @@ export const getRangeDatesForReserve = (reserve:Reserve) => {
     return dateRanges;
 };
 
+export const getNumberOfNights = (dateFrom: Date, dateTo: Date): number => {
+  // Calculate the time difference between the two dates in milliseconds
+  const timeDifference = dateTo.getTime() - dateFrom.getTime();
+
+  // Convert the time difference from milliseconds to days
+  const numberOfDays = timeDifference / (1000 * 60 * 60 * 24);
+
+  // Return the number of nights (days between the dates)
+  return Math.ceil(numberOfDays);
+};
+
 export const formatDateToYYYYMMDD = (date: Date): string => {
   // Create a new Date object with the current time zone
   const localDate = new Date(date);

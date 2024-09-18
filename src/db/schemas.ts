@@ -214,5 +214,40 @@ const FaqSchema = z.object({
   answer: z.string().nonempty({ message: 'faq.validations.answer_required' }),
 });
 
+const ReserveTentItemFormDataSchema = z.object({
+  reserve_tent_option_id: z.number().positive({ message: "reserve.validations.id_required" }),
+  reserve_tent_option_date_from: z.date({ message: "reserve.validations.date_from_required" }),
+  reserve_tent_option_date_to: z.date({ message: "reserve.validations.date_to_required" }),
+  reserve_tent_option_aditional_people: z.number().min(0, { message: "reserve.validations.aditional_people_min" }),
+  reserve_tent_option_aditional_people_max: z.number().min(0, { message: "reserve.validations.aditional_people_max_required" }),
+}).refine((data) => data.reserve_tent_option_date_from < data.reserve_tent_option_date_to, {
+  message: "reserve.validations.date_from_less_than_date_to",
+  path: ["reserve_tent_option_date_from"],
+}).refine((data) => data.reserve_tent_option_aditional_people <= data.reserve_tent_option_aditional_people_max, {
+  message: "reserve.validations.aditional_people_exceed_max",
+  path: ["reserve_tent_option_aditional_people"], // Error will point to this field
+});
 
-export { signInSchema, createUserSchema, editUserSchema, TentSchema, ProductSchema, ExperienceSchema, DiscountCodeSchema, PromotionSchema, ReserveFormDataSchema, ReviewSchema, FaqSchema};
+const ReservePromotionItemFormDataSchema = z.object({
+  reserve_promotion_option_id: z.number().positive({ message: "reserve.validations.id_required" }),
+  reserve_promotion_option_date_from: z.date({ message: "reserve.validations.date_from_required" }),
+  reserve_promotion_option_date_to: z.date({ message: "reserve.validations.date_to_required" }),
+}).refine((data) => data.reserve_promotion_option_date_from < data.reserve_promotion_option_date_to, {
+  message: "reserve.validations.date_from_less_than_date_to",
+  path: ["reserve_promotion_option_date_from"],
+})
+
+
+const ReserveExperienceItemFormDataSchema = z.object({
+  reserve_experience_option_id: z.number().positive({ message: "reserve.validations.id_required" }),
+  reserve_experience_option_day: z.date(),
+  reserve_experience_option_quantity: z.number().min(1,{ message: "reserve.validations.quantity_min" }),
+})
+
+const ReserveProductItemFormDataSchema = z.object({
+  reserve_product_option_id: z.number().positive({ message: "reserve.validations.id_required" }),
+  reserve_product_option_quantity: z.number().min(1,{ message: "reserve.validations.quantity_min" }),
+})
+
+
+export { signInSchema, createUserSchema, editUserSchema, TentSchema, ProductSchema, ExperienceSchema, DiscountCodeSchema, PromotionSchema, ReserveFormDataSchema, ReviewSchema, FaqSchema ,ReserveTentItemFormDataSchema, ReserveProductItemFormDataSchema, ReserveExperienceItemFormDataSchema, ReservePromotionItemFormDataSchema};

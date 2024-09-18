@@ -2,7 +2,6 @@ import Dashboard from "../components/ui/Dashboard";
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { Eye, Pen, X, ChevronLeft, ChevronRight, Disc, CircleX, Image, UserIcon, Blocks  } from "lucide-react";
 import Button from "../components/ui/Button";
-import { InputRadio } from "../components/ui/Input";
 import {  formatDate, createImagesArray, formatToISODate, getTotalPromotionCalculated, formatPrice } from "../lib/utils";
 import { getAllPromotions, getAllPromotionOptions, createPromotion, updatePromotion, deletePromotion } from "../db/actions/promotions";
 import { useAuth } from "../contexts/AuthContext";

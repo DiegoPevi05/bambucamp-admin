@@ -110,7 +110,7 @@ export const getAllMyReserves = async(token:string, page:Number, language:string
   return data;
 }
 
-export const getAllReserveOptions = async(token:string):Promise<optionsReserve|null> => {
+export const getAllReserveOptions = async(token:string, language:string):Promise<optionsReserve|null> => {
   let data:optionsReserve | null = null;
   try{
 
@@ -120,7 +120,7 @@ export const getAllReserveOptions = async(token:string):Promise<optionsReserve|n
     const fetchReservesOptions = await axios.get(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -157,7 +157,7 @@ export const getAllReserveOptions = async(token:string):Promise<optionsReserve|n
   return data;
 }
 
-export const getAllReserves = async( token: string, page:Number, filters?:ReserveFilters ): Promise<{reserves:Reserve[], totalPages:Number ,currentPage:Number}|null> => {
+export const getAllReserves = async( token: string, page:Number, language:string, filters?:ReserveFilters ): Promise<{reserves:Reserve[], totalPages:Number ,currentPage:Number}|null> => {
 
   let data:{ reserves:Reserve[],totalPages:Number,currentPage:Number } | null = null;
   try{
@@ -180,7 +180,7 @@ export const getAllReserves = async( token: string, page:Number, filters?:Reserv
     const fetchReserves = await axios.get(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -221,13 +221,13 @@ export const getAllReserves = async( token: string, page:Number, filters?:Reserv
 
 
 
-export const createReserve = async (reserve: ReserveFormData, token: string): Promise<boolean> => {
+export const createReserve = async (reserve: ReserveFormData, token: string, language:string): Promise<boolean> => {
   try {
 
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/reserves`, reserve, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
     toast.success(response.data.message);
@@ -260,13 +260,13 @@ export const createReserve = async (reserve: ReserveFormData, token: string): Pr
 };
 
 
-export const updateReserve = async (reserveId:Number,reserve: ReserveFormData, token: string): Promise<boolean> => {
+export const updateReserve = async (reserveId:Number,reserve: ReserveFormData, token: string, language:string): Promise<boolean> => {
   try {
 
     const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/reserves/${reserveId}`, reserve, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 
@@ -301,13 +301,13 @@ export const updateReserve = async (reserveId:Number,reserve: ReserveFormData, t
 
 
 
-export const deleteReserve = async(idReserve:Number, token:string ):Promise<boolean> => {
+export const deleteReserve = async(idReserve:Number, token:string, language:string ):Promise<boolean> => {
 
   try {
     const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/reserves/${idReserve}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Accept-Language':'es'
+        'Accept-Language':language
       }
     });
 

@@ -2,15 +2,15 @@ import Dashboard from "../components/ui/Dashboard";
 import { useState, useEffect, FormEvent } from "react";
 import { Eye, Pen, X, ChevronLeft, ChevronRight, Calendar, CircleX,   FlameKindling, Tent, Pizza, Search, Plus  } from "lucide-react";
 import Button from "../components/ui/Button";
-import {  formatDate, formatToISODate, getTotalReserveCalculated, getCurrentCustomPrice,  calculatePrice, formatPrice, getReserveDates, formatDateToYYYYMMDD } from "../lib/utils";
+import {  formatDate, getTotalReserveCalculated, getCurrentCustomPrice,  calculatePrice, formatPrice, getReserveDates, formatDateToYYYYMMDD, getNumberOfNights } from "../lib/utils";
 import { getAllReserveOptions, getAllReserves, createReserve, updateReserve, deleteReserve } from "../db/actions/reserves";
 import { getAllUsers } from "../db/actions/users";
 import { useAuth } from "../contexts/AuthContext";
-import { UserFilters, Reserve, ReserveFilters, ReserveFormData, optionsReserve, ReserveTentDto, ReserveProductDto, ReserveExperienceDto, User } from "../lib/interfaces";
+import { UserFilters, Reserve, ReserveFilters, ReserveFormData, optionsReserve, ReserveTentDto, ReserveProductDto, ReserveExperienceDto, User, ReservePromotionDto } from "../lib/interfaces";
 import { AnimatePresence, motion } from "framer-motion";
-import {fadeIn, fadeOnly} from "../lib/motions";
+import {fadeIn} from "../lib/motions";
 import {  ZodError } from 'zod';
-import { ReserveFormDataSchema } from "../db/schemas";
+import { ReserveExperienceItemFormDataSchema, ReserveFormDataSchema, ReserveProductItemFormDataSchema, ReservePromotionItemFormDataSchema, ReserveTentItemFormDataSchema } from "../db/schemas";
 import Modal from "../components/Modal";
 import { toast } from "sonner";
 import {InputRadio} from "../components/ui/Input";
@@ -26,7 +26,9 @@ const DashboardAdminReserves = () => {
     const [tents,setTents] = useState<ReserveTentDto[]>([]);
     const [products,setProducts] = useState<ReserveProductDto[]>([]);
     const [experiences,setExperiences] = useState<ReserveExperienceDto[]>([]);
-    const [criteriaReserve,setCriteriaReserve] = useState<string>("NORMAL");
+    const [promotions,setPromotions] = useState<ReservePromotionDto[]>([]);
+
+    const [openReserveOption,setOpenReserveOption] = useState<"tent"|"product"|"experience"|"promotion"|null>(null);
 
     const [currentView,setCurrentView] = useState<string>("LOADING");
 
@@ -37,7 +39,7 @@ const DashboardAdminReserves = () => {
 
     const getReservesOptions = async() => {
       if(user != null){
-          const ReserveOptions  = await getAllReserveOptions(user.token);
+          const ReserveOptions  = await getAllReserveOptions(user.token,i18n.language);
           if(ReserveOptions){
               setDatasetReservesOptions(ReserveOptions);
           }
@@ -47,76 +49,395 @@ const DashboardAdminReserves = () => {
     const getReservesHandler = async (page:Number, filters?:ReserveFilters) => {
         setCurrentView("LOADING");
         if(user != null){
-            const reserves  = await getAllReserves(user.token,page,filters);
+            const reserves  = await getAllReserves(user.token,page,i18n.language,filters);
             if(reserves){
                 setDataSetReserves(reserves);
-                setCurrentView("A");
+                setCurrentView("L");
             }
         }
     }
 
     const [loadingForm, setLoadingForm] = useState<boolean>(false);
+    const [tentItemTotalPrice, setTentItemTotalPrice] = useState<number>(0);
 
-    const handleAddReserveOption = (formName:string, type:string) => {
-      const form = document.getElementById(formName) as HTMLFormElement;
-      const optionInput = form.querySelector(`select[name="promotion_option_${type}_id"]`) as HTMLSelectElement;
-      const quantityInput = form.querySelector(`input[name="promotion_option_${type}_qty"]`) as HTMLInputElement;
+    const getTentItemFormData = ():{idTent:number, aditionalPeople:number, dateFrom:Date, dateTo:Date, no_custom_price:boolean}|null => {
+      const container = document.getElementById("modal_reserve_items") as HTMLFormElement;
 
-      const no_custom_price = (form.querySelector(`input[name="promotion_option_${type}_no_special_price"]`) as HTMLInputElement).checked;
+      const idTentInput  = container.querySelector(`select[name="reserve_tent_option_id"]`) as HTMLSelectElement;
+      const aditionalPeopleInput =  container.querySelector(`input[name="reserve_tent_option_aditional_people"]`) as HTMLInputElement;
+      const dateFromInput = container.querySelector(`input[name="reserve_tent_option_date_from"]`) as HTMLInputElement;
+      const dateToInput = container.querySelector(`input[name="reserve_tent_option_date_to"]`) as HTMLInputElement;
+      const noCustomPriceInput = container.querySelector(`input[name="reserve_tent_option_no_special_price"]`) as HTMLInputElement;
 
+      if(idTentInput == undefined || aditionalPeopleInput == undefined || dateFromInput == undefined || dateToInput == undefined || noCustomPriceInput == undefined ){
+        return null;
+      }
 
-      if (!optionInput || !quantityInput) {
-        console.error(`Option input or quantity input not found.`);
+      const idTent = Number(idTentInput.value);
+      const aditionalPeople = Number(aditionalPeopleInput.value);
+      const dateFrom = new Date(dateFromInput.value)
+      const dateTo = new Date(dateToInput.value)
+      const no_custom_price = dateToInput.checked;
+
+      const tent_db  = datasetReservesOptions.tents.find((i)=> i.id == idTent);
+      if(!tent_db){
+        return null;
+      }
+
+      setErrorMessages({});
+
+      try {
+
+        ReserveTentItemFormDataSchema.parse({ 
+          reserve_tent_option_id:idTent,
+          reserve_tent_option_date_from:dateFrom,
+          reserve_tent_option_date_to:dateTo,
+          reserve_tent_option_aditional_people:aditionalPeople,
+          reserve_tent_option_aditional_people_max:tent_db.max_aditional_people,
+        });
+
+        return {
+          idTent,
+          aditionalPeople,
+          dateFrom,
+          dateTo,
+          no_custom_price
+        }
+
+      } catch (error) {
+        if (error instanceof ZodError) {
+          const newErrorMessages: Record<string, string> = {};
+          error.errors.forEach(err => {
+            const fieldName = err.path[0] as string;
+            newErrorMessages[fieldName] = err.message;
+          });
+          setErrorMessages(newErrorMessages);
+        }
+        return null;
+      }
+
+    }
+
+    const calculateTentItemPrice = () => {
+
+      const currentItem = getTentItemFormData();
+
+      if (currentItem == null) {
+        setTentItemTotalPrice(0);
         return;
       }
 
-      const id = Number(optionInput.value);
+      const data = datasetReservesOptions.tents.find((i)=> i.id == currentItem.idTent);
+
+      if(data){
+        const base_price = calculatePrice(data.price,data.custom_price, currentItem.no_custom_price)
+        const ad_people_price = currentItem.aditionalPeople * data.aditional_people_price;
+        setTentItemTotalPrice(ad_people_price + base_price * getNumberOfNights(currentItem.dateFrom,currentItem.dateTo));
+      }
+    } 
+
+    const [productItemTotalPrice, setProductItemTotalPrice] = useState<number>(0);
+
+    const getProductItemFormData = ():{idProduct:number, quantity:number, no_custom_price:boolean}|null => {
+      const container = document.getElementById("modal_reserve_items") as HTMLFormElement;
+
+      const idProductInput  = container.querySelector(`select[name="reserve_product_option_id"]`) as HTMLSelectElement;
+      const quantityInput =  container.querySelector(`input[name="reserve_product_option_quantity"]`) as HTMLInputElement;
+      const noCustomPriceInput = container.querySelector(`input[name="reserve_product_option_no_special_price"]`) as HTMLInputElement;
+
+      if(idProductInput == undefined || quantityInput == undefined || noCustomPriceInput == undefined ){
+        return null;
+      }
+
+      const idProduct = Number(idProductInput.value);
       const quantity = Number(quantityInput.value);
+      const no_custom_price = noCustomPriceInput.checked;
 
-      if (isNaN(id) || isNaN(quantity) || quantity <= 0 || !id ) {
-        toast.error("Marca una opcion valida");
+      setErrorMessages({});
+
+      try {
+
+        ReserveProductItemFormDataSchema.parse({ 
+          reserve_product_option_id:idProduct,
+          reserve_product_option_quantity:quantity,
+        });
+
+        return {
+          idProduct,
+          quantity,
+          no_custom_price:no_custom_price
+        }
+
+      } catch (error) {
+        if (error instanceof ZodError) {
+          const newErrorMessages: Record<string, string> = {};
+          error.errors.forEach(err => {
+            const fieldName = err.path[0] as string;
+            newErrorMessages[fieldName] = err.message;
+          });
+          setErrorMessages(newErrorMessages);
+        }
+        return null;
+      }
+
+    }
+
+    const [experienceItemTotalPrice, setExperienceItemTotalPrice] = useState<number>(0);
+
+    const getExperienceItemFormData = ():{idExperience:number, quantity:number, day:Date, no_custom_price:boolean}|null => {
+      const container = document.getElementById("modal_reserve_items") as HTMLFormElement;
+
+      const idExperienceInput  = container.querySelector(`select[name="reserve_experience_option_id"]`) as HTMLSelectElement;
+      const quantityInput =  container.querySelector(`input[name="reserve_experience_option_quantity"]`) as HTMLInputElement;
+      const dateInput =  container.querySelector(`input[name="reserve_experience_option_date"]`) as HTMLInputElement;
+      const noCustomPriceInput = container.querySelector(`input[name="reserve_experience_option_no_special_price"]`) as HTMLInputElement;
+
+      if(idExperienceInput == undefined || quantityInput == undefined || dateInput == undefined || noCustomPriceInput == undefined ){
+        return null;
+      }
+
+      const idExperience = Number(idExperienceInput.value);
+      const day = new Date(dateInput.value);
+      const quantity = Number(quantityInput.value);
+      const no_custom_price = noCustomPriceInput.checked;
+
+      setErrorMessages({});
+
+      try {
+
+        ReserveExperienceItemFormDataSchema.parse({ 
+          reserve_experience_option_id:idExperience,
+          reserve_experience_option_day:day,
+          reserve_experience_option_quantity:quantity,
+        });
+
+        return {
+          idExperience,
+          day,
+          quantity,
+          no_custom_price:no_custom_price
+        }
+
+      } catch (error) {
+        if (error instanceof ZodError) {
+          const newErrorMessages: Record<string, string> = {};
+          error.errors.forEach(err => {
+            const fieldName = err.path[0] as string;
+            newErrorMessages[fieldName] = err.message;
+          });
+          setErrorMessages(newErrorMessages);
+        }
+        return null;
+      }
+
+    }
+
+    const [promotionItemTotalPrice, setPromotionItemTotalPrice] = useState<number>(0);
+
+    const getPromotionItemFormData = ():{idPromotion:number, dateFrom:Date, dateTo:Date}|null => {
+      const container = document.getElementById("modal_reserve_items") as HTMLFormElement;
+
+      const idPromotionInput  = container.querySelector(`select[name="reserve_promotion_option_id"]`) as HTMLSelectElement;
+      const dateFromInput = container.querySelector(`input[name="reserve_promotion_option_date_from"]`) as HTMLInputElement;
+      const dateToInput = container.querySelector(`input[name="reserve_promotion_option_date_to"]`) as HTMLInputElement;
+
+      if(idPromotionInput == undefined || dateFromInput == undefined || dateToInput == undefined ){
+        return null;
+      }
+
+      const idPromotion = Number(idPromotionInput.value);
+      const dateFrom = new Date(dateFromInput.value);
+      const dateTo = new Date(dateToInput.value);
+
+      setErrorMessages({});
+
+      try {
+
+        ReservePromotionItemFormDataSchema.parse({ 
+          reserve_promotion_option_id:idPromotion,
+          reserve_promotion_option_date_from:dateFrom,
+          reserve_promotion_option_date_to:dateTo,
+        });
+
+        return {
+          idPromotion,
+          dateFrom,
+          dateTo
+        }
+
+      } catch (error) {
+        if (error instanceof ZodError) {
+          const newErrorMessages: Record<string, string> = {};
+          error.errors.forEach(err => {
+            const fieldName = err.path[0] as string;
+            newErrorMessages[fieldName] = err.message;
+          });
+          setErrorMessages(newErrorMessages);
+        }
+        return null;
+      }
+
+    }
+
+    const calculateProductItemPrice = () => {
+
+      const currentItem = getProductItemFormData();
+
+      if (currentItem == null) {
+        setProductItemTotalPrice(0);
         return;
       }
 
+      const data = datasetReservesOptions.products.find((i)=> i.id == currentItem.idProduct);
 
+      if(data){
+        const base_price = calculatePrice(data.price,data.custom_price, currentItem.no_custom_price)
+        setProductItemTotalPrice( base_price * currentItem.quantity);
+      }
+    } 
+
+    const calculateExperienceItemPrice = () => {
+
+      const currentItem = getExperienceItemFormData();
+
+      if (currentItem == null) {
+        setExperienceItemTotalPrice(0);
+        return;
+      }
+
+      const data = datasetReservesOptions.experiences.find((i)=> i.id == currentItem.idExperience);
+
+      if(data){
+        const base_price = calculatePrice(data.price,data.custom_price, currentItem.no_custom_price)
+        setExperienceItemTotalPrice( base_price * currentItem.quantity);
+      }
+    } 
+
+    const calculatePromotionItemPrice = () => {
+
+      const currentItem = getPromotionItemFormData();
+
+      if (currentItem == null) {
+        setExperienceItemTotalPrice(0);
+        return;
+      }
+
+      const data = datasetReservesOptions.promotions.find((i)=> i.id == currentItem.idPromotion);
+
+      if(data){
+        setPromotionItemTotalPrice(data.grossImport);
+      }
+    } 
+
+
+    const handleAddReserveOption = (type:string) => {
       let data:any = null;
 
       if(type == "tent"){
-        data = datasetReservesOptions.tents.find((i)=> i.id == id);
-        if(data){
-          const newOption: ReserveTentDto = { idTent: id , name: data.title , nights:quantity, price: calculatePrice (data.price,data.custom_price, no_custom_price), confirmed:true};
-          setTents([...tents, newOption]);
+
+        const currentItem = getTentItemFormData();
+
+        if (currentItem == null) {
+          return;
         }
-      }else if(type == "product"){
-        data = datasetReservesOptions.products.find((i)=> i.id == id);
+
+        data = datasetReservesOptions.tents.find((i)=> i.id == currentItem.idTent);
+
         if(data){
-          const newOption: ReserveProductDto = { idProduct: id , name: data.name , quantity, price:calculatePrice (data.price,data.custom_price, no_custom_price) , confirmed:true };
-          setProducts([...products, newOption]);
+          const newTentOption: ReserveTentDto = { 
+            idTent:currentItem.idTent , 
+            name: data.title , 
+            nights: getNumberOfNights(currentItem.dateFrom, currentItem.dateTo) , 
+            price: calculatePrice (data.price,data.custom_price, currentItem.no_custom_price), 
+            confirmed:true, 
+            dateFrom:currentItem.dateFrom, 
+            dateTo:currentItem.dateTo, 
+            aditionalPeople: currentItem.aditionalPeople
+          };
+          setTents([...tents, newTentOption]);
+        }
+
+      }else if(type == "product"){
+
+        const currentItem = getProductItemFormData();
+
+        if (currentItem == null) {
+          return;
+        }
+
+        data = datasetReservesOptions.products.find((i)=> i.id == currentItem.idProduct);
+
+        if(data){
+          const newProductOption: ReserveProductDto = { 
+            idProduct:currentItem.idProduct , 
+            name: data.name , 
+            quantity: currentItem.quantity,
+            price: calculatePrice (data.price,data.custom_price, currentItem.no_custom_price), 
+            confirmed:true, 
+          };
+          setProducts([...products, newProductOption]);
         }
       }else if(type == "experience"){
 
-        const DayInput = form.querySelector(`select[name="promotion_option_${type}_day"]`) as HTMLInputElement;
-        const day = new Date(DayInput.value);
-        data = datasetReservesOptions.experiences.find((i)=> i.id == id);
-        if(data){
-          const newOption: ReserveExperienceDto = { idExperience: id , name: data.name , quantity, price:calculatePrice (data.price,data.custom_price, no_custom_price) , confirmed:true, day: day };
-          setExperiences([...experiences, newOption]);
-        }
-        DayInput.value = '';
-      } 
+        const currentItem = getExperienceItemFormData();
 
-      // Clear input fields
-      optionInput.value = '';
-      quantityInput.value = '';
-      handleApplyDiscount(formName);
+        if (currentItem == null) {
+          return;
+        }
+
+        data = datasetReservesOptions.experiences.find((i)=> i.id == currentItem.idExperience);
+
+        if(data){
+          const newExperienceOption: ReserveExperienceDto = { 
+            idExperience:currentItem.idExperience , 
+            name: data.name , 
+            day:currentItem.day,
+            quantity: currentItem.quantity,
+            price: calculatePrice (data.price,data.custom_price, currentItem.no_custom_price), 
+            confirmed:true, 
+          };
+          setExperiences([...experiences, newExperienceOption]);
+        }
+
+      }else if (type == "promotion"){
+
+        const currentItem = getPromotionItemFormData();
+
+        if (currentItem == null) {
+          return;
+        }
+
+        data = datasetReservesOptions.promotions.find((i)=> i.id == currentItem.idPromotion);
+
+        if(data){
+          const newPromotionOption: ReservePromotionDto = { 
+            idPromotion:currentItem.idPromotion , 
+            name: data.title , 
+            price:data.grossImport,
+            nights: getNumberOfNights(currentItem.dateFrom, currentItem.dateTo) , 
+            dateFrom:currentItem.dateFrom,
+            dateTo:currentItem.dateTo,
+            confirmed:true
+          };
+          setPromotions([...promotions, newPromotionOption]);
+        }
+
+      } 
+      setOpenReserveOption(null);
 
     };
 
 
-    const handleRemoveReserveOption = (index: number,type:string) => {
-        if(type == "tent") setTents(tents.filter((_,i)=> i !== index));
-        if(type == "product") setProducts(products.filter((_,i)=> i !== index));
-        if(type == "experience") setExperiences(experiences.filter((_,i)=> i !== index))
+    const handleRemoveReserveOption = (index: number, type: string) => {
+      if (type === "tent") {
+        setTents(tents.filter((_, i) => i !== index));
+      } else if (type === "product") {
+        setProducts(products.filter((_, i) => i !== index));
+      } else if (type === "experience") {
+        setExperiences(experiences.filter((_, i) => i !== index));
+      } else if (type === "promotion") {
+        setPromotions(promotions.filter((_, i) => i !== index));
+      }
     };
 
 
@@ -125,24 +446,12 @@ const DashboardAdminReserves = () => {
     const validateFields = (formname:string): ReserveFormData |null => {
         const form = document.getElementById(formname) as HTMLFormElement;
         const userId = Number((form.querySelector('input[name="userId"]') as HTMLInputElement).value);
-        const qtypeople = Number((form.querySelector('input[name="qtypeople"]') as HTMLInputElement).value);
-        const qtykids = Number((form.querySelector('input[name="qtykids"]') as HTMLInputElement).value);
-        const dateFrom = new Date ((form.querySelector('input[name="dateFrom"]') as HTMLInputElement).value);
-        const dateTo = new Date ((form.querySelector('input[name="dateTo"]') as HTMLInputElement).value);
 
-        const promotionId =  criteriaReserve == "PROMOTION" ? Number((form.querySelector('input[name="promotion_id"]') as HTMLInputElement).value) : 0;
-        const price_is_calculated = criteriaReserve == "PROMOTION" ?  true : (form.querySelector('input[name="price_is_calculated"]') as HTMLInputElement).checked;
+        const payment_status = (form.querySelector('input[name="payment_status"]') as HTMLInputElement).checked;
+        const reserve_status = (form.querySelector('input[name="reserve_status"]') as HTMLInputElement).checked;
 
         const canceled_status = (form.querySelector('input[name="canceled_status"]') as HTMLInputElement).checked;
-        const discountCodeId = Number((form.querySelector('select[name="discount_code_id"]') as HTMLInputElement).value) 
-
-        const netImport = Number((form.querySelector('input[name="netImport"]') as HTMLInputElement).value);
-        const discount = Number((form.querySelector('input[name="discount"]') as HTMLInputElement).value);
-        const grossImport = Number((form.querySelector('input[name="grossImport"]') as HTMLInputElement).value);
         const canceled_reason = (form.querySelector('textarea[name="canceled_reason"]') as HTMLInputElement).value;
-        const paymentStatus = (form.querySelector('select[name="payment_status"]') as HTMLInputElement).value;
-        const aditionalPeople = Number((form.querySelector('input[name="additional_people"]') as HTMLInputElement).value);
-
 
         setErrorMessages({});
 
@@ -190,7 +499,7 @@ const DashboardAdminReserves = () => {
         const fieldsValidated = validateFields('form_create_reserve');
         if(fieldsValidated != null){
           if(user !== null){
-            const isSuccess = await createReserve(fieldsValidated, user.token);
+            const isSuccess = await createReserve(fieldsValidated, user.token, i18n.language);
             if(!isSuccess){
               setLoadingForm(false);
               return;
@@ -235,7 +544,7 @@ const DashboardAdminReserves = () => {
 
     const deleteReserveHandler = async() => {
         if(user != null && selectedReserve != null){
-            const isSuccess = await deleteReserve(selectedReserve.id,user.token)
+            const isSuccess = await deleteReserve(selectedReserve.id,user.token,i18n.language)
             if(!isSuccess){
               return;
             } 
@@ -272,7 +581,7 @@ const DashboardAdminReserves = () => {
         const fieldsValidated = validateFields('form_update_promotion');
         if(fieldsValidated != null){
           if(user !== null && selectedReserve != null){
-            const isSuccess =  await updateReserve(selectedReserve.id,fieldsValidated, user.token);
+            const isSuccess =  await updateReserve(selectedReserve.id,fieldsValidated, user.token, i18n.language);
             if(!isSuccess){
               setLoadingForm(false);
               return;
@@ -458,6 +767,11 @@ const DashboardAdminReserves = () => {
         setDataExperienceDayOptions(dateRange);
     }
 
+
+
+
+
+
     return (
     <Dashboard>
         <AnimatePresence>
@@ -471,13 +785,12 @@ const DashboardAdminReserves = () => {
                 variants={fadeIn("up","",0.5,0.3)}
                 className="w-full min-h-[300px] flex flex-col justify-center items-center gap-y-4 bg-white pointer-events-none">
                   <div className="loader"></div>
-                  <h1 className="font-primary text-secondary mt-4">{"Cargando..."}</h1>
+                  <h1 className="font-primary text-secondary mt-4">{t("common.loading")}</h1>
             </motion.div>
         )}
 
         {currentView == "L" && (
             <>
-
                 <motion.div 
                     key={"List-View"}
                     initial="hidden"
@@ -486,35 +799,34 @@ const DashboardAdminReserves = () => {
                     viewport={{ once: true }}
                     variants={fadeIn("up","",0.5,0.3)}
                     className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                  <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Calendar/>Reservas</h2>
+                  <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Calendar/>{t("reserve.reserves")}</h2>
                   <div className="w-full h-auto flex flex-col xl:flex-row justify-start xl:justify-between items-center gap-x-4">
                     <div className="w-full xl:w-auto h-auto flex flex-col md:flex-row  justify-start md:justify-between xl:justify-start items-start gap-y-4 gap-x-4">
                           <div className="max-xl:w-[50%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
                             <input 
                               type="date" 
                               name="criteria_search_value_date_from"
-                              placeholder="Desde" 
+                              placeholder={t("reserve.from")}
                               className="w-[50%] xl:w-48 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
                             <input 
                               type="date" 
                               name="criteria_search_value_date_to"
-                              placeholder="Hasta" 
+                              placeholder={t("reserve.to")}
                               className="w-[50%] xl:w-48 h-8 text-xs font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-primary"
                             />
                           </div>
                         <div className="max-xl:w-[50%] flex flex-col md:flex-row items-start md:items-center gap-x-2">
                               <label className="max-xl:w-full md:ml-4 flex items-center text-xs">
-                                Estado de Pago
+                                {t("reserve.payment_status")}
                                 <select name="criteria_search_status" className="max-xl:w-full ml-2 h-8 text-xs font-tertiary border-b-2 border-secondary focus:outline-none focus:border-b-primary">
-                                  <option value="">Seleccionar Estatus</option>
-                                  <option value="PAID">PAGADO</option>
-                                  <option value="PENDING">PENDIENTE</option>
-                                  <option value="DEBT">DEBE</option>
+                                  <option value="">{t("reserve.select_payment_status")}</option>
+                                  <option value="PAID">{t("reserve.PAID")}</option>
+                                  <option value="UNPAID">{t("reserve.UNPAID")}</option>
                                 </select>
                               </label>
                               <Button variant="light" isRound={true} effect="default" className="md:ml-4 mt-4 md:mt-0" onClick={()=>searchReserveHandler()}>
-                              Buscar
+                                {t("common.search")}
                             </Button>
                           </div>
                         </div>
@@ -526,17 +838,17 @@ const DashboardAdminReserves = () => {
                       <thead className="font-primary text-sm xl:text-md bg-primary text-white">
                             <tr className="">
                                 <th className="rounded-tl-xl p-2">#</th>
-                                <th className="p-2">External ID</th>
-                                <th className="p-2">Desde</th>
-                                <th className="p-2">Hasta</th>
-                                <th className="p-2 max-xl:hidden">Servicios y Productos</th>
-                                <th className="p-2">Importe Total</th>
-                                <th className="p-2">Cancelado</th>
-                                <th className="p-2">Estado de Reserva</th>
-                                <th className="p-2">Estado de Pago</th>
-                                <th className="p-2 max-xl:hidden">Creado</th>
-                                <th className="p-2 max-xl:hidden">Actualizado</th>
-                                <th className="rounded-tr-xl p-2">Acciones</th>
+                                <th className="p-2">{t("reserve.external_id")}</th>
+                                <th className="p-2">{t("reserve.from")}</th>
+                                <th className="p-2">{t("reserve.to")}</th>
+                                <th className="p-2 max-xl:hidden">{t("reserve.services_and_products")}</th>
+                                <th className="p-2">{t("reserve.total_amount")}</th>
+                                <th className="p-2">{t("reserve.cancel")}</th>
+                                <th className="p-2">{t("reserve.reserve_status")}</th>
+                                <th className="p-2">{t("reserve.payment_status")}</th>
+                                <th className="p-2 max-xl:hidden">{t("reserve.created")}</th>
+                                <th className="p-2 max-xl:hidden">{t("reserve.updated")}</th>
+                                <th className="rounded-tr-xl p-2">{t("reserve.actions")}</th>
                             </tr>
                         </thead>
                         <tbody className="font-secondary text-xs xl:text-sm">
@@ -556,10 +868,10 @@ const DashboardAdminReserves = () => {
                                         </td>
                                         <td className="">{`${formatPrice(reserveItem.gross_import)}`}</td>
                                         <td className="h-full">{reserveItem.canceled_status ? "Si": "No" }</td>
-                                        <td className="h-full">{reserveItem.reserve_status != "CONFIRMED" ?  ( reserveItem.reserve_status != "NOT_CONFIRMED" ? "COMPLETADA" : "SIN CONFIRMAR" ) : "CONFIRMADA" }</td>
-                                        <td className="h-full">{reserveItem.payment_status != "PAID" ?  ( reserveItem.payment_status != "DEBT" ? "PENDIENTE" : "SIN PAGAR" ) : "PAGADO" }</td>
-                                        <td className="h-full max-xl:hidden">{reserveItem.updatedAt != undefined && reserveItem.updatedAt != null ? formatDate(reserveItem.updatedAt) : "None"}</td>
-                                        <td className="h-full max-xl:hidden">{reserveItem.createdAt != undefined && reserveItem.createdAt != null ? formatDate(reserveItem.createdAt) : "None"}</td>
+                                        <td className="h-full">{reserveItem.reserve_status != "CONFIRMED" ?  ( reserveItem.reserve_status != "NOT_CONFIRMED" ? t("reserve.COMPLETE") : t("reserve.NOT_CONFIRMED") ) : t("reserve.CONFIRMED") }</td>
+                                        <td className="h-full">{reserveItem.payment_status != "PAID" ? t("reserve.UNPAID") : t("reserve.PAID") }</td>
+                                        <td className="h-full max-xl:hidden">{reserveItem.updatedAt != undefined && reserveItem.updatedAt != null ? formatDate(reserveItem.updatedAt) : t("reserve.none")}</td>
+                                        <td className="h-full max-xl:hidden">{reserveItem.createdAt != undefined && reserveItem.createdAt != null ? formatDate(reserveItem.createdAt) : t("reserve.none")}</td>
                                         <td className="h-full flex flex-col items-center justify-center">
                                           <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
                                             <button onClick={()=>{setSelectedReserve(reserveItem);  setTents(reserveItem.tents); setProducts(reserveItem.products); setExperiences(reserveItem.experiences); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
@@ -581,10 +893,10 @@ const DashboardAdminReserves = () => {
                 <Modal isOpen={openDeleteModal} onClose={()=>setOpenDeleteModal(false)}>
                     <div className="w-[400px] h-auto flex flex-col items-center justify-center text-secondary pb-6 px-6 pt-12 text-center">
                         <CircleX className="h-[60px] w-[60px] text-red-400 "/>
-                        <p className="text-primary">Estas seguro de eliminar esta reserva?</p>
+                        <p className="text-primary">{t("reserve.secure_delete_reserve_header")}</p>
                         <div className="flex flex-row justify-around w-full mt-6">
-                            <Button size="sm" variant="dark" effect="default" isRound={true} onClick={()=>setOpenDeleteModal(false)}> Cancelar  </Button>
-                            <Button size="sm" variant="danger" effect="default" isRound={true} onClick={()=>{deleteReserveHandler()}}> Aceptar </Button>
+                            <Button size="sm" variant="dark" effect="default" isRound={true} onClick={()=>setOpenDeleteModal(false)}>{t("common.cancel")} </Button>
+                            <Button size="sm" variant="danger" effect="default" isRound={true} onClick={()=>{deleteReserveHandler()}}>{t("common.accept")} </Button>
                         </div>
                     </div>
                 </Modal>
@@ -592,321 +904,342 @@ const DashboardAdminReserves = () => {
 
         )}
 
-        {currentView == "V" && selectedReserve && (
-                <motion.div 
-                    key={"New-View"}
-                    initial="hidden"
-                    animate="show"
-                    exit="hidden"
-                    viewport={{ once: true }}
-                    variants={fadeIn("up","",0.5,0.3)}
-                    className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Calendar/>Ver Promocion</h2>
+        {currentView === "E" || currentView === "A" &&  (
 
-                  <div className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" >
-
-                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="userId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6"> Usuario</label>
-                            <input name="userId" value={selectedReserve.id} className="hidden"/>
-                            <input name="userId_name" value={selectedReserve.id} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Usuario seleccionado"} disabled/>
-                          </div>
-
+          <AnimatePresence>
+            {openReserveOption != null && (
+              <Modal isOpen={openReserveOption != null} onClose={()=>setOpenReserveOption(null)}>
+                <div id="modal_reserve_items" className="w-screen lg:w-[800px] h-auto lg:h-[600px] flex flex-col items-start justify-start text-secondary py-16 px-4 sm:p-6 overflow-hidden">
+                  <div className="w-full h-auto flex flex-row gap-x-4 sm:gap-x-6 pb-4 border-b-2 border-secondary">
+                      <InputRadio  
+                        className="w-auto" 
+                        onClick={()=>{setOpenReserveOption("tent")}} 
+                        name="category" 
+                        placeholder={t("reserve.glampings")} 
+                        rightIcon={<Tent/>} 
+                        checked={openReserveOption === "tent"}
+                      />
+                      <InputRadio  
+                        className="w-auto" 
+                        onClick={()=>{setOpenReserveOption("product")}} 
+                        name="category" 
+                        placeholder={t("reserve.products")} 
+                        rightIcon={<Pizza/>}
+                        checked={openReserveOption === "product"}
+                      />
+                      <InputRadio  
+                        className="w-auto" 
+                        onClick={()=>{setOpenReserveOption("experience")}} 
+                        name="category" 
+                        placeholder={t("reserve.experiences")} 
+                        rightIcon={<FlameKindling/>}
+                        checked={openReserveOption === "experience"}
+                      />
+                      <InputRadio  
+                        className="w-auto" 
+                        onClick={()=>{setOpenReserveOption("promotion")}} 
+                        name="category" 
+                        placeholder={t("reserve.promotions")} 
+                        rightIcon={<FlameKindling/>}
+                        checked={openReserveOption === "promotion"}
+                      />
+                    </div>
+                  {openReserveOption == "tent" && (
+                    
+                    <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden mt-6 gap-y-2 sm:gap-y-2">
                         <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                              <label htmlFor="reserve_tent_option_date_from" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("reserve.from")}</label>
+                              <input onChange={()=>calculateTentItemPrice()} name="reserve_tent_option_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.from")}/>
 
-                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                            <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de personas"}</label>
-                            <input name="qtypeople" type="number" value={selectedReserve.qtypeople} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de personas"} disabled/>
-                          </div>
-
-                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                            <label htmlFor="qtykids"  className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad  de niños"}</label>
-                            <input name="qtykids" type="number" value={selectedReserve.qtykids} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de niños"} disabled/>
-                          </div>
-
-                        </div>
-
-                        <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                            <label htmlFor="dateFrom" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Desde"}</label>
-                            <input name="dateFrom" type="date" value={selectedReserve.dateFrom.toISOString()} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"} disabled/>
-                          </div>
-
-                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                            <label htmlFor="dateTo" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Hasta"}</label>
-                            <input name="dateTo" type="date" value={selectedReserve.dateTo.toISOString()} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Hasta"} disabled/>
-                          </div>
-
-                        </div>
-
-                        <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-
-                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                            <label htmlFor="payment_status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estado de Pago"}</label>
-                            <select name="payment_status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              <option value={selectedReserve.paymentStatus}>{selectedReserve.paymentStatus != "PAID" ?  (selectedReserve.paymentStatus == "DEBT" ? "DEBE" : "PENDIENTE")  : "PAGADO"}</option>
-                            </select>
-                          </div>
-
-                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                            <label htmlFor="additional_people" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de Personas adicionales"}</label>
-                            <input name="additional_people" type="number" step="0.01" value={selectedReserve.aditionalPeople} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de Personas adicionales"} disabled/>
-                          </div>
-
-                        </div>
-
-                        <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1  gap-y-2">
-
-                          <label htmlFor="canceled_reason" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{"Cancelacion"}</label>
-
-                            <div className="checkbox-wrapper-13 px-2">
-                              <input name="canceled_status" type="checkbox" aria-hidden="true" checked={selectedReserve.canceled_status}/>
-                              <label htmlFor="canceled_status">Reserva Cancelada?</label>
+                              <div className="w-full h-6">
+                                {errorMessages.reserve_tent_option_date_from && (
+                                  <motion.p 
+                                    initial="hidden"
+                                    animate="show"
+                                    exit="hidden"
+                                    variants={fadeIn("up","", 0, 1)}
+                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.reserve_tent_option_date_from)}
+                                  </motion.p>
+                                )}
+                              </div>
                             </div>
 
-                            <textarea name="canceled_reason" className="w-full h-8 sm:h-20 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Razon de cancelacion"} disabled>{selectedReserve.canceled_reason}</textarea>
+                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                              <label htmlFor="reserve_tent_option_date_to" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("reserve.to")}</label>
+                              <input onChange={()=>calculateTentItemPrice()} name="reserve_tent_option_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.to")}/>
+                              <div className="w-full h-6">
+                                {errorMessages.reserve_tent_option_date_to && (
+                                  <motion.p 
+                                    initial="hidden"
+                                    animate="show"
+                                    exit="hidden"
+                                    variants={fadeIn("up","", 0, 1)}
+                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.reserve_tent_option_date_to)}
+                                  </motion.p>
+                                )}
+                              </div>
+                            </div>
                         </div>
+                      <div className="flex flex-col justify-start items-start gap-x-6 w-[100%] h-auto gap-y-2 sm:gap-y-1">
+                        <label htmlFor="reserve_tent_option_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Glamping"}</label>
+                          <select onChange={()=>calculateTentItemPrice()} name="reserve_tent_option_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                              { datasetReservesOptions.tents.map((tent,index) => {
+                                return(
+                                  <option key={index} value={tent.id}>{`${tent.title} | ${t("reserve.price")}: ${formatPrice(tent.price)} ${getCurrentCustomPrice(tent.custom_price) >0 ? `| ${t("reserve.price_of_day")} ${formatPrice(getCurrentCustomPrice(tent.custom_price))}`: " "} | ${t("reserve.price_aditional_people")} ${formatPrice(tent.aditional_people_price)} ` }</option>
+                                  )
+                              })}
+                          </select>
+                          <div className="w-full h-6">
+                            {errorMessages.reserve_tent_option_id && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {t(errorMessages.reserve_tent_option_id)}
+                              </motion.p>
+                            )}
+                          </div>
+                      </div>
+
+                      <div className="flex flex-col justify-start itemst-start gap-x-6 w-[100%] h-auto gap-y-2 sm:gap-y-1">
+                        <label htmlFor="reserve_tent_option_aditional_people" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.aditional_people")}</label>
+                        <input onChange={()=>calculateTentItemPrice()} name="reserve_tent_option_aditional_people" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.aditional_people")}/>
+                          <div className="w-full h-6">
+                            {errorMessages.reserve_tent_option_aditional_people && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {t(errorMessages.reserve_tent_option_aditional_people)}
+                              </motion.p>
+                            )}
+                          </div>
+                      </div>
+                      <div className="checkbox-wrapper-13 px-2 w-full">
+                        <input onChange={()=>calculateTentItemPrice()} name="reserve_tent_option_no_special_price" type="checkbox" aria-hidden="true" />
+                        <label className="text-[12px]" htmlFor="canceled_status">{t("reserve.custom_price_not_apply")}</label>
+                      </div>
+                      <div className="w-full h-auto flex flex-row justify-end">
+                        <span className="text-2xl">{formatPrice(tentItemTotalPrice)}</span>
+                      </div>
+
+
+                      <Button onClick={()=>handleAddReserveOption("tent")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-auto ml-auto mt-auto">{t("reserve.add_glamping_reserve")}</Button>
                     </div>
 
-                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
-                      {criteriaReserve === "NORMAL" ? 
-                        <>
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="price_is_calculated" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precios Calculados?"}</label>
-                            <div className="checkbox-wrapper-13 px-2">
-                              <input name="price_is_calculated" type="checkbox" aria-hidden="true" checked={selectedReserve.price_is_calculated} />
-                              <label className="text-[12px]" htmlFor="price_is_calculated">Los precios se calcularan en base a los precios de los productos</label>
-                            </div>
+                  )}
+
+                  {openReserveOption == "product" && (
+                    
+                    <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden mt-6 gap-y-2 sm:gap-y-2">
+                      <div className="flex flex-col justify-start items-start gap-x-6 w-[100%] h-auto gap-y-2 sm:gap-y-1">
+                        <label htmlFor="reserve_product_option_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.product")}</label>
+                          <select onChange={()=>calculateProductItemPrice()} name="reserve_product_option_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                              { datasetReservesOptions.products.map((product,index) => {
+                                return(
+                                  <option key={index} value={product.id}>{`${product.name} | ${t("reserve.price")}: ${formatPrice(product.price)} ${getCurrentCustomPrice(product.custom_price) >0 ? `| ${t("reserve.price_of_day")} ${formatPrice(getCurrentCustomPrice(product.custom_price))}`: " "}` }</option>
+                                  )
+                              })}
+                          </select>
+                          <div className="w-full h-6">
+                            {errorMessages.reserve_product_option_id && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {t(errorMessages.reserve_product_option_id)}
+                              </motion.p>
+                            )}
                           </div>
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="glampings" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Glampings en la reserva"}</label>
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {tents.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="products" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Productos en la reserva"}</label>
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {products.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Producto: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="experiences" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Experiencias en la reserva"}</label>
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {experiences.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Experiencia: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-                          </div>
-                        </>
-                      :
-                        <>
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="promotion_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Selecciona la promocion a aplicar en la reserva"}</label>
-                            <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                                  <select name="promotion_option_id" className="w-[100%] h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                      <option value={selectedReserve.promotionId}>{`Nombre: ${selectedReserve.promotionId} | Precio: $${selectedReserve.promotionId} | Descuento: ${selectedReserve.promotionId}%`}</option>
-                                  </select>
-                            </div>
-                            <input name="promotion_id" value={selectedReserve.promotionId} className="hidden" disabled/>
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {tents.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {products.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Producto: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {experiences.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Experiencia: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                            <button
-                                              type="button"
-
-                                              onClick={() => handleRemoveReserveOption(index,"experience")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              Borrar
-                                            </button>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-                          </div>
-                        </>
-                      }
-
-
-
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                        <label htmlFor="discount_code_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Aplicar codigo de descuento"}</label>
-                        <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                              <select name="discount_code_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                  <option value={selectedReserve.discountCodeId}>{`${selectedReserve.discountCodeId} | Descuento: ${selectedReserve.discountCodeId}%`}</option>
-                              </select>
-                        </div>
                       </div>
 
-                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-[50%] h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="importe_calculado" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Total Calculado"}</label>
-                          <input name="importe_calculado" value={ `$ ${getTotalReserveCalculated(tents,products,experiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  disabled/>
-                        </div>
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-[50%] h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descuento en %"}</label>
-                          <input name="discount" value={selectedReserve.discount} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Descuento en %"} disabled/>
-                        </div>
+                      <div className="flex flex-col justify-start itemst-start gap-x-6 w-[100%] h-auto gap-y-2 sm:gap-y-1">
+                        <label htmlFor="reserve_product_option_quantity" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.quantity")}</label>
+                        <input onChange={()=>calculateProductItemPrice()} name="reserve_product_option_quantity" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.quantity")}/>
+                          <div className="w-full h-6">
+                            {errorMessages.reserve_product_option_quantity && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {t(errorMessages.reserve_product_option_quantity)}
+                              </motion.p>
+                            )}
+                          </div>
+                      </div>
+                      <div className="checkbox-wrapper-13 px-2 w-full">
+                        <input onChange={()=>calculateProductItemPrice()} name="reserve_product_option_no_special_price" type="checkbox" aria-hidden="true" />
+                        <label className="text-[12px]" htmlFor="reserve_product_option_no_special_price">{t("reserve.custom_price_not_apply")}</label>
+                      </div>
+                      <div className="w-full h-auto flex flex-row justify-end">
+                        <span className="text-2xl">{formatPrice(productItemTotalPrice)}</span>
                       </div>
 
-                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
 
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="netImport" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Neto"}</label>
-                          <input name="netImport" value={selectedReserve.netImport} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Importe Neto"} disabled/>
-                        </div>
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="grossImport" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Total"}</label>
-                          <input name="grossImport" value={selectedReserve.grossImport} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Importe Total"} disabled/>
-                        </div>
-
-                      </div>
-
-                      </div>
+                      <Button onClick={()=>handleAddReserveOption("product")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-auto ml-auto mt-auto">{t("reserve.add_product_reserve")}</Button>
                     </div>
-                </motion.div>
+
+                  )}
+
+                  {openReserveOption == "experience" && (
+                    
+                    <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden mt-6 gap-y-2 sm:gap-y-2">
+
+                      <div className="flex flex-col justify-start items-start gap-x-6 w-[100%] h-auto gap-y-2 sm:gap-y-1">
+                        <label htmlFor="reserve_experience_option_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.experience")}</label>
+                          <select onChange={()=>calculateExperienceItemPrice()} name="reserve_experience_option_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                              { datasetReservesOptions.experiences.map((experience,index) => {
+                                return(
+                                  <option key={index} value={experience.id}>{`${experience.name} | ${t("reserve.price")}: ${formatPrice(experience.price)} ${getCurrentCustomPrice(experience.custom_price) >0 ? `| ${t("reserve.price_of_day")} ${formatPrice(getCurrentCustomPrice(experience.custom_price))}`: " "} ` }</option>
+                                  )
+                              })}
+                          </select>
+                          <div className="w-full h-6">
+                            {errorMessages.reserve_experience_option_id && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {t(errorMessages.reserve_experience_option_id)}
+                              </motion.p>
+                            )}
+                          </div>
+                      </div>
+                      <div className="flex flex-col justify-start itemst-start gap-x-6 w-[100%] h-auto gap-y-2 sm:gap-y-1">
+                        <label htmlFor="reserve_experience_option_quantity" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.quantity")}</label>
+                        <input onChange={()=>calculateExperienceItemPrice()} name="reserve_experience_option_quantity" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.quantity")}/>
+                          <div className="w-full h-6">
+                            {errorMessages.reserve_experience_option_quantity && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {t(errorMessages.reserve_experience_option_quantity)}
+                              </motion.p>
+                            )}
+                          </div>
+                      </div>
+
+                      <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                        <label htmlFor="reserve_experience_option_date" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("reserve.day_of_experience")}</label>
+                        <input onChange={()=>calculateExperienceItemPrice()} name="reserve_experience_option_date" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.day_of_experience")}/>
+
+                        <div className="w-full h-6">
+                          {errorMessages.reserve_experience_option_date && (
+                            <motion.p 
+                              initial="hidden"
+                              animate="show"
+                              exit="hidden"
+                              variants={fadeIn("up","", 0, 1)}
+                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                              {t(errorMessages.reserve_experience_option_date)}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="checkbox-wrapper-13 px-2 w-full">
+                        <input onChange={()=>calculateExperienceItemPrice()} name="reserve_experience_option_no_special_price" type="checkbox" aria-hidden="true" />
+                        <label className="text-[12px]" htmlFor="canceled_status">{t("reserve.custom_price_not_apply")}</label>
+                      </div>
+                      <div className="w-full h-auto flex flex-row justify-end">
+                        <span className="text-2xl">{formatPrice(experienceItemTotalPrice)}</span>
+                      </div>
+
+
+                      <Button onClick={()=>handleAddReserveOption("experience")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-auto ml-auto mt-auto">{t("reserve.add_experience_reserve")}</Button>
+                    </div>
+
+                  )}
+
+                  {openReserveOption == "promotion" && (
+                    
+                    <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden mt-6 gap-y-2 sm:gap-y-2">
+
+                      <div className="flex flex-col justify-start items-start gap-x-6 w-[100%] h-auto gap-y-2 sm:gap-y-1">
+                        <label htmlFor="reserve_promotion_option_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.promotion")}</label>
+                          <select onChange={()=>calculatePromotionItemPrice()} name="reserve_promotion_option_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                              { datasetReservesOptions.promotions.map((promotion,index) => {
+                                return(
+                                  <option key={index} value={promotion.id}>{`${t("reserve.promotion_name")}: ${promotion.title} | ${t("reserve.price")}: ${formatPrice(promotion.grossImport)} | ${t("reserve.price_of_day")}: ${promotion.discount}%`}</option>
+                                  )
+                              })}
+                          </select>
+                          <div className="w-full h-6">
+                            {errorMessages.reserve_promotion_option_id && (
+                              <motion.p 
+                                initial="hidden"
+                                animate="show"
+                                exit="hidden"
+                                variants={fadeIn("up","", 0, 1)}
+                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                {t(errorMessages.reserve_promotion_option_id)}
+                              </motion.p>
+                            )}
+                          </div>
+                      </div>
+                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
+                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                            <label htmlFor="reserve_promotion_option_date_from" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("reserve.from")}</label>
+                            <input onChange={()=>calculatePromotionItemPrice()} name="reserve_promotion_option_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.from")}/>
+
+                            <div className="w-full h-6">
+                              {errorMessages.reserve_promotion_option_date_from && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {t(errorMessages.reserve_promotion_option_date_from)}
+                                </motion.p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                            <label htmlFor="reserve_promotion_option_date_to" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("reserve.from")}</label>
+                            <input onChange={()=>calculatePromotionItemPrice()} name="reserve_promotion_option_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.to")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.reserve_promotion_option_date_to && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {t(errorMessages.reserve_promotion_option_date_to)}
+                                </motion.p>
+                              )}
+                            </div>
+                          </div>
+                      </div>
+                      <div className="w-full h-auto flex flex-row justify-end">
+                        <span className="text-2xl">{formatPrice(promotionItemTotalPrice)}</span>
+                      </div>
+                      <Button onClick={()=>handleAddReserveOption("promotion")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-auto ml-auto mt-auto">{t("reserve.add_promotion_reserve")}</Button>
+                    </div>
+
+                  )}
+                </div>
+              </Modal>
+            )}
+          </AnimatePresence>
         )}
-
-
 
 
         {currentView == "A" && (
@@ -918,16 +1251,16 @@ const DashboardAdminReserves = () => {
                 viewport={{ once: true }}
                 variants={fadeIn("up","",0.5,0.3)}
                 className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Calendar/>Agregar Reserva</h2>
+                <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Calendar/>{t("reserve.add_reserve")}</h2>
 
               <form id="form_create_reserve" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitCreation(e)}>
 
                 <div className="flex flex-col justify-start items-start w-full">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="search_user_email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Buscar Usuario"}</label>
+                        <label htmlFor="search_user_email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.search_user")}</label>
                         <div className="w-full h-auto flex flex-row justify-between gap-x-4 relative">
-                          <input name="search_user_email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Buscar usuario"}/>
+                          <input name="search_user_email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.search_user")}/>
                           <AnimatePresence>
                             {users && users.length > 0 && (
                               <motion.div 
@@ -937,7 +1270,7 @@ const DashboardAdminReserves = () => {
                                 className="absolute left-0 top-8 sm:top-10 w-full max-h-[100px] min-h-[50px] overflow-y-scroll flex flex-col justify-start items-start bg-white py-2">
                                 {users.map((userItem,index)=>{
                                   return(
-                                    <span onClick={()=>selectUserId('form_create_reserve', userItem) } className="w-full h-auto text-sm font-primary text-secondary hover:bg-secondary hover:text-white duration-300 hover:cursor-pointer p-2" key={"user"+index}>{`Usuario: ${userItem.firstName},${userItem.lastName} Correo: ${userItem.email}`}</span>
+                                    <span onClick={()=>selectUserId('form_create_reserve', userItem) } className="w-full h-auto text-sm font-primary text-secondary hover:bg-secondary hover:text-white duration-300 hover:cursor-pointer p-2" key={"user"+index}>{`${t("reserve.user")}: ${userItem.firstName},${userItem.lastName} ${t("reserve.email")}: ${userItem.email}`}</span>
                                   )
                                 })}
                               </motion.div>
@@ -946,9 +1279,9 @@ const DashboardAdminReserves = () => {
 
                           <button type="button" onClick={()=>searchUsersByEmail('form_create_reserve')} className="w-auto h-auto border border-2 border-slate-200 p-2 rounded-xl active:scale-95 duration-300"><Search/></button>
                         </div>
-                        <label htmlFor="userId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6"> Usuario</label>
+                        <label htmlFor="userId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.user")}</label>
                         <input name="userId" className="hidden"/>
-                        <input name="userId_name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Usuario seleccionado"}/>
+                        <input name="userId_name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.user_selected")}/>
 
                         <div className="w-full h-6">
                           {errorMessages.userId && (
@@ -964,1157 +1297,172 @@ const DashboardAdminReserves = () => {
                         </div>
                       </div>
                       <div className="w-full h-auto flex flex-row justify-end mb-4">
-                        <Button variant="ghostLight" rightIcon={<Plus/>} isRound={true} effect="default">Add Item</Button>
+                        <Button onClick={()=>setOpenReserveOption("tent")} variant="ghostLight" rightIcon={<Plus/>} isRound={true} effect="default">{t("reserve.add_item")}</Button>
                       </div>
                       <table className="h-auto w-full shadow-xl rounded-xl text-center border-collapse table-fixed">
                         <thead className="font-primary text-xs xl:text-sm bg-secondary text-white rounded-t-xl">
                               <tr className="">
-                                  <th className="w-[5%] rounded-tl-xl">#</th>
-                                  <th className="w-[5%]">ID</th>
-                                  <th className="w-[45%]">Concept</th>
-                                  <th className="w-[15%]">Unit</th>
-                                  <th className="w-[10%]">Qty</th>
-                                  <th className="w-[10%]">Unit Price</th>
-                                  <th className="w-[10%] rounded-tr-xl">Price</th>
+                                  <th className="w-[5%] rounded-tl-xl py-2">#</th>
+                                  <th className="w-[45%] py-2">{t("reserve.item")}</th>
+                                  <th className="w-[15%] py-2">{t("reserve.unit")}</th>
+                                  <th className="w-[10%] py-2">{t("reserve.unit_price")}</th>
+                                  <th className="w-[10%] py-2">{t("reserve.qty")}</th>
+                                  <th className="w-[10%] py-2 rounded-tr-xl">{t("reserve.price")}</th>
                               </tr>
                           </thead>
                           <tbody className="font-secondary text-xs xl:text-sm">
-                              <tr key={"reserve_key"} className="text-slate-400 cursor-pointer"> 
-                                  <td className="border border-slate-300 text-center">{"0"}</td>
-                                  <td className="border border-slate-300 text-center">{"1"}</td>
-                                  <td className="border border-slate-300 text-left">{"Bambucamp Sallary | From:12-01-2024 To: 12-02-2024"}</td>
-                                  <td className="border border-slate-300 text-center">{"Noches"}</td>
-                                  <td className="border border-slate-300 text-center">{"2"}</td>
-                                  <td className="border border-slate-300 text-center">{"120"}</td>
-                                  <td className="border border-slate-300 text-center">{"240"}</td>
-                              </tr>
+
+                              {promotions.map((item, index) => (
+                                <tr key={"reserve_key_promotion_"+index} className="text-slate-400 cursor-pointer hover:bg-secondary duration-300 hover:text-white active:scale-95"> 
+                                    <td className="border border-slate-300 text-center">{index + 1}</td>
+                                  <td className="border border-slate-300 text-left">{`${item.name} | ${t("reserve.from")}: ${formatDateToYYYYMMDD(item.dateFrom)} ${t("reserve.to")}: ${formatDateToYYYYMMDD(item.dateTo)}`}</td>
+                                    <td className="border border-slate-300 text-center">{t("reserve.unit")}</td>
+                                    <td className="border border-slate-300 text-center">{formatPrice(item.price)}</td>
+                                    <td className="border border-slate-300 text-center">{"1"}</td>
+                                    <td className="border border-slate-300 text-center">{formatPrice(item.price)}</td>
+                                </tr>
+                              ))}
+
+                              {tents.map((item, index) => (
+                                <tr key={"reserve_key_tent_"+index} className="text-slate-400 cursor-pointer hover:bg-secondary duration-300 hover:text-white active:scale-95"> 
+                                    <td className="border border-slate-300 text-center">{promotions.length + index + 1}</td>
+                                  <td className="border border-slate-300 text-left">{`${item.name} | ${t("reserve.from")}: ${formatDateToYYYYMMDD(item.dateFrom)} ${t("reserve.to")}: ${formatDateToYYYYMMDD(item.dateTo)}`}</td>
+                                    <td className="border border-slate-300 text-center">{t("reserve.nights")}</td>
+                                    <td className="border border-slate-300 text-center">{formatPrice(item.price)}</td>
+                                    <td className="border border-slate-300 text-center">{item.nights}</td>
+                                    <td className="border border-slate-300 text-center">{formatPrice(item.price * item.nights)}</td>
+                                </tr>
+                              ))}
+
+                              {experiences.map((item, index) => (
+                                <tr key={"reserve_key_experience_"+index} className="text-slate-400 cursor-pointer hover:bg-secondary duration-300 hover:text-white active:scale-95"> 
+                                    <td className="border border-slate-300 text-center">{promotions.length + tents.length + index + 1}</td>
+                                  <td className="border border-slate-300 text-left">{`${item.name} | ${t("reserve.day_of_experience")} ${formatDateToYYYYMMDD(item.day)}`}</td>
+                                    <td className="border border-slate-300 text-center">{t("reserve.unit")}</td>
+                                    <td className="border border-slate-300 text-center">{formatPrice(item.price)}</td>
+                                    <td className="border border-slate-300 text-center">{item.quantity}</td>
+                                    <td className="border border-slate-300 text-center">{formatPrice(item.price * item.quantity)}</td>
+                                </tr>
+                              ))}
+
+                              {products.map((item, index) => (
+                                <tr key={"reserve_key_product_"+index} className="text-slate-400 cursor-pointer hover:bg-secondary duration-300 hover:text-white active:scale-95"> 
+                                    <td className="border border-slate-300 text-center">{promotions.length + tents.length + experiences.length + index + 1}</td>
+                                  <td className="border border-slate-300 text-left">{`${item.name}`}</td>
+                                    <td className="border border-slate-300 text-center">{t("reserve.unit")}</td>
+                                    <td className="border border-slate-300 text-center">{formatPrice(item.price)}</td>
+                                    <td className="border border-slate-300 text-center">{item.quantity}</td>
+                                    <td className="border border-slate-300 text-center">{formatPrice(item.price * item.quantity)}</td>
+                                </tr>
+                              ))}
                               <tr key={"reserve_key_net_import"} className="text-slate-400"> 
-                                  <td className="border-2 border-t-secondary border-b-secondary" colSpan={6}>Net Import</td>
-                                  <td className="border-2 border-t-secondary border-b-secondary">{formatPrice(340)}</td>
+                                  <td className="border-[1px] border-t-secondary border-b-secondary" colSpan={5}>{t("reserve.gross_import")}</td>
+                                  <td className="border-[1px] border-t-secondary border-b-secondary">{formatPrice(getTotalReserveCalculated(tents,products,experiences))}</td>
                               </tr>
                               <tr key={"reserve_key_total"} className="text-slate-400"> 
-                                  <td className="border-2 border-t-secondary border-b-secondary" colSpan={6}>Discount</td>
-                                  <td className="border-2 border-t-secondary border-b-secondary">{formatPrice(100)}</td>
+                                  <td className="border-[1px] border-t-secondary border-b-secondary" colSpan={5}>{t("reserve.discount")}</td>
+                                  <td className="border-[1px] border-t-secondary border-b-secondary">{formatPrice(0)}</td>
                               </tr>
                               <tr key={"reserve_key_gross_import"} className="text-slate-400"> 
-                                  <td className="" colSpan={6}>Gross Import</td>
-                                  <td className="">{formatPrice(240)}</td>
+                                  <td className="" colSpan={5}>{t("reserve.net_import")}</td>
+                                  <td className="">{formatPrice(getTotalReserveCalculated(tents,products,experiences))}</td>
                               </tr>
                           </tbody>
                       </table>
 
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-2  gap-y-2">
-                        <label htmlFor="criteria_reserve" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{"Criterio de Reserva"}</label>
-                        <div className="flex flex-row justify-start items-start gap-x-6">
-                          <InputRadio name="criteria_reserve" variant="dark" value="NORMAL" placeholder="Normal" checked={criteriaReserve == "NORMAL"} onClick={(e)=>changeReserveType(e)} readOnly/>
-                          <InputRadio name="criteria_reserve" variant="dark" value="PROMOTION" placeholder="Promocion" checked={ criteriaReserve == "PROMOTION" } onClick={(e)=>changeReserveType(e)} readOnly/>
-                        </div>
-                      </div>
-                      {criteriaReserve === "NORMAL" ? 
-                        <>
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="price_is_calculated" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Precios Calculados?"}</label>
-                            <div className="checkbox-wrapper-13 px-2">
-                              <input name="price_is_calculated" type="checkbox" aria-hidden="true" />
-                              <label className="text-[12px]" htmlFor="price_is_calculated">Los precios se calcularan en base a los precios de los productos</label>
-                            </div>
-                            <div className="w-full h-6">
-                              {errorMessages.price_is_calculated && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.price_is_calculated}
-                                </motion.p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="glampings" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Glampings en la reserva"}</label>
-                            <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                                <div className="flex flex-col justify-start items-start gap-x-6 w-[75%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_tent_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Glamping"}</label>
-                                    <select name="promotion_option_tent_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                        { datasetReservesOptions.tents.map((tent,index) => {
-                                            return(
-                                              <option key={index} value={tent.id}>{`${tent.title} | Precio: $${tent.price} | Precio del dia $${getCurrentCustomPrice(tent.custom_price)}` }</option>
-                                            )
-                                        })}
-                                    </select>
-                                </div>
-
-                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_qty" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad"}</label>
-                                  <input name="promotion_option_tent_qty" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad"}/>
-                                </div>
-                                <Button onClick={()=>handleAddReserveOption("form_create_reserve","tent")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
-                            </div>
-                            <div className="checkbox-wrapper-13 px-2">
-                              <input name="promotion_option_tent_no_special_price" type="checkbox" aria-hidden="true" />
-                              <label className="text-[12px]" htmlFor="canceled_status">No se aplicara el precio el dia si se marca esta opcion</label>
-                            </div>
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {tents.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                            <button
-                                              type="button"
-                                              onClick={() => handleRemoveReserveOption(index,"tent")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              Borrar
-                                            </button>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-
-                            <div className="w-full h-6">
-                              {errorMessages.tents && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.tents}
-                                </motion.p>
-                              )}
-                            </div>
-
-                          </div>
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="products" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Productos en la reserva"}</label>
-                            <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                                <div className="flex flex-col justify-start items-start gap-x-6 w-[75%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_product_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Productos"}</label>
-                                    <select name="promotion_option_product_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                        { datasetReservesOptions.products.map((product,index) => {
-                                            return(
-                                              <option key={index} value={product.id}>{`${product.name} | Precio: $${product.price} | Precio del dia: ${getCurrentCustomPrice(product.custom_price)}`}</option>
-                                            )
-                                        })}
-                                    </select>
-                                </div>
-
-                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_product_qty" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad"}</label>
-                                  <input name="promotion_option_product_qty" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad"}/>
-                                </div>
-                                <Button onClick={()=>handleAddReserveOption("form_create_reserve","product")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
-                            </div>
-
-                            <div className="checkbox-wrapper-13 px-2">
-                              <input name="promotion_option_product_no_special_price" type="checkbox" aria-hidden="true" />
-                              <label className="text-[12px]" htmlFor="canceled_status">No se aplicara el precio el dia si se marca esta opcion</label>
-                            </div>
-
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {products.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Producto: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                            <button
-                                              type="button"
-
-                                              onClick={() => handleRemoveReserveOption(index,"product")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              Borrar
-                                            </button>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-
-                            <div className="w-full h-6">
-                              {errorMessages.products && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.products}
-                                </motion.p>
-                              )}
-                            </div>
-
-                          </div>
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="experiences" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Experiencias en la reserva"}</label>
-                            <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                                <div className="flex flex-col justify-start items-start gap-x-6 w-[50%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_experience_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Experiencia"}</label>
-                                    <select name="promotion_option_experience_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                        { datasetReservesOptions.experiences.map((experience,index) => {
-                                            return(
-                                              <option key={index} value={experience.id}>{`${experience.name} | Precio: $${experience.price} | Precio del dia:  $${getCurrentCustomPrice(experience.custom_price)}`}</option>
-                                            )
-                                        })}
-                                    </select>
-                                </div>
-
-                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_experience_day" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Dia"}</label>
-                                  <select name="promotion_option_experience_day" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                    { experiencesDayOptions.map((date,index) => {
-                                        return(
-                                          <option key={index} value={date.date.toString()}>{`${date.label}`}</option>
-                                        )
-                                    })}
-                                  </select>
-                                </div>
-
-                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_experience_qty" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad"}</label>
-                                  <input name="promotion_option_experience_qty" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad"}/>
-                                </div>
-                                <Button onClick={()=>handleAddReserveOption("form_create_reserve","experience")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
-                            </div>
-
-                            <div className="checkbox-wrapper-13 px-2">
-                              <input name="promotion_option_experience_no_special_price" type="checkbox" aria-hidden="true" />
-                              <label className="text-[12px]" htmlFor="canceled_status">No se aplicara el precio el dia si se marca esta opcion</label>
-                            </div>
-
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {experiences.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Experiencia: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                            <button
-                                              type="button"
-
-                                              onClick={() => handleRemoveReserveOption(index,"experience")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              Borrar
-                                            </button>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-
-                            <div className="w-full h-6">
-                              {errorMessages.experiences && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.experiences}
-                                </motion.p>
-                              )}
-                            </div>
-
-                          </div>
-                        </>
-                      :
-                        <>
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="promotion_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Selecciona la promocion a aplicar en la reserva"}</label>
-                            <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                                  <select name="promotion_option_id" className="w-[80%] h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                      { datasetReservesOptions.promotions.map((promotion,index) => {
-                                          return(
-                                            <option key={index} value={promotion.id}>{`Nombre: ${promotion.title} | Precio: $${promotion.grossImport} | Descuento: ${promotion.discount}%`}</option>
-                                          )
-                                      })}
-                                  </select>
-                              <Button size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[20%] my-auto" onClick={()=>applyPromotionToReserve("form_create_reserve")}>Aplicar</Button>
-                            </div>
-                            <input name="promotion_id" className="hidden"/>
-                            <div className="w-full h-6">
-                              {errorMessages.promotionId && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.promotionId}
-                                </motion.p>
-                              )}
-                            </div>
-
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {tents.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                            <button
-                                              type="button"
-                                              onClick={() => handleRemoveReserveOption(index,"tent")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              Borrar
-                                            </button>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {products.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Producto: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                            <button
-                                              type="button"
-
-                                              onClick={() => handleRemoveReserveOption(index,"product")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              Borrar
-                                            </button>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {experiences.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Experiencia: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.quantity}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                            <button
-                                              type="button"
-
-                                              onClick={() => handleRemoveReserveOption(index,"experience")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              Borrar
-                                            </button>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-
-                          </div>
-                        </>
-                      }
-
-
-
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                        <label htmlFor="discount_code_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Aplicar codigo de descuento"}</label>
-                        <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                              <select onChange={()=>handleApplyDiscount("form_create_reserve")} name="discount_code_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                  <option value="0">Sin Descuento</option>
-                                  { datasetReservesOptions.discounts.map((discount,index) => {
-                                      return(
-                                          <option key={index} value={discount.id}>{`${discount.code} | Descuento: ${discount.discount}%`}</option>
-                                      )
-                                  })}
-                              </select>
-                        </div>
+                    <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6 mt-12">
+                      <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                        <label htmlFor="payment_status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.payment_status")}</label>
+                        <select name="payment_status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                          <option value="UNPAID">{t("reserve.UNPAID")}</option>
+                          <option value="PAID">{t("reserve.PAID")}</option>
+                        </select>
 
                         <div className="w-full h-6">
-                          {errorMessages.discount && (
+                          {errorMessages.payment_status && (
                             <motion.p 
                               initial="hidden"
                               animate="show"
                               exit="hidden"
                               variants={fadeIn("up","", 0, 1)}
                               className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.discount}
+                              {errorMessages.payment_status}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+                        <label htmlFor="reserve_status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.reserve_status")}</label>
+                        <select name="reserve_status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                          <option value="NOT_CONFIRMED">{t("reserve.NOT_CONFIRMED")}</option>
+                          <option value="CONFIRMED">{t("reserve.CONFIRMED")}</option>
+                          <option value="COMPLETE">{t("reserve.COMPLETE")}</option>
+                        </select>
+
+                        <div className="w-full h-6">
+                          {errorMessages.reserve_status && (
+                            <motion.p 
+                              initial="hidden"
+                              animate="show"
+                              exit="hidden"
+                              variants={fadeIn("up","", 0, 1)}
+                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                              {errorMessages.reserve_status}
+                            </motion.p>
+                          )}
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1  gap-y-2">
+
+                      <label htmlFor="canceled_reason" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{t("reserve.canceled")}</label>
+
+                        <div className="checkbox-wrapper-13 px-2">
+                          <input name="canceled_status" type="checkbox" aria-hidden="true" />
+                          <label htmlFor="canceled_status">{t("reserve.canceled_reserve")}</label>
+                        </div>
+
+                        <div className="w-full h-6">
+                          {errorMessages.canceled_status && (
+                            <motion.p 
+                              initial="hidden"
+                              animate="show"
+                              exit="hidden"
+                              variants={fadeIn("up","", 0, 1)}
+                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                              {errorMessages.canceled_status}
                             </motion.p>
                           )}
                         </div>
 
+                        <textarea name="canceled_reason" className="w-full h-8 sm:h-20 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.canceled_reason")}></textarea>
+
+                        <div className="w-full h-6">
+                          {errorMessages.canceled_reason && (
+                            <motion.p 
+                              initial="hidden"
+                              animate="show"
+                              exit="hidden"
+                              variants={fadeIn("up","", 0, 1)}
+                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                              {errorMessages.canceled_reason}
+                            </motion.p>
+                          )}
+                        </div>
                       </div>
-
-                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-[50%] h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="importe_calculado" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Total Calculado"}</label>
-                          <input name="importe_calculado" value={ `$ ${getTotalReserveCalculated(tents,products,experiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  disabled/>
-                        </div>
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-[40%] h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descuento en %"}</label>
-                          <input name="discount" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Descuento en %"}/>
-
-                          <div className="w-full h-6">
-                            {errorMessages.discount && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.discount}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col justify-center itemst-center gap-x-6 w-[10%] h-full gap-y-2 sm:gap-y-1">
-                          <button
-                            type="button"
-
-                            onClick={()=>calculateAmountLocally("form_create_reserve")}
-                            className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-primary hover:text-white rounded-xl duration-300 hover:border-primary"
-                          >
-                             %
-                          </button>
-                        </div>
-
-                      </div>
-
-                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="netImport" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Neto"}</label>
-                          <input name="netImport" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Importe Neto"}/>
-
-                          <div className="w-full h-6">
-                            {errorMessages.netImport && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.netImport}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="grossImport" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Total"}</label>
-                          <input name="grossImport" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Importe Total"}/>
-
-                          <div className="w-full h-6">
-                            {errorMessages.grossImport && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.grossImport}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-
-                      </div>
-
-                      <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="payment_status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estado de Pago"}</label>
-                          <select name="payment_status" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                            <option value="PAID">PAGADO</option>
-                            <option value="DEBT">DEBE</option>
-                            <option value="PENDING">PENDIENTE</option>
-                          </select>
-
-                          <div className="w-full h-6">
-                            {errorMessages.paymentStatus && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.paymentStatus}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                          <label htmlFor="additional_people" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de Personas adicionales"}</label>
-                          <input name="additional_people" type="number" step="0.01" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de Personas adicionales"}/>
-
-                          <div className="w-full h-6">
-                            {errorMessages.additionalPeople && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.additionalPeople}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
-
-                      </div>
-
-                      <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1  gap-y-2">
-
-                        <label htmlFor="canceled_reason" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6 mb-2">{"Cancelacion"}</label>
-
-                          <div className="checkbox-wrapper-13 px-2">
-                            <input name="canceled_status" type="checkbox" aria-hidden="true" />
-                            <label htmlFor="canceled_status">Reserva Cancelada?</label>
-                          </div>
-
-                          <div className="w-full h-6">
-                            {errorMessages.canceled_status && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.canceled_status}
-                              </motion.p>
-                            )}
-                          </div>
-
-                          <textarea name="canceled_reason" className="w-full h-8 sm:h-20 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Razon de cancelacion"}></textarea>
-
-                          <div className="w-full h-6">
-                            {errorMessages.canceled_reason && (
-                              <motion.p 
-                                initial="hidden"
-                                animate="show"
-                                exit="hidden"
-                                variants={fadeIn("up","", 0, 1)}
-                                className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                {errorMessages.canceled_reason}
-                              </motion.p>
-                            )}
-                          </div>
-                        </div>
 
                       <div className="flex flex-row justify-end gap-x-6 w-full">
-                          <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                          <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Crear Reserva </Button>
+                          <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("common.cancel")}</Button>
+                          <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}>{t("reserve.create_reserve")}</Button>
                       </div>
 
                   </div>
                 </form>
             </motion.div>
         )}
-
-        {currentView === "E" && selectedReserve && (
-                <motion.div 
-                    key={"Edit-View"}
-                    initial="hidden"
-                    animate="show"
-                    exit="hidden"
-                    viewport={{ once: true }}
-                    variants={fadeIn("up","",0.5,0.3)}
-                    className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
-                    <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Calendar/>Editar Experiencia</h2>
-
-                  <form id="form_update_promotion" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitUpdate(e)}>
-
-                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%] h-full">
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="title" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Titulo de la promocion"}</label>
-                            <input name="title" value={selectedReserve.title}  onChange={(e)=>onChangeSelectedReserve(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Titulo de la promocion"}/>
-                            <div className="w-full h-6">
-                              {errorMessages.title && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.title}
-                                </motion.p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="description" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descripcion"}</label>
-                            <textarea name="description"  onChange={(e)=>onChangeSelectedReserve(e)} className="w-full h-8 sm:h-24 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary mt-2" placeholder={"Descripcion"}>{selectedReserve.description}</textarea>
-                            <div className="w-full h-6">
-                              {errorMessages.description && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.description}
-                                </motion.p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="expiredDate" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Fecha de Expiracion"}</label>
-                              <input name="expiredDate" type="date" value={formatToISODate(selectedReserve.expiredDate)}  onChange={(e)=>onChangeSelectedReserve(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Fecha de Expiracion"}/>
-
-                              <div className="w-full h-6">
-                                {errorMessages.expiredDate && (
-                                  <motion.p 
-                                    initial="hidden"
-                                    animate="show"
-                                    exit="hidden"
-                                    variants={fadeIn("up","", 0, 1)}
-                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.expiredDate}
-                                  </motion.p>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="stock" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de promociones"}</label>
-                              <input name="stock" value={selectedReserve.stock}  onChange={(e)=>onChangeSelectedReserve(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de promociones"}/>
-
-                              <div className="w-full h-6">
-                                {errorMessages.stock && (
-                                  <motion.p 
-                                    initial="hidden"
-                                    animate="show"
-                                    exit="hidden"
-                                    variants={fadeIn("up","", 0, 1)}
-                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.stock}
-                                  </motion.p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-
-                              <label htmlFor="qtypeople" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de personas"}</label>
-                              <input name="qtypeople" value={selectedReserve.qtypeople}  onChange={(e)=>onChangeSelectedReserve(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de personas"}/>
-
-                              <div className="w-full h-6">
-                                {errorMessages.qtypeople && (
-                                  <motion.p 
-                                    initial="hidden"
-                                    animate="show"
-                                    exit="hidden"
-                                    variants={fadeIn("up","", 0, 1)}
-                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.qtypeople}
-                                  </motion.p>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="qtykids" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad de Niños"}</label>
-                              <input name="qtykids" value={selectedReserve.qtykids}  onChange={(e)=>onChangeSelectedReserve(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad de Niños"}/>
-
-                              <div className="w-full h-6">
-                                {errorMessages.qtykids && (
-                                  <motion.p 
-                                    initial="hidden"
-                                    animate="show"
-                                    exit="hidden"
-                                    variants={fadeIn("up","", 0, 1)}
-                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.qtykids}
-                                  </motion.p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Estatus"}</label>
-                            <select name="status" onChange={(e)=>onChangeSelectedReserve(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              <option value="ACTIVE" selected={selectedReserve.status == "ACTIVE"}>ACTIVO</option>
-                              <option value="INACTIVE" selected={selectedReserve.status == "INACTIVE"}>INACTIVO</option>
-                            </select>
-                            <div className="w-full h-6">
-                              {errorMessages.status && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.status}
-                                </motion.p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="image" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Imagenes"}</label>
-                              <div className="flex flex-row flex-wrap justify-start items-start w-full h-auto p-4 gap-6">
-                                <AnimatePresence>
-                                  {existingImages.map((image, index) => (
-                                    <motion.div
-                                      key={"ExistantImage"+index}
-                                      initial="hidden"
-                                      animate="show"
-                                      exit="hidden"
-                                      viewport={{ once: true }}
-                                      variants={fadeOnly("",0,0.3)}
-                                      className="image-selected"
-                                      style={{
-                                        backgroundImage: `url(${import.meta.env.VITE_BACKEND_URL}/${image})`,
-                                        backgroundSize: 'cover',
-                                        position: 'relative'
-                                      }}
-                                    >
-                                      <button
-                                        type="button"
-                                        className="delete-image-selected"
-                                        onClick={() => handleRemoveExistingImage(image)}
-                                      >
-                                        X
-                                      </button>
-                                    </motion.div>
-                                  ))}
-                                  {images.map((image, index) => (
-                                    <motion.div
-                                      key={"FilesImages"+index}
-                                      initial="hidden"
-                                      animate="show"
-                                      exit="hidden"
-                                      viewport={{ once: true }}
-                                      variants={fadeOnly("",0,0.3)}
-                                      className="image-selected"
-                                      style={{
-                                        backgroundImage: `url(${image.url})`,
-                                        backgroundSize: 'cover',
-                                        position: 'relative'
-                                      }}
-                                    >
-                                      <button
-                                        type="button"
-                                        className="delete-image-selected"
-                                        onClick={() => handleRemoveImage(image.url)}
-                                      >
-                                        X
-                                      </button>
-                                    </motion.div>
-                                  ))}
-                                </AnimatePresence>
-                                <div className="file-select" id="src-tent-image" >
-                                  <input type="file" name="src-tent-image" aria-label="Archivo" onChange={handleImageChange} multiple/>
-                                </div>
-
-                              </div>
-                              <div className="w-full h-6">
-                                {errorMessages.images && (
-                                  <motion.p 
-                                    initial="hidden"
-                                    animate="show"
-                                    exit="hidden"
-                                    variants={fadeIn("up","", 0, 1)}
-                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.images}
-                                  </motion.p>
-                                )}
-                              </div>
-                          </div>
-
-
-                      </div>
-
-                    <div className="flex flex-col justify-start items-start w-full lg:w-[50%]">
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="glampings" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Glampings en la promocion"}</label>
-                            <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[75%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_tent_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Glamping"}</label>
-                                    <select name="promotion_option_tent_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                        { datasetReservesOptions.tents.map((tent,index) => {
-                                            return(
-                                                <option key={index} value={tent.id}>{`${tent.title} | Precio: $${tent.price}`}</option>
-                                            )
-                                        })}
-                                    </select>
-                                </div>
-
-                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_qty" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad"}</label>
-                                  <input name="promotion_option_tent_qty" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad"}/>
-                                </div>
-                                <Button onClick={()=>handleAddReserveOption("form_update_promotion","tent")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
-                            </div>
-
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {tents.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Tienda: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                            <button
-                                              type="button"
-                                              onClick={() => handleRemoveReserveOption(index,"tent")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              Borrar
-                                            </button>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-
-                            <div className="w-full h-6">
-                              {errorMessages.tents && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.tents}
-                                </motion.p>
-                              )}
-                            </div>
-
-                          </div>
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="products" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Productos en la promocion"}</label>
-                            <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[75%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_product_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Productos"}</label>
-                                    <select name="promotion_option_product_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                        { datasetReservesOptions.products.map((product,index) => {
-                                            return(
-                                                <option key={index} value={product.id}>{`${product.name} | Precio: $${product.price}`}</option>
-                                            )
-                                        })}
-                                    </select>
-                                </div>
-
-                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_product_qty" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad"}</label>
-                                  <input name="promotion_option_product_qty" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad"}/>
-                                </div>
-                                <Button onClick={()=>handleAddReserveOption("form_update_promotion","product")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
-                            </div>
-
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {products.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Producto: <label className="text-tertiary ml-2 text-xs">{item.label}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                            <button
-                                              type="button"
-
-                                              onClick={() => handleRemoveReserveOption(index,"product")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              Borrar
-                                            </button>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-
-                            <div className="w-full h-6">
-                              {errorMessages.products && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.products}
-                                </motion.p>
-                              )}
-                            </div>
-
-                          </div>
-
-                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-2">
-                            <label htmlFor="experiences" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Experiencias en la promocion"}</label>
-                            <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[75%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_experience_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Experiencia"}</label>
-                                    <select name="promotion_option_experience_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                        { datasetReservesOptions.experiences.map((experience,index) => {
-                                            return(
-                                                <option key={index} value={experience.id}>{`${experience.name} | Precio: $${experience.price}`}</option>
-                                            )
-                                        })}
-                                    </select>
-                                </div>
-
-                                <div className="flex flex-col justify-start itemst-start gap-x-6 w-[25%] h-auto gap-y-2 sm:gap-y-1">
-                                  <label htmlFor="promotion_option_experience_qty" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Cantidad"}</label>
-                                  <input name="promotion_option_experience_qty" type="number" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Cantidad"}/>
-                                </div>
-                                <Button onClick={()=>handleAddReserveOption("form_update_promotion","experience")} size="sm" type="button" variant="dark" effect="default" isRound={true} className="w-[10%] my-auto">+</Button>
-                            </div>
-
-                            <div className="w-full h-auto">
-                              <AnimatePresence>
-                                {experiences.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            initial="hidden"
-                                            animate="show"
-                                            exit="hidden"
-                                            viewport={{ once: true }}
-                                            variants={fadeIn("up","",0,0.3)}
-                                            className="w-full h-auto flex flex-row justify-between items-center rounded-xl border border-slate-200 px-4 py-2 my-2 text-sm"
-                                          >
-                                            <span className="w-[30%]">
-                                              Experiencia: <label className="text-tertiary ml-2 text-xs">{item.name}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Cantidad: <label className="text-tertiary ml-2 text-xs">{item.qty}</label>
-                                            </span>
-                                            <span className="w-[30%]">
-                                              Precio Unt.: <label className="text-tertiary ml-2">S/{item.price.toFixed(2)}</label>
-                                            </span>
-                                            <button
-                                              type="button"
-
-                                              onClick={() => handleRemoveReserveOption(index,"experience")}
-                                              className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-red-400 hover:text-white rounded-xl duration-300 hover:border-red-400"
-                                            >
-                                              Borrar
-                                            </button>
-                                          </motion.div>
-                                        ))}
-                              </AnimatePresence>
-                            </div>
-
-                            <div className="w-full h-6">
-                              {errorMessages.products && (
-                                <motion.p 
-                                  initial="hidden"
-                                  animate="show"
-                                  exit="hidden"
-                                  variants={fadeIn("up","", 0, 1)}
-                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                  {errorMessages.products}
-                                </motion.p>
-                              )}
-                            </div>
-
-                          </div>
-
-                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-[50%] h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="importe_calculado" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Total Calculado"}</label>
-                              <input name="importe_calculado" value={ `$ ${getTotalReserveCalculated(tents,products,experiences)}` } className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary"  disabled/>
-                            </div>
-
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-[40%] h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="discount" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Descuento en %"}</label>
-                              <input name="discount" value={selectedReserve.discount} onChange={(e)=>onChangeSelectedReserve(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Descuento en %"}/>
-
-                              <div className="w-full h-6">
-                                {errorMessages.discount && (
-                                  <motion.p 
-                                    initial="hidden"
-                                    animate="show"
-                                    exit="hidden"
-                                    variants={fadeIn("up","", 0, 1)}
-                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.discount}
-                                  </motion.p>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col justify-center itemst-center gap-x-6 w-[10%] h-full gap-y-2 sm:gap-y-1">
-                              <button
-                                type="button"
-
-                                onClick={()=>calculateAmountLocally("form_update_promotion")}
-                                className="border-2 border-slate-200 p-2 active:scale-95 hover:bg-primary hover:text-white rounded-xl duration-300 hover:border-primary"
-                              >
-                                 %
-                              </button>
-                            </div>
-
-                          </div>
-
-                          <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="netImport" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Neto"}</label>
-                              <input name="netImport" value={selectedReserve.netImport} onChange={(e)=>onChangeSelectedReserve(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Importe Neto"}/>
-
-                              <div className="w-full h-6">
-                                {errorMessages.netImport && (
-                                  <motion.p 
-                                    initial="hidden"
-                                    animate="show"
-                                    exit="hidden"
-                                    variants={fadeIn("up","", 0, 1)}
-                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.netImport}
-                                  </motion.p>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="grossImport" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Importe Total"}</label>
-                              <input name="grossImport" value={selectedReserve.grossImport} onChange={(e)=>onChangeSelectedReserve(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={"Importe Total"}/>
-
-                              <div className="w-full h-6">
-                                {errorMessages.grossImport && (
-                                  <motion.p 
-                                    initial="hidden"
-                                    animate="show"
-                                    exit="hidden"
-                                    variants={fadeIn("up","", 0, 1)}
-                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {errorMessages.grossImport}
-                                  </motion.p>
-                                )}
-                              </div>
-                            </div>
-
-                          </div>
-
-                          <div className="flex flex-row justify-end gap-x-6 w-full">
-                              <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>Cancelar</Button>
-                              <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}> Guardar Cambios </Button>
-                          </div>
-
-                      </div>
-                    </form>
-                </motion.div>
-                )}
 
         </AnimatePresence>
     </Dashboard>
