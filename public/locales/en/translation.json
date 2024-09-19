@@ -8,6 +8,8 @@
 		"cancel": "Cancel",
 		"accept": "Accept",
 		"search": "Search",
+		"no": "No",
+		"yes": "Yes",
 		"validations": {
 			"image_file": "Archive must be valid (JPEG, PNG, WEBP) and not weight more than 2MB",
 			"custom_price_price": "Custom price must be positive"
@@ -65,6 +67,7 @@
 		}
 	},
 	"reserve": {
+		"download_receipt": "Download Receipt",
 		"services": "Services",
 		"no_products_available": "No products available",
 		"no_experiences_available": "No experiences available",
@@ -184,6 +187,7 @@
 		"no_discount": "No Discount",
 		"cancel": "Canceled?",
 		"go_back_reserves_list": "Go back to reserves list",
+		"update_reserve": "Update reserve",
 		"validations": {
 			"id_required": "Id is required",
 			"date_from_required": "Date from is required",
@@ -192,7 +196,23 @@
 			"aditional_people_max_required": "This glamping do not have maxium quantity of people",
 			"date_from_less_than_date_to": "Date from needs to be less than the date To",
 			"aditional_people_exceed_max": "You are over the maxium quantity for this glamping",
-			"quantity_min": "Quantity minimum is 1"
+			"aditional_people_positive": "Quantity of aditional people can not be negative",
+			"quantity_min": "Quantity minimum is 1",
+			"name_required": "Name is required",
+			"price_positive": "Price must be a positive number",
+			"quantity_positive": "Quantity must be a positive number",
+			"day_required": "Day is required",
+			"nights_positive": "Nights must be a positive number",
+			"dateFrom_required": "Start date is required",
+			"dateTo_required": "End date is required",
+			"userId_positive": "User ID must be a positive number",
+			"discount_code_id_nonnegative": "Discount code ID cannot be negative",
+			"gross_import_positive": "Gross import must be a positive number",
+			"discount_nonnegative": "Discount must be a non-negative number",
+			"net_import_positive": "Net import must be a positive number",
+			"canceled_status_boolean": "Must be true or false",
+			"payment_status_required": "Payment status is required",
+			"reserve_status_required": "Reservation status is required"
 		}
 	},
 	"glamping": {

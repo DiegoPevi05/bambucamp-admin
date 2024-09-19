@@ -215,7 +215,7 @@ const ReserveCard = (props:ReserveCardProps) => {
           </div>
           <div className="w-[50%] h-auto flex flex-col">
             <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start"><Coins className="h-5 w-5"/>{t("reserve.total_import")}{":"}</h2>
-            <p className="text-xs font-primary text-slate-400 mt-2">{"S/."}{reserve.gross_import}{".00"}</p>
+            <p className="text-xs font-primary text-slate-400 mt-2">{formatPrice(reserve.net_import)}</p>
           </div>
           <div className="w-[50%] h-auto flex flex-col">
             <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start"><CreditCard className="h-5 w-5"/>{t("reserve.reservation")}{":"}</h2>
@@ -266,6 +266,7 @@ const ReserveCard = (props:ReserveCardProps) => {
                 placeholder={t("reserve.glampings")} 
                 rightIcon={<TentIcon/>} 
                 checked={openDetails === "tents"}
+                readOnly
               />
               <InputRadio  
                 className="w-auto" 
@@ -274,6 +275,7 @@ const ReserveCard = (props:ReserveCardProps) => {
                 placeholder={t("reserve.products")} 
                 rightIcon={<Pizza/>}
                 checked={openDetails === "products"}
+                readOnly
               />
               <InputRadio  
                 className="w-auto" 
@@ -282,6 +284,7 @@ const ReserveCard = (props:ReserveCardProps) => {
                 placeholder={t("reserve.experiences")} 
                 rightIcon={<FlameKindling/>}
                 checked={openDetails === "experiences"}
+                readOnly
               />
             </div>
             <div className="w-full h-auto overflow-scroll-x">
@@ -303,6 +306,7 @@ const ReserveCard = (props:ReserveCardProps) => {
                           rightIcon={<TentIcon/>} 
                           onClick={()=>setSelectedOption(index)}
                           checked={selectedOption === index}
+                          readOnly
                         />
                       )
                     ))
@@ -407,6 +411,7 @@ const ReserveCard = (props:ReserveCardProps) => {
                                   checked={selectedOption === index}
                                   readOnly
                                   className="flex-shrink-0"
+                                  readOnly
                                 />
                             ))
                           }

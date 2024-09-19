@@ -8,6 +8,8 @@
 		"cancel": "Cancelar",
 		"accept": "Aceptar",
 		"search": "Buscar",
+		"no": "No",
+		"yes": "Si",
 		"validations": {
 			"image_file": "Debe ser un archivo válido (JPEG, PNG, WEBP) y no pesar más 2MB",
 			"custom_price_price": "Precio personalizado debe ser positivo"
@@ -65,6 +67,7 @@
 		}
 	},
 	"reserve": {
+		"download_receipt": "Descargar Comprobante",
 		"services": "Servicios",
 		"no_products_available": "No hay productos disponibles",
 		"no_experiences_available": "No hay experiencias disponibles",
@@ -184,6 +187,7 @@
 		"no_discount": "Sin Descuento",
 		"cancel": "Cancelada?",
 		"go_back_reserves_list": "Volver a la lista de reservas",
+		"update_reserve": "Actualizar reserva",
 		"validations": {
 			"id_required": "El ID es obligatorio",
 			"date_from_required": "La fecha desde es obligatoria",
@@ -192,7 +196,23 @@
 			"aditional_people_max_required": "Este glamping no tiene cantidad máxima de personas",
 			"date_from_less_than_date_to": "La fecha desde debe ser menor que la fecha hasta",
 			"aditional_people_exceed_max": "Has superado la cantidad máxima para este glamping",
-			"quantity_min": "La cantidad mínima es 1"
+			"aditional_people_positive": "La cantidad de personas no puede ser negativa",
+			"quantity_min": "La cantidad mínima es 1",
+			"name_required": "El nombre es requerido",
+			"price_positive": "El precio debe ser un número positivo",
+			"quantity_positive": "La cantidad debe ser un número positivo",
+			"day_required": "El día es requerido",
+			"nights_positive": "Las noches deben ser un número positivo",
+			"dateFrom_required": "La fecha de inicio es requerida",
+			"dateTo_required": "La fecha de fin es requerida",
+			"userId_positive": "El ID del usuario debe ser un número positivo",
+			"discount_code_id_nonnegative": "El ID del código de descuento no puede ser negativo",
+			"gross_import_positive": "El importe bruto debe ser un número positivo",
+			"discount_nonnegative": "El descuento debe ser un número no negativo",
+			"net_import_positive": "El importe neto debe ser un número positivo",
+			"canceled_status_boolean": "Debe ser verdadero o falso",
+			"payment_status_required": "El estado del pago es requerido",
+			"reserve_status_required": "El estado de reserva es necesario"
 		}
 	},
 	"glamping": {

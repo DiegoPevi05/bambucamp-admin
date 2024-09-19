@@ -156,55 +156,54 @@ const PromotionSchema = z.object({
 });
 
 const ReserveTentDtoSchema = z.object({
-  idTent: z.number().positive({ message: 'El id del tent debe ser un número positivo' }),
-  name: z.string().nonempty({ message: 'El nombre es requerido' }),
-  price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
-  nights: z.number().positive({ message: 'La cantidad debe ser un número positivo' }),
+  idTent: z.number().positive({ message: 'reserve.validations.id_required' }),
+  name: z.string().nonempty({ message: 'reserve.validations.name_required' }),
+  price: z.number().positive({ message: 'reserve.validations.price_positive' }),
+  nights: z.number().positive({ message: 'reserve.validations.quantity_positive' }),
   dateFrom:z.date(),
   dateTo:z.date(),
-  aditionalPeople:z.number().nonnegative({message: "La cantidad de personas adicionales debe ser un numero posiitivo"}).optional()
+  aditionalPeople:z.number().nonnegative({message: "reserve.validations.aditional_people_positive"}).optional()
 });
 
 const ReserveProductDtoSchema = z.object({
-  idProduct: z.number().positive({ message: 'El id del producto debe ser un número positivo' }),
-  name: z.string().nonempty({ message: 'El nombre es requerido' }),
-  price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
-  quantity: z.number().positive({ message: 'La cantidad debe ser un número positivo' })
+  idProduct: z.number().positive({ message: "reserve.validations.id_required"}),
+  name: z.string().nonempty({ message: "reserve.validations.name_required"}),
+  price: z.number().positive({ message: "reserve.validations.price_positive"}),
+  quantity: z.number().positive({ message: "reserve.validations.quantity_positive"})
 });
 
 const ReserveExperienceDtoSchema = z.object({
-  idExperience: z.number().positive({ message: 'El id de la experiencia debe ser un número positivo' }),
-  name: z.string().nonempty({ message: 'El nombre es requerido' }),
-  price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
-  quantity: z.number().positive({ message: 'La cantidad debe ser un número positivo' }),
-  day:z.date(),
+  idExperience: z.number().positive({ message: "reserve.validations.id_required"}),
+  name: z.string().nonempty({ message: "reserve.validations.name_required"}),
+  price: z.number().positive({ message: "reserve.validations.price_positive"}),
+  quantity: z.number().positive({ message: "reserve.validations.quantity_positive"}),
+  day: z.date(),
 });
 
 const ReservePromotionDtoSchema = z.object({
-  idPromotion: z.number().positive({ message: 'El id de la experiencia debe ser un número positivo' }),
-  name: z.string().nonempty({ message: 'El nombre es requerido' }),
-  price: z.number().positive({ message: 'El precio debe ser un número positivo' }),
-  nights: z.number().positive({ message: 'Las noches debe ser un número positivo' }),
-  dateFrom:z.date(),
-  dateTo:z.date()
+  idPromotion: z.number().positive({ message: "reserve.validations.id_required"}),
+  name: z.string().nonempty({ message: "reserve.validations.name_required"}),
+  price: z.number().positive({ message: "reserve.validations.price_positive"}),
+  nights: z.number().positive({ message: "reserve.validations.nights_positive"}),
+  dateFrom: z.date(),
+  dateTo: z.date(),
 });
 
-// Define the main ReserveFormData schema
 const ReserveFormDataSchema = z.object({
-  userId: z.number().positive({ message: 'El ID del usuario debe ser un número positivo' }),
+  userId: z.number().positive({ message: "reserve.validations.userId_positive"}),
   tents: z.array(ReserveTentDtoSchema).default([]),
   products: z.array(ReserveProductDtoSchema).default([]),
   experiences: z.array(ReserveExperienceDtoSchema).default([]),
   promotions: z.array(ReservePromotionDtoSchema).default([]),
-  discount_code_id: z.number().nonnegative({ message: 'El ID del código de descuento no puede ser neativo' }).optional(),
-  discount_code_name:z.string().optional(),
-  gross_import: z.number().positive({ message: 'El importe neto debe ser un número positivo' }),
-  discount: z.number().nonnegative({ message: 'El descuento debe ser un número no negativo' }),
-  net_import: z.number().positive({ message: 'El importe bruto debe ser un número positivo' }),
+  discount_code_id: z.number().nonnegative({ message: "reserve.validations.discount_code_id_nonnegative"}).optional(),
+  discount_code_name: z.string().optional(),
+  gross_import: z.number().positive({ message: "reserve.validations.gross_import_positive"}),
+  discount: z.number().nonnegative({ message: "reserve.validations.discount_nonnegative"}),
+  net_import: z.number().positive({ message: "reserve.validations.net_import_positive"}),
   canceled_reason: z.string().optional(),
-  canceled_status: z.boolean({ message: 'Debe ser verdadero o falso' }),
-  payment_status: z.string().nonempty({ message: 'El estado del pago es requerido' }),
-  reserve_status: z.string().nonempty({ message: 'El estado de reserva es necesario' }),
+  canceled_status: z.boolean({ message: "reserve.validations.canceled_status_boolean"}),
+  payment_status: z.string().nonempty({ message: "reserve.validations.payment_status_required"}),
+  reserve_status: z.string().nonempty({ message: "reserve.validations.reserve_status_required"})
 });
 
 
