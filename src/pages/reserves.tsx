@@ -77,7 +77,7 @@ const DashboardAdminReserves = () => {
       const aditionalPeople = Number(aditionalPeopleInput.value);
       const dateFrom = new Date(dateFromInput.value)
       const dateTo = new Date(dateToInput.value)
-      const no_custom_price = dateToInput.checked;
+      const no_custom_price = noCustomPriceInput.checked;
 
       const tent_db  = datasetReservesOptions.tents.find((i)=> i.id == idTent);
       if(!tent_db){
