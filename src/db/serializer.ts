@@ -416,6 +416,7 @@ const serializeReserveTent = (data:any):ReserveTentDto => {
     dateTo:new Date(data.dateTo),
     confirmed:data.confirmed,
     aditionalPeople:data.aditionalPeople || 0,
+    aditionalPeoplePrice:data.aditionalPeoplePrice || 0,
     tentDB: tent_db_parsed != null ?  tent_db_parsed : undefined
   }
   return reserveTent;
@@ -495,6 +496,8 @@ export const serializeReserve = (data:any):Reserve|null => {
     id: data.id,
     external_id:data.external_id,
     userId:data.userId,
+    user_name:data.user_name ?? data.userId,
+    user_email:data.user_email ?? data.userId,
     dateSale: data.dateSale ? convertStrToCurrentTimezoneDate(data.dateSale) : data.dateSale,
     price_is_calculated : data.price_is_calculated,
     net_import: data.net_import || 0,

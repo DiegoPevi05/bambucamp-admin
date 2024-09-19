@@ -178,6 +178,12 @@
 		"canceled_reserve": "Reserve Canceled?",
 		"canceled_reason": "Canceled Reason",
 		"create_reserve": "Create Reserve",
+		"table_glosary": "Glosary of the table: ADP:Aditional People, ADPP: Aditional People Price",
+		"discount_code": "Code",
+		"apply_discount": "Apply Discount",
+		"no_discount": "No Discount",
+		"cancel": "Canceled?",
+		"go_back_reserves_list": "Go back to reserves list",
 		"validations": {
 			"id_required": "Id is required",
 			"date_from_required": "Date from is required",

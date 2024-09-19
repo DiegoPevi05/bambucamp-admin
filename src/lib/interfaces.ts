@@ -325,7 +325,7 @@ export interface ReserveTentDto {
   dateTo:Date;
   confirmed:boolean;
   aditionalPeople:number;
-  additionalPeoplePrice?:number;
+  aditionalPeoplePrice:number;
   promotionId?:number;
   tentDB?:Tent;
 }
@@ -381,6 +381,8 @@ export interface Reserve {
   id: number;
   external_id:number;
   userId:number;
+  user_name?:string;
+  user_email?:string;
   tents:ReserveTentDto[];
   products:ReserveProductDto[];
   experiences:ReserveExperienceDto[];
@@ -403,7 +405,7 @@ export interface Reserve {
 export interface ReserveFilters {
   dateFrom?: string;
   dateTo?:string;
-  paymentStatus?:string;
+  payment_status?:string;
 }
 
 
@@ -413,7 +415,6 @@ export interface ReserveFormData {
   products:ReserveProductDto[];
   experiences:ReserveExperienceDto[];
   promotions:ReservePromotionDto[];
-  dateSale: Date;
   price_is_calculated: boolean;
   discount_code_id: number;
   discount_code_name:string;

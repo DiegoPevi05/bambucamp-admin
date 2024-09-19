@@ -178,6 +178,12 @@
 		"canceled_reserve": "¿Reserva Cancelada?",
 		"canceled_reason": "Motivo de Cancelación",
 		"create_reserve": "Crear Reserva",
+		"table_glosary": "Glosario de la tabla: ADP:Personas Adicionales, ADPP: Precio por presona adicional",
+		"discount_code": "Codigo",
+		"apply_discount": "Aplicar Descuento",
+		"no_discount": "Sin Descuento",
+		"cancel": "Cancelada?",
+		"go_back_reserves_list": "Volver a la lista de reservas",
 		"validations": {
 			"id_required": "El ID es obligatorio",
 			"date_from_required": "La fecha desde es obligatoria",
