@@ -1,0 +1,67 @@
+name: Deploy to SSH server
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    environment: digital_ocean
+    runs-on: ubuntu-latest
+    steps:
+    - name: Initialize Deploy
+      env:
+        SLACK_MESSAGE: " * Initialize deploy of Bambucamp to Digital Ocean Server :git:"
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        echo "${SLACK_MESSAGE}"
+        curl -X POST -H 'Content-type: application/json' --data '{"text":"'"${SLACK_MESSAGE}"'"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Install dependencies
+      env:
+        SLACK_MESSAGE: " * Installing Dependencies :npm:"
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        echo "${SLACK_MESSAGE}"
+        npm install
+        curl -X POST -H 'Content-type: application/json' --data '{"text":"'"${SLACK_MESSAGE}"'"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+    - name: Create .env file
+      run: |
+        echo VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL }} >> .env
+        echo VITE_BACKEND_PUBLIC_URL=${{ secrets.VITE_BACKEND_PUBLIC_URL }} >> .env
+    - name: Build
+      env:
+        SLACK_MESSAGE: " * Building React App Dist Folder :vite:"
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        echo "${SLACK_MESSAGE}"
+        npm run build
+        curl -X POST -H 'Content-type: application/json' --data '{"text":"'"${SLACK_MESSAGE}"'"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+    - name: Set up SSH key
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Add host key to known host
+      env:
+        SLACK_MESSAGE: " * Set Connection and Enable it to SSH Digital Ocean server :digital_ocean:"
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        echo "${SLACK_MESSAGE}"
+        ssh-keyscan 104.236.199.84 >> ~/.ssh/known_hosts
+        curl -X POST -H 'Content-type: application/json' --data '{"text":"'"${SLACK_MESSAGE}"'"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+    - name: Create the deployment directory if not exists
+      env:
+        SLACK_MESSAGE: " * Ensuring Deployment Directory Exists :file_folder:"
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        echo "${SLACK_MESSAGE}"
+        ssh root@104.236.199.84 'mkdir -p /var/www/bambucamp-admin'
+        curl -X POST -H 'Content-type: application/json' --data '{"text":"'"${SLACK_MESSAGE}"'"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+    - name: Deploy
+      env:
+        SLACK_MESSAGE: " * App Deployed Successfully :react: :typescript:"
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      run: |
+        echo "${SLACK_MESSAGE}"
+        scp -r dist/* root@104.236.199.84:/var/www/bambucamp-admin/
+        curl -X POST -H 'Content-type: application/json' --data '{"text":"'"${SLACK_MESSAGE}"'"}' ${{ secrets.SLACK_WEBHOOK_URL }}

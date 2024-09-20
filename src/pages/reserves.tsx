@@ -647,7 +647,7 @@ const DashboardAdminReserves = () => {
     const onSubmitUpdate = async (e: FormEvent) => {
         e.preventDefault();
         setLoadingForm(true);
-        const fieldsValidated = validateFields('form_update_promotion');
+        const fieldsValidated = validateFields('form_update_reserve');
         if(fieldsValidated != null){
           if(user !== null && selectedReserve != null){
             const isSuccess =  await updateReserve(selectedReserve.id,fieldsValidated, user.token, i18n.language);
@@ -1620,7 +1620,6 @@ const DashboardAdminReserves = () => {
                 variants={fadeIn("up","",0.5,0.3)}
                 className="w-full h-auto flex flex-col justify-start items-start gap-y-4">
                 <h2 className="text-secondary text-2xl flex flex-row gap-x-4"><Calendar/>{t("reserve.add_reserve")}</h2>
-
               <form id="form_update_reserve" className="w-full h-auto flex flex-col lg:flex-row gap-6 p-6" onSubmit={(e)=>onSubmitUpdate(e)}>
 
                 <div className="flex flex-col justify-start items-start w-full">
@@ -1648,7 +1647,7 @@ const DashboardAdminReserves = () => {
                           <button type="button" onClick={()=>searchUsersByEmail('form_update_reserve')} className="w-auto h-auto border border-2 border-slate-200 p-2 rounded-xl active:scale-95 duration-300"><Search/></button>
                         </div>
                         <label htmlFor="userId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.user")}</label>
-                        <input name="userId" className="hidden"/>
+                        <input name="userId" className="hidden" defaultValue={selectedReserve.userId}/>
                         <input name="userId_name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.user_selected")} value={`${selectedReserve.user_name ?? selectedReserve.userId} | ${selectedReserve.user_email ?? selectedReserve.userId}` } readOnly/>
 
                         <div className="w-full h-6">
