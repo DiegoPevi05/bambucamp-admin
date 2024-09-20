@@ -157,7 +157,7 @@ const App: React.FC = () => {
     <Suspense fallback={<LoadingComponent isLoading={true} />}>
       <AuthProvider>
         <Providers>
-          <Router basename="/admin-panel">
+          <Router basename={import.meta.env.VITE_ENVIRONMENT == "DEV" ? "/" :"/admin-panel"}>
             <AppRoutes />
           </Router>
         </Providers>

@@ -9,7 +9,7 @@ i18n
   .use(initReactI18next) // Passes i18n down to react-i18next
   .init({
     backend: {
-      loadPath: '/locales/{{lng}}/translation.json' // Path to load translations
+      loadPath: import.meta.env.VITE_ENVIRONMENT == "DEV" ? '/locales/{{lng}}/translation.json' : '/admin-panel/locales/{{lng}}/translation.json'  // Path to load translations
     },
     fallbackLng: 'es', // Fallback language if detection fails
     interpolation: {
