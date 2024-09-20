@@ -35,7 +35,7 @@ jobs:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
         echo "${SLACK_MESSAGE}"
-        npm run build:prod
+        npm run build
         curl -X POST -H 'Content-type: application/json' --data '{"text":"'"${SLACK_MESSAGE}"'"}' ${{ secrets.SLACK_WEBHOOK_URL }}
     - name: Set up SSH key
       uses: webfactory/ssh-agent@v0.7.0
