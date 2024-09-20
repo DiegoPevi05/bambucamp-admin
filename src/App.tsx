@@ -157,7 +157,7 @@ const App: React.FC = () => {
     <Suspense fallback={<LoadingComponent isLoading={true} />}>
       <AuthProvider>
         <Providers>
-          <Router basename="/admin-page">
+          <Router basename="/">
             <AppRoutes />
           </Router>
         </Providers>
