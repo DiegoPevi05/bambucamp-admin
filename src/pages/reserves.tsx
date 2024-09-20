@@ -12,7 +12,6 @@ import {fadeIn} from "../lib/motions";
 import {  ZodError } from 'zod';
 import { ReserveExperienceItemFormDataSchema, ReserveFormDataSchema, ReserveProductItemFormDataSchema, ReservePromotionItemFormDataSchema, ReserveTentItemFormDataSchema } from "../db/schemas";
 import Modal from "../components/Modal";
-import { toast } from "sonner";
 import {InputRadio} from "../components/ui/Input";
 import {useTranslation} from "react-i18next";
 
@@ -694,7 +693,7 @@ const DashboardAdminReserves = () => {
       setUsers([]);
     }
 
-
+    /*
     const [experiencesDayOptions,setDataExperienceDayOptions] = useState<{date:Date, label:string}[]>([])
 
     const getDateRangeFromForm = (formname:string) => {
@@ -742,7 +741,7 @@ const DashboardAdminReserves = () => {
         }
 
         setDataExperienceDayOptions(dateRange);
-    }
+        }*/
 
     const downloadReceipt = async() => {
       if(user !== null && selectedReserve){

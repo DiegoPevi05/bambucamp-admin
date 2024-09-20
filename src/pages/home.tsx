@@ -409,7 +409,6 @@ const ReserveCard = (props:ReserveCardProps) => {
                                   rightIcon={<FlameKindling/>} 
                                   onClick={()=>setSelectedOption(index)}
                                   checked={selectedOption === index}
-                                  readOnly
                                   className="flex-shrink-0"
                                   readOnly
                                 />

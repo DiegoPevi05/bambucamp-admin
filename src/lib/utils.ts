@@ -1,6 +1,6 @@
 import {ClassValue,clsx} from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import {Reserve, ImageInterface, ReserveTentDto, ReserveProductDto, ReserveExperienceDto, CustomPrice, optTentPromotionDto, optProductPromotionDto, optExperiencePromotionDto} from './interfaces'
+import {Reserve, ImageInterface, ReserveTentDto, CustomPrice, optTentPromotionDto, optProductPromotionDto, optExperiencePromotionDto} from './interfaces'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

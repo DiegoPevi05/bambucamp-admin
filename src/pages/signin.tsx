@@ -5,7 +5,7 @@ import { signInSchema } from "../db/schemas.ts"
 import { motion } from "framer-motion";
 import { fadeIn } from "../lib/motions";
 import {  useNavigate } from "react-router-dom";
-import { Lock, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import { SignInAccount } from "../db/actions";
