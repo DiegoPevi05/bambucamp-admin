@@ -1,9 +1,9 @@
-import { useState,useEffect } from "react";
+import { useState,useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fadeIn, fadeOnly } from "../lib/motions";
 import { useTranslation } from "react-i18next";
 import  Button from "../components/ui/Button";
-import { CalendarCheck, DoorClosed, Tent as TentIcon, Pizza,  DoorOpen,Coins,CircleSlash, CreditCard, FlameKindling, Eye, Plus, Info, CircleX, CircleCheck, User, ChevronLeft, ChevronRight, ShoppingBasket, X  } from "lucide-react"
+import { CalendarCheck, DoorClosed, Tent as TentIcon, Pizza,  DoorOpen,Coins,CircleSlash, CreditCard, FlameKindling, Eye, Plus, Info, CircleX, CircleCheck, User, ChevronLeft, ChevronRight, ShoppingBasket, X, FileDown, ReceiptText  } from "lucide-react"
 import {   NotificationDto, PublicExperience, PublicProduct, Reserve, ReserveExperienceDto, ReserveTentDto, createReserveExperienceDto, createReserveProductDto } from "../lib/interfaces";
 import Modal from "../components/Modal";
 import Dashboard from "../components/ui/Dashboard";
@@ -12,12 +12,14 @@ import { getTentsNames, getProductsNames, getExperiencesNames, formatPrice, form
 import ServiceItem from "../components/ServiceItem";
 import Calendar from "../components/Calendar";
 import {useAuth} from "../contexts/AuthContext";
-import { getAllMyReserves, getAllMyReservesCalendar } from "../db/actions/reserves";
+import { downloadBillForReserve, getAllMyReserves, getAllMyReservesCalendar } from "../db/actions/reserves";
 import { getAllNotifications } from "../db/actions/notifications";
 import {addExperienceToReserve, addProductToReserve, getPublicExperiences, getPublicProducts} from "../db/actions/reserves";
 import ExperienceCard from "../components/ExperienceCard";
 import { toast } from "sonner";
 import ProductCard from "../components/ProductCard";
+import {useNavigate} from "react-router-dom";
+import {NO_NOTIFICATIONS, NO_RESERVATIONS} from "../assets/images";
 
 
 interface NotificationCardProps {
@@ -42,10 +44,10 @@ const NotificationCard = (props:NotificationCardProps) => {
           { notification.type === "ERROR" && <CircleX className="h-5 w-5 text-tertiary"/>}
           { notification.type === "SUCCESS" && <CircleCheck className="h-5 w-5 text-tertiary"/>}
           { notification.type === "INFORMATION" && <Info className="h-5 w-5 text-tertiary"/>}
-          <h2 className="group-hover:text-tertiary">{notification.title}</h2>
+          <h2 className="group-hover:text-tertiary text-sm sm:text-md">{notification.title}</h2>
           <h3 className="ml-auto text-xs text-secondary">{formatDate(notification.date)}</h3>
         </div>
-        <p className="text-sm text-secondary group-hover:text-white font-secondary">{notification.preview}</p>
+        <p className="text-xs sm:text-sm text-secondary group-hover:text-white font-secondary">{notification.preview}</p>
       </motion.div>
       <Modal isOpen={openModal} onClose={()=>setOpenModal(false)}>
         <div className="w-full h-auto flex flex-col items-center justify-center text-secondary p-12">
@@ -196,6 +198,12 @@ const ReserveCard = (props:ReserveCardProps) => {
     setLoadingCreateProductInReserve(false);
   }
 
+  const downloadReceipt = async(idReserve:Number) => {
+    if(user !== null ){
+      await downloadBillForReserve(idReserve, user.token, i18n.language);
+    }
+  }
+
   return (
     <>
     <motion.div 
@@ -204,55 +212,123 @@ const ReserveCard = (props:ReserveCardProps) => {
       viewport={{once: true}}
       variants={fadeIn("up","",0,0.5)}
       className="bg-white p-2 rounded-xl shadow-lg border-2 border-gray-200 w-full h-auto  gap-x-4 mt-4 flex flex-col sm:grid sm:grid-cols-6 sm:grid-rows-7">
-      <div className="sm:col-span-4 2xl:col-span-3 sm:row-span-6 p-4 flex flex-row flex-wrap gap-y-4">
-          <div className="w-[50%] h-auto flex flex-col">
-            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start"><CircleSlash className="h-5 w-5"/>{t("reserve.identificator")}{":"}</h2>
-            <p className="text-xs font-primary text-slate-400 mt-2">{reserve.external_id}</p>
-          </div>
-          <div className="w-[50%] h-auto flex flex-col">
-            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start"><CalendarCheck className="h-5 w-5"/>{t("reserve.reservation")}{":"}</h2>
-            <p className="text-xs font-primary text-slate-400 mt-2">{reserve.reserve_status != "NOT_CONFIRMED" ? ( reserve.reserve_status == "CONFIRMED" ? (t("reserve.CONFIRMED")) : (t("reserve.COMPLETE")) ) : (t("reserve.NOT_CONFIRMED")) }</p>
-          </div>
-          <div className="w-[50%] h-auto flex flex-col">
-            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start"><Coins className="h-5 w-5"/>{t("reserve.total_import")}{":"}</h2>
-            <p className="text-xs font-primary text-slate-400 mt-2">{formatPrice(reserve.net_import)}</p>
-          </div>
-          <div className="w-[50%] h-auto flex flex-col">
-            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start"><CreditCard className="h-5 w-5"/>{t("reserve.reservation")}{":"}</h2>
-            <p className="text-xs font-primary text-slate-400 mt-2">{reserve.payment_status == "PAID" ? (t("PAID")) : (t("UNPAID"))}</p>
-          </div>
-          <div className="w-[50%] h-auto flex flex-col">
-            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start"><DoorClosed className="h-5 w-5"/>{t("Check In")}{":"}</h2>
-            <p className="text-xs font-primary text-slate-400 mt-2">{formatDate(getReserveDates(reserve.tents).dateFrom)}</p>
-          </div>
-          <div className="w-[50%] h-auto flex flex-col">
-            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start"><DoorOpen className="h-5 w-5"/>{t("Check Out")}{":"}</h2>
-            <p className="text-xs font-primary text-slate-400 mt-2">{formatDate(getReserveDates(reserve.tents).dateTo)}</p>
-          </div>
-        </div>
-      <div className="sm:col-span-2 2xl:col-span-3 sm:row-span-6 p-4 flex flex flex-row flex-wrap sm:border-l-2 sm:border-slate-200">
-          <div className="w-full h-auto flex flex-col">
-            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start"><TentIcon className="h-5 w-5"/>{t("reserve.glampings")}{":"}</h2>
-            <p className="text-xs font-primary text-slate-400 mt-2">{getTentsNames(reserve)}</p>
-          </div>
-          <div className="w-full h-auto flex flex-col">
-            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start"><Pizza className="h-5 w-5"/>{t("reserve.products")}{":"}</h2>
-            <p className="text-xs font-primary text-slate-400 mt-2">{getProductsNames(reserve)}</p>
-          </div>
-          <div className="w-full h-auto flex flex-col">
-            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start"><FlameKindling className="h-5 w-5"/>{t("reserve.experiences")}{":"}</h2>
-            <p className="text-xs font-primary text-slate-400 mt-2">{getExperiencesNames(reserve)}</p>
-          </div>
-        </div>
-        <div className="col-span-6 row-span-1 flex flex-row justify-end gap-x-4">
+
+        {/* Header Section */}
+        <div className="col-span-6 row-span-1 flex justify-between gap-x-4">
           <Button
             effect="default"
-            className="w-auto"
+            className="w-auto max-sm:text-[12px]"
+            size="sm"
+            variant="ghostLight"
+            onClick={() => downloadReceipt(reserve.id)}
+            rightIcon={<FileDown />}
+            disabled={reserve.canceled_status || (reserve.payment_status != "PAID" && reserve.reserve_status != "COMPLETED") }
+            isRound={true}>
+            {t("reserve.download_bill")} 
+          </Button>
+          <Button
+            effect="default"
+            className="w-auto max-sm:text-[12px]"
             size="sm"
             variant="ghostLight"
             onClick={() => setOpenReserve(true)}
-            isRound={true}
-          >{t("reserve.view_details")} <Eye /></Button>
+            rightIcon={<ReceiptText/>}
+            isRound={true}>
+            {t("reserve.view_details")} 
+          </Button>
+        </div>
+
+        {/* Left Section */}
+        <div className="col-span-6 sm:col-span-4 lg:col-span-3 row-span-3 sm:row-span-6 p-4 grid grid-cols-2 gap-y-4">
+          <div className="col-span-1">
+            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start">
+              <CircleSlash className="h-5 w-5"/>
+              {t("reserve.identificator")}:
+            </h2>
+            <p className="text-xs font-primary text-slate-400 mt-2">
+              {reserve.external_id}
+            </p>
+          </div>
+          <div className="col-span-1">
+            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start">
+              <CalendarCheck className="h-5 w-5"/>
+              {t("reserve.reservation")}:
+            </h2>
+            <p className="text-xs font-primary text-slate-400 mt-2">
+              {reserve.reserve_status !== "NOT_CONFIRMED" 
+                ? reserve.reserve_status === "CONFIRMED" 
+                  ? t("reserve.CONFIRMED") 
+                  : t("reserve.COMPLETE") 
+                : t("reserve.NOT_CONFIRMED")}
+            </p>
+          </div>
+          <div className="col-span-1">
+            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start">
+              <Coins className="h-5 w-5"/>
+              {t("reserve.total_import")}:
+            </h2>
+            <p className="text-xs font-primary text-slate-400 mt-2">
+              {formatPrice(reserve.net_import)}
+            </p>
+          </div>
+          <div className="col-span-1">
+            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start">
+              <CreditCard className="h-5 w-5"/>
+              {t("reserve.reservation")}:
+            </h2>
+            <p className="text-xs font-primary text-slate-400 mt-2">
+              {reserve.payment_status === "PAID" ? t("reserve.PAID") : t("reserve.UNPAID")}
+            </p>
+          </div>
+          <div className="col-span-1">
+            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start">
+              <DoorClosed className="h-5 w-5"/>
+              {t("Check In")}:
+            </h2>
+            <p className="text-xs font-primary text-slate-400 mt-2">
+              {formatDate(getReserveDates(reserve.tents).dateFrom)}
+            </p>
+          </div>
+          <div className="col-span-1">
+            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start">
+              <DoorOpen className="h-5 w-5"/>
+              {t("Check Out")}:
+            </h2>
+            <p className="text-xs font-primary text-slate-400 mt-2">
+              {formatDate(getReserveDates(reserve.tents).dateTo)}
+            </p>
+          </div>
+        </div>
+
+        {/* Right Section */}
+        <div className="col-span-6 sm:col-span-2 lg:col-span-3 row-span-3 sm:row-span-6 p-4 grid grid-cols-1 gap-y-4 sm:border-l-2 sm:border-slate-200">
+          <div>
+            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start">
+              <TentIcon className="h-5 w-5"/>
+              {t("reserve.glampings")}:
+            </h2>
+            <p className="text-xs font-primary text-slate-400 mt-2">
+              {getTentsNames(reserve)}
+            </p>
+          </div>
+          <div>
+            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start">
+              <Pizza className="h-5 w-5"/>
+              {t("reserve.products")}:
+            </h2>
+            <p className="text-xs font-primary text-slate-400 mt-2">
+              {getProductsNames(reserve)}
+            </p>
+          </div>
+          <div>
+            <h2 className="text-sm font-secondary text-primary flex flex-row gap-x-2 items-start">
+              <FlameKindling className="h-5 w-5"/>
+              {t("reserve.experiences")}:
+            </h2>
+            <p className="text-xs font-primary text-slate-400 mt-2">
+              {getExperiencesNames(reserve)}
+            </p>
+          </div>
         </div>
       </motion.div>
 
@@ -769,6 +845,7 @@ const ReserveCard = (props:ReserveCardProps) => {
 const DashboardReserves = () => {
 
     const {t,i18n} = useTranslation();
+    const navigate = useNavigate();
     const { user } = useAuth();
 
     const [datasetReserves,setDataSetReserves] = useState<{reserves:Reserve[],totalPages:Number,currentPage:Number}>({reserves:[],totalPages:1,currentPage:1});
@@ -776,22 +853,40 @@ const DashboardReserves = () => {
 
     const [dataNotifications,setDataNotifications] = useState<{notifications:NotificationDto[], totalPages:Number, currentPage:Number}>({notifications:[],totalPages:1, currentPage:1})
     const [currentDate, setCurrentDate] = useState<Date>(new Date());
+    const [pageSize, setPageSize] = useState<{ reserves:number, notifcations:number }| null>(null); // Start with `null` to ensure no data is fetched until pageSize is set.
 
-
-    useEffect(()=>{
-        getMyReservesHandler(1);
+    useEffect(() => {
+        const width = window.innerWidth;
+        if (width < 640) {
+          setPageSize({reserves: 2, notifcations:5 });
+        } else if (width < 1536) {
+          setPageSize({reserves:2 , notifcations: 2});
+        } else {
+          setPageSize({reserves:4, notifcations:2});
+        }
         getMyReservesCalendarHandler(0);
-        getMyNotifications(1);
-    },[]);
+    }, []); // This only sets `pageSize`.
 
-    const getMyReservesHandler = async (page:Number) => {
-        if(user != null){
-            const reserves  = await getAllMyReserves(user.token,page,i18n.language);
-            if(reserves){
+    useEffect(() => {
+        if (pageSize !== null) {  // Ensure data fetching happens only after `pageSize` is set.
+            getAllData();
+        }
+    }, [pageSize]); // Triggers only once after pageSize is set.
+
+    const getAllData = useCallback(() => {
+        getMyReservesHandler(1);
+        getMyNotifications(1);
+    }, [pageSize]); // `pageSize` is correctly passed to ensure data fetching with the right page size.
+
+    const getMyReservesHandler = useCallback(async (page: number) => {
+        if (user != null) {
+            const reserves = await getAllMyReserves(user.token, page, pageSize?.reserves as number, i18n.language);
+            if (reserves) {
                 setDataSetReserves(reserves);
             }
         }
-    }
+    }, [pageSize]);
+
 
     const getMyReservesCalendarHandler = async (page:Number) => {
         if(user != null){
@@ -804,7 +899,7 @@ const DashboardReserves = () => {
 
     const getMyNotifications = async (page:Number) => {
         if(user != null){
-            const notifications  = await getAllNotifications(user.token,page,i18n.language);
+            const notifications  = await getAllNotifications(user.token,page,pageSize?.notifcations as number,i18n.language);
             if(notifications){
                 setDataNotifications(notifications);
             }
@@ -831,6 +926,10 @@ const DashboardReserves = () => {
 
     const calendarDays = Calendar(currentDate, datasetReserveCalendar.reserves.map((reserve) => ({ reserveID:reserve.id , external_id:reserve.external_id , checkin: reserve.dateFrom, checkout: reserve.dateTo })));
 
+  const goToRoute = (route:string) => {
+    navigate(route);
+  };
+
     return (
     <Dashboard>
       <motion.div 
@@ -838,60 +937,126 @@ const DashboardReserves = () => {
         animate="show"
         exit="hidden"
         variants={fadeIn("up","",0,0.5)}
-        className="bg-white h-auto flex flex-col justify-start items-start lg:row-span-7 lg:grid lg:grid-cols-2 lg:grid-rows-3 gap-4">
+        className="bg-white 
+        h-auto 2xl:h-[90%]  
+        w-full
+        flex flex-col xl:flex-row 
+        justify-start items-start gap-y-4 xl:gap-4 xl:pb-4">
 
-        <div className="bg-white p-4 rounded-lg shadow-lg border-2 border-gray-200 w-full h-auto flex flex-col lg:col-span-1 lg:row-span-2">
-            <h1 className="text-md sm:text-lg flex flex-row gap-x-2 text-secondary"><CalendarCheck/>{t("reserve.calendar")}</h1>
-            <p className="font-secondary text-sm sm:text-md text-tertiary">{t("reserve.view_reserves_month")}</p>
-            <div className="w-full h-auto flex flex-row gap-x-2 my-4 sm:my-2">
-              <span className="h-4 sm:h-6 w-4 sm:w-6 bg-tertiary rounded-md"></span>
-              <p className="font-primary text-tertiary text-sm">{t("reserve.reserves")}</p>
-              <span className="h-4 sm:h-6 w-4 sm:w-6 bg-white rounded-md border-2 border-slate-400"></span>
-              <p className="font-primary text-slate-400 text-sm">{t("reserve.today")}</p>
-            </div>
-            <AnimatePresence>
-                <motion.div 
-                initial="hidden"
-                animate="show"
-                exit="hidden"
-                variants={fadeOnly("",0,0.5)}
-                className="h-auto w-full w-full bg-white duration-800 transition-all transition-opacity rounded-b-xl">
-                  <div className="flex flex-row justify-between items-center mb-4 px-4">
-                    <button className="text-sm sm:text-md text-secondary hover:text-primary duration-300" onClick={handlePreviousMonth}>{t("common.previous")}</button>
-                    <h1 className="text-sm sm:text-md text-secondary">{currentDate.getMonth()+1 +"/"+ currentDate.getFullYear()}</h1>
-                    <button className="text-sm sm:text-md text-secondary hover:text-primary duration-300" onClick={handleNextMonth}>{t("common.next")}</button>
+        <div className="w-full xl:w-[50%] h-full flex flex-col xl:gap-y-4">
+          <div className="bg-white px-2 py-4 xl:p-4 rounded-lg shadow-lg border-2 border-gray-200 w-full h-auto xl:h-auto flex flex-col">
+              <h1 className="text-sm sm:text-lg flex flex-row gap-x-2 text-secondary max-sm:mt-2"><CalendarCheck/>{t("reserve.calendar")}</h1>
+              <p className="font-secondary text-sm sm:text-md max-sm:mt-2 text-tertiary">{t("reserve.view_reserves_month")}</p>
+              <div className="w-full h-auto flex flex-row gap-x-2 my-4 sm:my-2">
+                <span className="h-4 sm:h-6 w-4 sm:w-6 bg-tertiary rounded-md"></span>
+                <p className="font-primary text-tertiary text-sm">{t("reserve.reserves")}</p>
+                <span className="h-4 sm:h-6 w-4 sm:w-6 bg-white rounded-md border-2 border-slate-400"></span>
+                <p className="font-primary text-slate-400 text-sm">{t("reserve.today")}</p>
+              </div>
+              <AnimatePresence>
+                  <motion.div 
+                  initial="hidden"
+                  animate="show"
+                  exit="hidden"
+                  variants={fadeOnly("",0,0.5)}
+                  className="h-auto w-full w-full bg-white duration-800 transition-all transition-opacity rounded-b-xl">
+                    <div className="flex flex-row justify-between items-center mb-4 px-4">
+                      <button className="text-sm sm:text-md text-white hover:text-primary duration-300 bg-secondary rounded-full px-4 py-1 active:scale-95 hover:bg-white hover:text-secondary border-2 border-white hover:border-secondary" onClick={handlePreviousMonth}>{t("common.previous")}</button>
+                      <h1 className="text-sm sm:text-md text-white duration-300 bg-secondary rounded-full px-4 py-1  border-2 border-white">{currentDate.getMonth()+1 +"/"+ currentDate.getFullYear()}</h1>
+                      <button className="text-sm sm:text-md text-white hover:text-primary duration-300 bg-secondary rounded-full px-4 py-1 active:scale-95 hover:bg-white hover:text-secondary border-2 border-white hover:border-secondary" onClick={handleNextMonth}>{t("common.next")}</button>
+                    </div>
+                    <div className="grid grid-cols-7 gap-2 p-2">
+                      {calendarDays}
+                    </div>
+                  </motion.div>
+              </AnimatePresence>
+          </div>
+          <div className="bg-white px-2 py-4 sm:p-4 rounded-lg shadow-lg border-2 border-gray-200 w-full h-auto xl:h-full hidden xl:flex flex-col">
+              <h1 className="text-lg flex flex-row gap-x-2 text-secondary"><CalendarCheck/>{t("reserve.news")}</h1>
+              <p className="font-secondary text-md text-tertiary">{t("reserve.latest_notifications")}</p>
+              <div className="w-full h-full overflow-hidden">
+                {dataNotifications.notifications.length === 0 ?
+                  <div className="w-full h-[400px] sm:h-full flex flex-col items-center justify-center bg-white gap-y-4">
+                    <img src={NO_NOTIFICATIONS} alt="tent" className="w-[40%] sm:w-[100px] h-auto object-cover"/>
+                        <h3 
+                          className={`text-secondary text-center`}>
+                              {`${t("reserve.no_notifications")}`}
+                        </h3>
                   </div>
-                  <div className="grid grid-cols-7 gap-2 p-2">
-                    {calendarDays}
+                :
+                  <div className="w-full h-full xl:h-36 flex flex-col overflow-y-scroll gap-y-4 mt-4 pr-2">
+                      {dataNotifications.notifications.map((notification, index) => (
+                        <NotificationCard key={index} notification={notification}/>
+                      ))}
                   </div>
-                </motion.div>
-            </AnimatePresence>
+                }
+              </div>
+              <div className="flex flex-row justify-between w-full mt-auto">
+                  <Button onClick={ () => getMyNotifications( Number(dataNotifications.currentPage) - 1)} size="sm" variant="dark" effect="default" isRound={true} disabled={dataNotifications.currentPage == 1}> <ChevronLeft/>  </Button>
+                  <Button onClick={ () => getMyNotifications( Number(dataNotifications.currentPage) + 1)} size="sm" variant="dark" effect="default" isRound={true} disabled={dataNotifications.currentPage >= dataNotifications.totalPages}> <ChevronRight/> </Button>
+              </div>
+          </div>
         </div>
 
-        <div className="bg-white p-2 sm:p-4 rounded-lg shadow-lg border-2 border-gray-200 min-h-[650px] lg:h-full flex flex-col lg:col-span-1 lg:row-span-3 ">
-          <h1 className="text-sm sm:text-lg flex flex-row gap-x-2 text-secondary"><TentIcon/>{t("reserve.reserves")}</h1>
-          <p className="font-secondary text-tertiary text-sm sm:text-md max-sm:mt-2">{"Mira tus reservas aqui"}</p>
 
-          <div className="w-full h-[80%] flex flex-col overflow-y-scroll pr-2 sm:pr-4">
-              {datasetReserves.reserves.map((reserve, index) => (
-                <ReserveCard key={index} reserve={reserve}/>
-              ))}
+        <div className="bg-white px-2 py-4  xl:p-4 rounded-lg shadow-lg border-2 border-gray-200 w-full xl:w-[50%] h-auto xl:h-full flex flex-col ">
+          <h1 className="text-sm sm:text-lg flex flex-row gap-x-2 text-secondary max-sm:mt-2"><TentIcon/>{t("reserve.reserves")}</h1>
+          <p className="font-secondary text-tertiary text-sm sm:text-md max-sm:mt-2">{t("reserve.view_reserves_month")}</p>
+
+          <div className="w-full h-[80%] flex flex-col overflow-y-scroll xl:pr-4 gap-y-4 mt-4">
+              {datasetReserves.reserves.length === 0 ?
+                <div className="w-full h-[400px] sm:h-full flex flex-col items-center justify-center bg-white gap-y-4">
+                  <img src={NO_RESERVATIONS} alt="tent" className="w-[40%] sm:w-[30%] h-auto object-cover ml-6"/>
+                      <h3 
+                        className={`text-secondary text-center`}>
+                            {`${t("reserve.no_tents_reservations")}`}
+                      </h3>
+                      <Button
+                        onClick={()=>goToRoute("/reserves")}
+                        effect="default"
+                        variant="ghostLight" 
+                        size="lg" 
+                        className="group h-10"
+                        isRound={true}
+                        rightIcon={<Plus/>}
+                      >{t("reserve.add_to_reserve")}</Button>
+                </div>
+              :
+                datasetReserves.reserves.map((reserve, index) => (
+                  <ReserveCard key={index} reserve={reserve}/>
+                ))
+            }
             </div>
-            <div className="flex flex-row justify-between w-full mt-auto">
+          <div className="flex flex-row justify-between w-full mt-auto max-xl:mt-4">
                 <Button onClick={ () => getMyReservesHandler( Number(datasetReserves.currentPage) - 1)} size="sm" variant="dark" effect="default" isRound={true} disabled={datasetReserves.currentPage == 1}> <ChevronLeft/>  </Button>
                 <Button onClick={ () => getMyReservesHandler( Number(datasetReserves.currentPage) + 1)} size="sm" variant="dark" effect="default" isRound={true} disabled={datasetReserves.currentPage >= datasetReserves.totalPages}> <ChevronRight/> </Button>
             </div>
         </div>
 
-        <div className="bg-white px-2 py-4 sm:p-4 rounded-lg shadow-lg border-2 border-gray-200 w-full max-lg:min-h-[400px] flex flex-col lg:col-span-1 lg:row-span-1">
-            <h1 className="text-lg flex flex-row gap-x-2 text-secondary"><CalendarCheck/>{t("reserve.news")}</h1>
-            <p className="font-secondary text-md text-tertiary">{t("reserve.latest_notifications")}</p>
-            <div className="w-full h-full overflow-hidden">
-              <div className="w-full h-[300px] lg:h-36 flex flex-col overflow-y-scroll gap-y-4 mt-4 pr-2">
-                  {dataNotifications.notifications.map((notification, index) => (
-                    <NotificationCard key={index} notification={notification}/>
-                  ))}
-              </div>
+        <div className="bg-white px-2 py-4 xl:p-4 rounded-lg shadow-lg border-2 border-gray-200 xl:hidden w-full h-auto flex flex-col ">
+          <h1 className="text-sm sm:text-lg flex flex-row gap-x-2 text-secondary max-sm:mt-2"><CalendarCheck/>{t("reserve.news")}</h1>
+          <p className="font-secondary text-sm sm:text-md text-tertiary">{t("reserve.latest_notifications")}</p>
+          <div className="w-full h-full overflow-hidden">
+            <div className="w-full h-auto xl:h-full flex flex-col overflow-y-scroll gap-y-4 mt-4">
+
+                {dataNotifications.notifications.length === 0 ?
+                  <div className="w-full h-auto flex flex-col items-center justify-center bg-white gap-y-4 py-12">
+                    <img src={NO_NOTIFICATIONS} alt="tent" className="w-[150px] sm:w-[200px] h-auto object-cover"/>
+                        <h3 
+                          className={`text-secondary text-center`}>
+                              {`${t("reserve.no_notifications")}`}
+                        </h3>
+                  </div>
+                :
+                dataNotifications.notifications.map((notification, index) => (
+                  <NotificationCard key={index} notification={notification}/>
+                ))
+              }
+            </div>
+          </div>
+          <div className="flex flex-row justify-between w-full mt-auto max-xl:mt-4">
+                <Button onClick={ () => getMyNotifications( Number(dataNotifications.currentPage) - 1)} size="sm" variant="dark" effect="default" isRound={true} disabled={dataNotifications.currentPage == 1}> <ChevronLeft/>  </Button>
+                <Button onClick={ () => getMyNotifications( Number(dataNotifications.currentPage) + 1)} size="sm" variant="dark" effect="default" isRound={true} disabled={dataNotifications.currentPage >= dataNotifications.totalPages}> <ChevronRight/> </Button>
             </div>
         </div>
 

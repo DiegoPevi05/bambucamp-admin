@@ -3,13 +3,15 @@ import axios from 'axios';
 import { NotificationDto, notifcationFilters } from '../../lib/interfaces';
 import { serializeNotification } from '../serializer';
 
-export const getAllNotifications = async( token: string, page:Number, language:string, filters?:notifcationFilters ): Promise<{notifications:NotificationDto[], totalPages:Number ,currentPage:Number}|null> => {
+export const getAllNotifications = async( token: string, page:Number, pageSize:number, language:string, filters?:notifcationFilters ): Promise<{notifications:NotificationDto[], totalPages:Number ,currentPage:Number}|null> => {
 
   let data:{ notifications:NotificationDto[],totalPages:Number,currentPage:Number } | null = null;
   try{
     // Create a URLSearchParams object to construct the query string
     const params = new URLSearchParams();
     params.append('page', page.toString());
+    params.append('pageSize', pageSize.toString());
+
 
     // Append filters to the query parameters
     if (filters) {
