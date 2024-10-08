@@ -1,6 +1,6 @@
 import { useState, FormEvent } from "react";
 import Button from "../components/ui/Button";
-import {  ISOLOGO, LOGO_PRIMARY } from "../assets/images";
+import {  ISOLOGO } from "../assets/images";
 import { signInSchema } from "../db/schemas.ts"
 import { motion } from "framer-motion";
 import { fadeIn } from "../lib/motions";
