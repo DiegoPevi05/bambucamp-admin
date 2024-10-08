@@ -225,3 +225,40 @@ export const formatDateToYYYYMMDD = (date: Date): string => {
   // Return the date in the desired format YYYYY-MM-DD
   return `${year}-${month}-${day}`;
 }
+
+export const countUnconfirmedItems = (reserve: Reserve): number  => {
+  let unconfirmedCount = 0;
+
+  // Count unconfirmed tents
+  reserve.tents.forEach((tent) => {
+    if (!tent.confirmed) {
+      unconfirmedCount++;
+    }
+  });
+
+  // Count unconfirmed products
+  reserve.products.forEach((product) => {
+    if (!product.confirmed) {
+      unconfirmedCount++;
+    }
+  });
+
+  // Count unconfirmed experiences
+  reserve.experiences.forEach((experience) => {
+    if (!experience.confirmed) {
+      unconfirmedCount++;
+    }
+  });
+
+  // Count unconfirmed promotions
+  reserve.promotions.forEach((promotion) => {
+    if (!promotion.confirmed) {
+      unconfirmedCount++;
+    }
+  });
+
+  return unconfirmedCount;
+}
+
+
+

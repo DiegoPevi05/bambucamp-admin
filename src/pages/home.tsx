@@ -8,7 +8,7 @@ import {   NotificationDto, PublicExperience, PublicProduct, Reserve, ReserveExp
 import Modal from "../components/Modal";
 import Dashboard from "../components/ui/Dashboard";
 import { InputRadio } from "../components/ui/Input";
-import { getTentsNames, getProductsNames, getExperiencesNames, formatPrice, formatDate, getReserveDates, formatDateToYYYYMMDD, getRangeDatesForReserve } from "../lib/utils";
+import { getTentsNames, getProductsNames, getExperiencesNames, formatPrice, formatDate, getReserveDates, formatDateToYYYYMMDD, getRangeDatesForReserve, countUnconfirmedItems } from "../lib/utils";
 import ServiceItem from "../components/ServiceItem";
 import Calendar from "../components/Calendar";
 import {useAuth} from "../contexts/AuthContext";
@@ -228,7 +228,14 @@ const ReserveCard = (props:ReserveCardProps) => {
       whileInView="show"
       viewport={{once: true}}
       variants={fadeIn("up","",0,0.5)}
-      className="bg-white p-2 rounded-xl shadow-lg border-2 border-gray-200 w-full h-auto  gap-x-4 mt-4 flex flex-col sm:grid sm:grid-cols-6 sm:grid-rows-8">
+      className="relative bg-white p-2 rounded-xl shadow-lg border-2 border-gray-200 w-full h-auto  gap-x-4 mt-4 flex flex-col sm:grid sm:grid-cols-6 sm:grid-rows-8">
+      {countUnconfirmedItems(reserve) > 0 &&
+        (
+        <span className="absolute -right-4 -top-4 bg-red-400 rounded-full h-8 w-8 flex justify-center items-center text-white">
+          {countUnconfirmedItems(reserve)}
+        </span>
+      )}
+
 
         {/* Header Section */}
         <div className="col-span-6 row-span-1 flex flex-row gap-x-4">
@@ -793,24 +800,23 @@ const ReserveCard = (props:ReserveCardProps) => {
               exit="hidden"
               variants={fadeIn("","up",0.5,1)}
               className="flex flex-col w-full h-auto lg:h-[400px] mt-4">
+              {!selectedExperience.confirmed && (
+                <div className="w-full h-auto flex flex-row justify-between">
+                  <span className="text-[10px] bg-red-100 text-red-400 w-[50%] rounded-lg px-4 py-1 mb-2 flex flex-row gap-x-2 items-center">
+                    <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-300"></span>
+                    </span>
+                    {t("reserve.pending_experience")}
+                  </span>
+                  <Button isLoading={loadingConfirmation} onClick={()=>HandlerConfirmEntity("EXPERIENCE",reserve.id,selectedExperience.id)} rightIcon={<CheckIcon/>} size="sm" isRound={true} effect={"default"} variant="ghostLight">
+                    {t("reserve.confirm")}
+                  </Button>
+                </div>
+              )}
               <div className="h-[80%] w-full flex flex-row">
                 <div className="h-full w-[50%] lg:w-[75%] flex flex-col pb-4 px-4">
-                  {!selectedExperience.confirmed && (
-                    <div className="w-full h-auto flex flex-row justify-between">
-                      <span className="text-[10px] bg-red-100 text-red-400 w-full sm:w-[50%] rounded-lg px-4 py-1 mb-2 flex flex-row gap-x-2 items-center">
-                        <span className="relative flex h-3 w-3">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-300"></span>
-                        </span>
-                        {t("reserve.pending_experience")}
-                      </span>
-                      <Button isLoading={loadingConfirmation} onClick={()=>HandlerConfirmEntity("EXPERIENCE",reserve.id,selectedExperience.id)} rightIcon={<CheckIcon/>} size="sm" isRound={true} effect={"default"} variant="ghostLight">
-                        {t("reserve.confirm")}
-                      </Button>
-                    </div>
-                  )}
                   <h1 className="text-tertiary">{selectedExperience.experienceDB?.name}</h1>
-
                   <p className="hidden sm:block text-primary text-xs">{selectedExperience.experienceDB?.description}</p>
                   <div className="w-full h-auto flex flex-col lg:flex-row mt-2">
                     <div className="w-[100%] lg:w-[50%] h-full flex flex-col">

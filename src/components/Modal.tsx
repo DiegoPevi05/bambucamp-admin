@@ -13,7 +13,7 @@ export const Modal = ({ isOpen, onClose, children }: ModalProps) => {
   return (
     <>
       {isOpen && (
-        <div className="bg-transparent fixed top-0 left-0 h-full w-full flex items-center justify-center z-10">
+        <div className="bg-transparent fixed top-0 left-0 h-full w-full flex items-center justify-center z-[120]">
           <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center z-[140]" style={{background: "rgba(0,0,0,0.1)"}} onClick={onClose}></div>
           <AnimatePresence>
               <motion.div
