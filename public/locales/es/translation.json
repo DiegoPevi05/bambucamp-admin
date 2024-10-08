@@ -10,6 +10,8 @@
 		"search": "Buscar",
 		"no": "No",
 		"yes": "Si",
+		"gross_amount": "Importe Total",
+		"price": "Precio",
 		"validations": {
 			"image_file": "Debe ser un archivo válido (JPEG, PNG, WEBP) y no pesar más 2MB",
 			"custom_price_price": "Precio personalizado debe ser positivo"
@@ -340,6 +342,10 @@
 		}
 	},
 	"experience": {
+		"suggestions": "Sugerencias",
+		"day": "Dia de la Experiencia",
+		"limit_age": "El limite de edad para esta experiencia",
+		"qty_people": "Cantidad de personas por experiencia",
 		"plural": "Experiencias",
 		"status": "Estado",
 		"select_status": "Seleccionar Estado",

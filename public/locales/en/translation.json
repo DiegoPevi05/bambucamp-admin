@@ -10,6 +10,8 @@
 		"search": "Search",
 		"no": "No",
 		"yes": "Yes",
+		"gross_amount": "Total Import",
+		"price": "Price",
 		"validations": {
 			"image_file": "Archive must be valid (JPEG, PNG, WEBP) and not weight more than 2MB",
 			"custom_price_price": "Custom price must be positive"
@@ -340,6 +342,10 @@
 		}
 	},
 	"experience": {
+		"suggestions": "Suggestions",
+		"day": "Experience Day",
+		"limit_age": "Limit of age for this experience",
+		"qty_people": "Quantity of people allowed by experience",
 		"plural": "Experiences",
 		"status": "Status",
 		"select_status": "Select Status",

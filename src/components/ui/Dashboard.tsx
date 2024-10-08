@@ -1,8 +1,8 @@
 import React, {useState} from "react";
 import Button from "./Button";
-import { LOGO_PRIMARY } from "../../assets/images";
+import { ISOLOGO } from "../../assets/images";
 import {  AnimatePresence } from "framer-motion";
-import { CalendarCheck, User, MessageSquare, DoorClosed, Pizza, FlameKindling, Percent, Disc, Tent, AlignJustify, Quote   } from "lucide-react"
+import { CalendarCheck, User, MessageSquare, DoorClosed, Pizza, FlameKindling, Percent, Disc, Tent, AlignJustify, Quote, Home   } from "lucide-react"
 import {useAuth} from "../../contexts/AuthContext";
 import DropDownListAccount from "../DropDownListAccount";
 import {useNavigate} from "react-router-dom";
@@ -13,7 +13,12 @@ import LanguageDropDownList from "../LanguageSelector";
 
 const DashboardButtons: DashboardButtonDataProps[] = [
   {
-    "title": "Reservas",
+    "title": "Dashboard",
+    "icon": <Home />,
+    "section": ""
+  },
+  {
+    "title": "reserve.reserves",
     "icon": <CalendarCheck />,
     "section": "reserves"
   },
@@ -109,8 +114,8 @@ const Dashboard = ({children}:{children:React.ReactNode}) => {
             <button className="2xl:hidden h-12 w-12 flex items-center justify-center text-secondary rounded-xl active:scale-95 active:bg-white active:text-secondary active:border active:border-secondary" onClick={()=>setOpenNavbar((prev)=> !prev)} ><AlignJustify className=""/></button>
             <LanguageDropDownList variant="dark"/>
           </div>
-          <a href="/" className="hover:cursor-pointer hover:scale-[1.05] transition-all duration-300 rounded-full bg-white w-[80px] sm:w-[125px] h-[80px] sm:h-[125px] flex items-center justify-center border border-secondary border-2 mx-auto">
-            <img src={LOGO_PRIMARY} alt="logo" className="w-[40px] sm:w-[80px] h-[40px] sm:h-[80px]"/>
+          <a href="/" className="hover:cursor-pointer hover:scale-[1.05] transition-all duration-300 rounded-full bg-white w-[80px] sm:w-[125px] h-[80px] sm:h-[125px] flex items-center justify-center  mx-auto">
+            <img src={ISOLOGO} alt="logo" className="w-[40px] sm:w-[80px] h-[40px] sm:h-[80px]"/>
           </a>
 
           {DashboardButtons.map((button, index) => (
