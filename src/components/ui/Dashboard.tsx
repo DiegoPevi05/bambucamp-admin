@@ -158,7 +158,7 @@ const Dashboard = ({children}:{children:React.ReactNode}) => {
               <button className="2xl:hidden h-full w-12 flex items-center justify-center text-secondary rounded-xl active:scale-95 active:bg-white active:text-secondary active:border active:border-secondary" onClick={()=>setOpenNavbar((prev)=> !prev)} ><AlignJustify className=""/></button>
               <div className="flex gap-x-4 items-start flex-col">
                 <h1 className="text-sm sm:text-lg text-secondary">{t("common.welcome")} {user?.firstName}{" "}{user?.lastName}</h1>
-                <p className="font-secondary text-[10px] sm:text-md text-tertiary">{t("common.subheader")}<a href="https://www.bambucamp.com.pe" target="_blank" className="hover:underline">www.bambucamp.com.pe</a></p>
+                <p className="font-secondary text-[10px] sm:text-[14px] text-tertiary">{t("common.subheader")}<a href="https://www.bambucamp.com.pe" target="_blank" className="hover:underline">www.bambucamp.com.pe</a></p>
               </div>
             </div>
             <DropDownListAccount user={user} variant="dark"/>

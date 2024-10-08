@@ -67,6 +67,10 @@
 		}
 	},
 	"reserve": {
+		"confirm": "Confirm",
+		"no_notifications": "No Notifications",
+		"no_tents_reservations": "No glampings reserved",
+		"download_bill": "Voucher",
 		"download_receipt": "Download Receipt",
 		"services": "Services",
 		"no_products_available": "No products available",
@@ -111,6 +115,7 @@
 		"PAID": "Paid",
 		"UNPAID": "Unpaid",
 		"pending_experience": "Experience pending confirmation",
+		"pending_product": "Product pending confirmation",
 		"my_experiences": "My Experiences",
 		"list": "List",
 		"request_adding_experiences": "Request Add Experiences",

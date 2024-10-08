@@ -346,7 +346,7 @@ export const deleteReserve = async(idReserve:Number, token:string, language:stri
 
 export const addProductToReserve = async (products: ReserveProductDto[], token: string, language:string): Promise<boolean> => {
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/reserves/reserve/product`, {products:products }, {
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/reserves/reserve/product/admin`, {products:products }, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept-Language':language
@@ -385,7 +385,7 @@ export const addExperienceToReserve = async (experiences: ReserveExperienceDto[]
   try {
 
 
-    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/reserves/reserve/experience`, {experiences:experiences }, {
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/reserves/reserve/experience/admin`, {experiences:experiences }, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept-Language':language
@@ -581,5 +581,47 @@ export const downloadBillForReserve = async(idReserve:Number, token:string, lang
     }
     console.error(error);
   }
+};
 
-}
+
+export const confirmEntity = async (entityType: string,reserveId:number, token:string, language:string , entityId?:number): Promise<boolean> => {
+  try {
+    const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/reserves/reserve/confirm`, 
+      { 
+        entityType,
+        reserveId,
+        entityId
+      }, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept-Language':language
+      }
+    });
+    toast.success(response.data.message);
+    return true;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
+
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
+      } else {
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || `Error confirming the ${entityType}.`} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
+      }
+    } else {
+      toast.error("An unexpected error occurred.");
+    }
+    console.error(error);
+    return false;
+  }
+};

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { fadeIn, fadeOnly } from "../lib/motions";
 import { useTranslation } from "react-i18next";
 import  Button from "../components/ui/Button";
-import { CalendarCheck, DoorClosed, Tent as TentIcon, Pizza,  DoorOpen,Coins,CircleSlash, CreditCard, FlameKindling, Eye, Plus, Info, CircleX, CircleCheck, User, ChevronLeft, ChevronRight, ShoppingBasket, X, FileDown, ReceiptText  } from "lucide-react"
+import { CalendarCheck, DoorClosed, Tent as TentIcon, Pizza,  DoorOpen,Coins,CircleSlash, CreditCard, FlameKindling, Eye, Plus, Info, CircleX, CircleCheck, User, ChevronLeft, ChevronRight, ShoppingBasket, X, FileDown, ReceiptText, CheckIcon  } from "lucide-react"
 import {   NotificationDto, PublicExperience, PublicProduct, Reserve, ReserveExperienceDto, ReserveTentDto, createReserveExperienceDto, createReserveProductDto } from "../lib/interfaces";
 import Modal from "../components/Modal";
 import Dashboard from "../components/ui/Dashboard";
@@ -12,7 +12,7 @@ import { getTentsNames, getProductsNames, getExperiencesNames, formatPrice, form
 import ServiceItem from "../components/ServiceItem";
 import Calendar from "../components/Calendar";
 import {useAuth} from "../contexts/AuthContext";
-import { downloadBillForReserve, getAllMyReserves, getAllMyReservesCalendar } from "../db/actions/reserves";
+import { confirmEntity, downloadBillForReserve, getAllMyReserves, getAllMyReservesCalendar } from "../db/actions/reserves";
 import { getAllNotifications } from "../db/actions/notifications";
 import {addExperienceToReserve, addProductToReserve, getPublicExperiences, getPublicProducts} from "../db/actions/reserves";
 import ExperienceCard from "../components/ExperienceCard";
@@ -198,6 +198,17 @@ const ReserveCard = (props:ReserveCardProps) => {
     setLoadingCreateProductInReserve(false);
   }
 
+  const [loadingConfirmation,setLoadingConfirmation] = useState<boolean>(false);
+
+  const HandlerConfirmEntity = async(entityType:string, idReserve:number, entityId?:number) => {
+    setLoadingConfirmation(true);
+    if(user !== null ){
+      console.log(entityId);
+      await confirmEntity(entityType, idReserve, user.token, i18n.language,entityId);
+    }
+    setLoadingConfirmation(false);
+  }
+
   const downloadReceipt = async(idReserve:Number) => {
     if(user !== null ){
       await downloadBillForReserve(idReserve, user.token, i18n.language);
@@ -211,31 +222,38 @@ const ReserveCard = (props:ReserveCardProps) => {
       whileInView="show"
       viewport={{once: true}}
       variants={fadeIn("up","",0,0.5)}
-      className="bg-white p-2 rounded-xl shadow-lg border-2 border-gray-200 w-full h-auto  gap-x-4 mt-4 flex flex-col sm:grid sm:grid-cols-6 sm:grid-rows-7">
+      className="bg-white p-2 rounded-xl shadow-lg border-2 border-gray-200 w-full h-auto  gap-x-4 mt-4 flex flex-col sm:grid sm:grid-cols-6 sm:grid-rows-8">
 
         {/* Header Section */}
-        <div className="col-span-6 row-span-1 flex justify-between gap-x-4">
-          <Button
-            effect="default"
-            className="w-auto max-sm:text-[12px]"
-            size="sm"
-            variant="ghostLight"
-            onClick={() => downloadReceipt(reserve.id)}
-            rightIcon={<FileDown />}
-            disabled={reserve.canceled_status || (reserve.payment_status != "PAID" && reserve.reserve_status != "COMPLETED") }
-            isRound={true}>
-            {t("reserve.download_bill")} 
-          </Button>
-          <Button
-            effect="default"
-            className="w-auto max-sm:text-[12px]"
-            size="sm"
-            variant="ghostLight"
-            onClick={() => setOpenReserve(true)}
-            rightIcon={<ReceiptText/>}
-            isRound={true}>
-            {t("reserve.view_details")} 
-          </Button>
+        <div className="col-span-6 row-span-1 flex flex-row gap-x-4">
+          <div className={`w-full flex flex-row ${reserve.reserve_status == "NOT_CONFIRMED" ? "justify-start": "justify-between"} gap-x-4`}>
+            <Button
+              effect="default"
+              className="w-auto max-sm:text-[12px]"
+              size="sm"
+              variant="ghostLight"
+              onClick={() => downloadReceipt(reserve.id)}
+              rightIcon={<FileDown />}
+              disabled={reserve.canceled_status || (reserve.payment_status != "PAID" && reserve.reserve_status != "COMPLETED") }
+              isRound={true}>
+              {t("reserve.download_bill")} 
+            </Button>
+            <Button
+              effect="default"
+              className="w-auto max-sm:text-[12px]"
+              size="sm"
+              variant="ghostLight"
+              onClick={() => setOpenReserve(true)}
+              rightIcon={<ReceiptText/>}
+              isRound={true}>
+              {t("reserve.view_details")} 
+            </Button>
+          </div>
+          {reserve.reserve_status == "NOT_CONFIRMED" &&
+            <Button rightIcon={<CheckIcon/>} size="sm" isRound={true} effect={"default"} variant="ghostLight" isLoading={loadingConfirmation} onClick={()=>HandlerConfirmEntity("RESERVE",reserve.id)} >
+              {t("reserve.confirm")}
+            </Button>
+          }
         </div>
 
         {/* Left Section */}
@@ -330,6 +348,7 @@ const ReserveCard = (props:ReserveCardProps) => {
             </p>
           </div>
         </div>
+
       </motion.div>
 
       <Modal isOpen={openReserve} onClose={()=>setOpenReserve(false)}>
@@ -423,24 +442,41 @@ const ReserveCard = (props:ReserveCardProps) => {
                         >{t("reserve.add_product")}</Button>
                       </div>
                       {reserve.products.map((product, index) => (
-                        <div key={"product"+index} className="flex flex-row w-full border border-2 border-gray-200 p-2 rounded-lg">
-                          <div className="w-48 h-24 bg-gray-200 rounded-lg">
-                            <img src={`${product?.productDB?.images[0]}`} alt={product?.productDB?.name} className="w-full h-full object-cover"/>
-                          </div>
-                          <div className="w-full h-auto flex flex-col gap-y-2 px-4">
-                            <p className="text-primary text-sm">{product?.productDB?.name}</p>
-                            <p className="text-secondary text-xs">{product?.productDB?.description}</p>
-                            <p className="text-primary text-sm mt-auto">{formatPrice(product.price)}</p>
-                          </div>
-                          <div className="w-24 h-auto flex flex-col justify-center items-center">
-                            <p className="text-primary text-sm">{t("reserve.quantity")}</p>
-                            <p className="text-primary text-sm">{product.quantity}</p>
-                            <p className="text-primary text-sm mt-auto">{formatPrice(product.quantity ? product.price*product.quantity : 0 )}</p>
+                        <div key={"product"+index} className="flex flex-col w-full border border-2 border-gray-200 p-2 rounded-lg">
+
+                          {!product.confirmed && (
+                            <div className="w-full h-auto flex justify-between mb-2">
+                              <span className="text-[10px] bg-red-100 text-red-400 w-auto sm:w-[50%] rounded-lg px-4 py-1 mb-2 flex flex-row gap-x-2">
+                                <span className="relative flex h-3 w-3">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-300"></span>
+                                </span>
+                                {t("reserve.pending_product")}
+                              </span>
+                              <Button isLoading={loadingConfirmation} onClick={()=>HandlerConfirmEntity("PRODUCT",reserve.id,product.id)} rightIcon={<CheckIcon/>} size="sm" isRound={true} effect={"default"} variant="ghostLight">
+                                {t("reserve.confirm")}
+                              </Button>
+                            </div>
+                          )}
+                          <div className="flex flex-row w-full">
+                            <div className="w-48 h-24 bg-gray-200 rounded-lg">
+                              <img src={`${product?.productDB?.images[0]}`} alt={product?.productDB?.name} className="w-full h-full object-cover"/>
+                            </div>
+                            <div className="w-full h-auto flex flex-col gap-y-2 px-4">
+                              <p className="text-primary text-sm">{product?.productDB?.name}</p>
+                              <p className="text-secondary text-xs">{product?.productDB?.description}</p>
+                              <p className="text-primary text-sm mt-auto">{formatPrice(product.price)}</p>
+                            </div>
+                            <div className="w-24 h-auto flex flex-col justify-center items-center">
+                              <p className="text-primary text-sm">{t("reserve.quantity")}</p>
+                              <p className="text-primary text-sm">{product.quantity}</p>
+                              <p className="text-primary text-sm mt-auto">{formatPrice(product.quantity ? product.price*product.quantity : 0 )}</p>
+                            </div>
                           </div>
                         </div>
                       ))}
                       <div className="w-full h-auto flex flex-row justify-between  border-t-2 border-secondary mt-auto p-4">
-                        <p className="text-primary text-sm">{t("common.gross_amount")}</p>
+                        <p className="text-primary text-sm">{t("reserve.gross_amount")}</p>
                         <p className="text-primary text-sm">{formatPrice(reserve.products.reduce((acc,product) => acc + product.price*product?.quantity,0))}</p>
                       </div>
                     </>
@@ -750,15 +786,21 @@ const ReserveCard = (props:ReserveCardProps) => {
               <div className="h-[80%] w-full flex flex-row">
                 <div className="h-full w-[50%] lg:w-[75%] flex flex-col pb-4 px-4">
                   {!selectedExperience.confirmed && (
-                    <span className="text-[10px] bg-red-100 text-red-400 w-full sm:w-[50%] rounded-lg px-4 py-1 mb-2 flex flex-row gap-x-2">
-                      <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-300"></span>
+                    <div className="w-full h-auto flex flex-row justify-between">
+                      <span className="text-[10px] bg-red-100 text-red-400 w-full sm:w-[50%] rounded-lg px-4 py-1 mb-2 flex flex-row gap-x-2 items-center">
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-300"></span>
+                        </span>
+                        {t("reserve.pending_experience")}
                       </span>
-                      {t("reserve.pending_experience")}
-                    </span>
+                      <Button isLoading={loadingConfirmation} onClick={()=>HandlerConfirmEntity("EXPERIENCE",reserve.id,selectedExperience.id)} rightIcon={<CheckIcon/>} size="sm" isRound={true} effect={"default"} variant="ghostLight">
+                        {t("reserve.confirm")}
+                      </Button>
+                    </div>
                   )}
                   <h1 className="text-tertiary">{selectedExperience.experienceDB?.name}</h1>
+
                   <p className="hidden sm:block text-primary text-xs">{selectedExperience.experienceDB?.description}</p>
                   <div className="w-full h-auto flex flex-col lg:flex-row mt-2">
                     <div className="w-[100%] lg:w-[50%] h-full flex flex-col">
