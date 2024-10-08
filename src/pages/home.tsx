@@ -171,7 +171,7 @@ const ReserveCard = (props:ReserveCardProps) => {
   const addExperienceToReserveHandler = async() => {
     setLoadingCreateExperienceInReserve(true);
     if(user == null){
-      toast.error("User must be log in to create a reservation");
+      toast.error(t("reserve.user_log_in_experience"));
       setLoadingCreateExperienceInReserve(false);
       return;
     }
@@ -189,7 +189,7 @@ const ReserveCard = (props:ReserveCardProps) => {
   const addProductToReserveHandler = async() => {
     setLoadingCreateProductInReserve(true);
     if(user == null){
-      toast.error("User must be log in to create a reservation");
+      toast.error(t("reserve.user_log_in_product"));
       setLoadingCreateProductInReserve(false);
       return;
     }
@@ -930,7 +930,7 @@ const DashboardReserves = () => {
         getMyNotifications(1);
     }, [pageSize]); // `pageSize` is correctly passed to ensure data fetching with the right page size.
 
-    const getMyReservesHandler = useCallback(async (page: number) => {
+    const getMyReservesHandler = useCallback(async (page: Number) => {
         if (user != null) {
             const reserves = await getAllMyReserves(user.token, page, pageSize?.reserves as number, i18n.language);
             if (reserves) {

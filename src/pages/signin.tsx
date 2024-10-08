@@ -1,6 +1,6 @@
 import { useState, FormEvent } from "react";
 import Button from "../components/ui/Button";
-import {  LOGO_PRIMARY } from "../assets/images";
+import {  ISOLOGO, LOGO_PRIMARY } from "../assets/images";
 import { signInSchema } from "../db/schemas.ts"
 import { motion } from "framer-motion";
 import { fadeIn } from "../lib/motions";
@@ -78,7 +78,7 @@ const SignIn = () => {
     <div className="relative w-full h-screen bg-cover bg-center bg-white">
       <div className="w-full h-full flex justify-center items-center">
         <form id="form_user_login" className="w-[90%] sm:w-[400px] h-auto flex flex-col justify-center items-center rounded-3xl shadow-md p-6 border-2 border-slate-200" onSubmit={(e)=>onSubmitCreation(e)}>
-          <img onClick={()=>goToRoute("/")} src={LOGO_PRIMARY} alt="logo" className="w-auto h-20 cursor-pointer hover:scale-105"/>
+          <img onClick={()=>goToRoute("/")} src={ISOLOGO} alt="logo" className="w-auto h-20 cursor-pointer hover:scale-105"/>
           <p className="text-secondary text-sm my-2">{t("auth.log_in_header")}</p>
           <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
             <label htmlFor="email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("auth.email")}</label>

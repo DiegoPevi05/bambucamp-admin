@@ -32,6 +32,7 @@ export interface RadioProps
   extends InputHTMLAttributes<HTMLInputElement>,
     VariantProps<typeof radioVariants> {
   rightIcon?: React.ReactNode
+  labelVisible?:boolean;
 }
 
 export const InputRadio: FC<RadioProps> = ({
@@ -40,6 +41,7 @@ export const InputRadio: FC<RadioProps> = ({
   effect,
   isRound,
   rightIcon,
+  labelVisible,
   ...props
 }) => {
   const id = props.id || `radio-${Math.random().toString(36).substr(2, 9)}`;
@@ -53,7 +55,9 @@ export const InputRadio: FC<RadioProps> = ({
         {...props}
       />
       <span className="flex justify-center items-center gap-x-2 px-4 py-2 h-10">
-        {props.placeholder}
+        <div className={`${labelVisible ? "flex" : "hidden sm:flex" }  p-0 m-0`}>
+          {props.placeholder}
+        </div>
         {rightIcon && <div className="transform transition-transform group-hover:translate-x-2 duration-300">{rightIcon}</div>}
       </span>
       <div className="checkIcon"> 

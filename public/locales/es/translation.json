@@ -69,6 +69,8 @@
 		}
 	},
 	"reserve": {
+		"user_log_in_experience": "El usuario debe estar autorizado para poder crear una experiencia",
+		"user_log_in_product": "El usuario debe estar autorizado para poder crear un producto",
 		"confirm": "Confirmar",
 		"no_notifications": "No hay Notificaciones",
 		"no_tents_reservations": "No hay glampings reservados",
