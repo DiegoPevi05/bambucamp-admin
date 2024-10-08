@@ -18,6 +18,11 @@
 		}
 	},
 	"user": {
+		"DNI": "DNI",
+		"PASSPORT": "Pasaporte",
+		"user_document_type": "Tipo de Documento",
+		"user_document_id": "Id de Documento",
+		"user_nationality": "Nacionalidad",
 		"plural": "Usuarios",
 		"search_user": "Buscar Usuario",
 		"firstname": "Nombre",

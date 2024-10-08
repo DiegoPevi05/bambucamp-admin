@@ -50,13 +50,16 @@ const DashboardAdminUsers = () => {
         const email = (form.querySelector('input[name="email"]') as HTMLInputElement).value;
         const role = (form.querySelector('select[name="role"]') as HTMLInputElement).value;
         const phoneNumber = (form.querySelector('input[name="phoneNumber"]') as HTMLInputElement).value;
+        const document_id = (form.querySelector('input[name="document_id"]') as HTMLInputElement).value;
+        const document_type = (form.querySelector('select[name="document_type"]') as HTMLInputElement).value;
+        const nationality = (form.querySelector('input[name="nationality"]') as HTMLInputElement).value;
 
         setErrorMessages({});
 
         try {
 
           if(formname == "form_create_user"){
-            createUserSchema.parse({ firstName, lastName, password, email, role, phoneNumber });
+            createUserSchema.parse({ firstName, password, email, role });
 
             return {
                 firstName,
@@ -64,11 +67,15 @@ const DashboardAdminUsers = () => {
                 password,
                 email,
                 role,
-                phoneNumber
+                phoneNumber,
+                document_id,
+                document_type,
+                nationality
             };
+
           }else{
               // For editing, omit password if it is empty
-              const userData:UserFormData = { firstName, lastName, email, role, phoneNumber };
+              const userData:UserFormData = { firstName, lastName, email, role, phoneNumber, document_id, document_type, nationality };
 
               if (password) {
                 userData.password = password;
@@ -382,10 +389,27 @@ const DashboardAdminUsers = () => {
                                   <select name="role" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >
                                     <option value={selectedUser?.role}>{selectedUser?.role != "SUPERVISOR" ? (selectedUser?.role  != "CLIENT" ? t("user.ADMIN") : t("user.CLIENT") ) : t("user.SUPERVISOR") }</option>
                                   </select>
-                                </div>
+                               </div>
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="nationality" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_nationality")}</label>
+                                <input name="nationality" value={selectedUser?.nationality} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_nationality")} readOnly/>
+                              </div>
                         </div>
 
                         <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
+
+                            <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                              <label htmlFor="document_type" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_document_type")}</label>
+                              <select name="document_type" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >
+                                <option value={selectedUser?.document_type}>{selectedUser?.document_type != "DNI" ? t("user.DNI") : t("user.PASSPORT") }</option>
+                              </select>
+                           </div>
+
+                              <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                <label htmlFor="document_id" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_document_id")}</label>
+                                <input name="document_id" value={selectedUser?.document_id} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_document_id")} readOnly/>
+                              </div>
+
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="last_password_change" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_last_password_change")}</label>
                                   <div className="w-full flex flex-col justify-end items-start h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" >{selectedUser?.lastPasswordChanged ? formatDate(selectedUser?.lastPasswordChanged) : t("user.none")}</div>
@@ -487,12 +511,6 @@ const DashboardAdminUsers = () => {
                                 </div>
                               </div>
 
-
-                        </div>
-
-                        <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
-
-
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="lastName" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_lastname")}</label>
                                 <input name="lastName" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_lastname")}/>
@@ -509,6 +527,31 @@ const DashboardAdminUsers = () => {
                                   }
                                 </div>
                               </div>
+
+                                <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                  <label htmlFor="role" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_rol")}</label>
+                                  <select name="role" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                                    <option value="CLIENT">{t("user.CLIENT")}</option>
+                                    <option value="SUPERVISOR">{t("user.SUPERVISOR")}</option>
+                                  </select>
+                                  <div className="w-full h-6">
+                                    {errorMessages.role && 
+                                      <motion.p 
+                                        initial="hidden"
+                                        animate="show"
+                                        exit="hidden"
+                                        variants={fadeIn("up","", 0, 1)}
+                                        className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                          {t(errorMessages.role)}
+                                      </motion.p>
+                                    }
+                                  </div>
+                                </div>
+
+
+                        </div>
+
+                        <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_cellphone")}</label>
@@ -527,25 +570,61 @@ const DashboardAdminUsers = () => {
                                 </div>
                               </div>
 
+
+
                             <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                              <label htmlFor="role" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_rol")}</label>
-                              <select name="role" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                                <option value="CLIENT">{t("user.CLIENT")}</option>
-                                <option value="SUPERVISOR">{t("user.SUPERVISOR")}</option>
+                              <label htmlFor="document_type" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_document_type")}</label>
+                              <select name="document_type" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                                <option value="DNI">{t("user.DNI")}</option>
+                                <option value="PASSPORT">{t("user.PASSPORT")}</option>
                               </select>
                               <div className="w-full h-6">
-                                {errorMessages.role && 
+                                {errorMessages.document_type && 
                                   <motion.p 
                                     initial="hidden"
                                     animate="show"
                                     exit="hidden"
                                     variants={fadeIn("up","", 0, 1)}
                                     className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                      {t(errorMessages.role)}
+                                      {t(errorMessages.document_type)}
                                   </motion.p>
                                 }
                               </div>
                             </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="document_id" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_document_id")}</label>
+                            <input name="document_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_document_id")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.document_id && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.document_id)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="nationality" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_nationality")}</label>
+                            <input name="nationality" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_nationality")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.nationality && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.nationality)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
 
                             <div className="flex flex-row justify-end gap-x-6 w-full mt-auto">
                                 <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("common.cancel")}</Button>
@@ -632,9 +711,6 @@ const DashboardAdminUsers = () => {
                                 </div>
                               </div>
 
-                        </div>
-
-                        <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="lastName" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_lastname")}</label>
                                   <input name="lastName" value={selectedUser.lastName} onChange={(e)=>onChangeSelectedUser(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_lastname")}/>
@@ -651,6 +727,30 @@ const DashboardAdminUsers = () => {
                                   }
                                 </div>
                               </div>
+
+                                <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                                  <label htmlFor="role" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_rol")}</label>
+                                    <select name="role" onChange={(e)=>onChangeSelectedUser(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" value={selectedUser.role}>
+                                    <option value="CLIENT">{t("user.CLIENT")}</option>
+                                    <option value="SUPERVISOR">{t("user.SUPERVISOR")}</option>
+                                  </select>
+                                  <div className="w-full h-6">
+                                    {errorMessages.role && 
+                                      <motion.p 
+                                        initial="hidden"
+                                        animate="show"
+                                        exit="hidden"
+                                        variants={fadeIn("up","", 0, 1)}
+                                        className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                          {t(errorMessages.role)}
+                                      </motion.p>
+                                    }
+                                  </div>
+                                </div>
+
+                        </div>
+
+                        <div className="flex flex-col items-start justify-start w-full lg:w-[50%] gap-6 p-6">
 
                               <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
                                 <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_cellphone")}</label>
@@ -669,25 +769,61 @@ const DashboardAdminUsers = () => {
                                 </div>
                               </div>
 
+
+
                             <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                              <label htmlFor="role" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_rol")}</label>
-                                <select name="role" onChange={(e)=>onChangeSelectedUser(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" value={selectedUser.role}>
-                                <option value="CLIENT">{t("user.CLIENT")}</option>
-                                <option value="SUPERVISOR">{t("user.SUPERVISOR")}</option>
+                              <label htmlFor="document_type" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_document_type")}</label>
+                              <select name="document_type" onChange={(e)=>onChangeSelectedUser(e)} className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" value={selectedUser.document_type}>
+                                <option value="DNI">{t("user.DNI")}</option>
+                                <option value="PASSPORT">{t("user.PASSPORT")}</option>
                               </select>
                               <div className="w-full h-6">
-                                {errorMessages.role && 
+                                {errorMessages.document_type && 
                                   <motion.p 
                                     initial="hidden"
                                     animate="show"
                                     exit="hidden"
                                     variants={fadeIn("up","", 0, 1)}
                                     className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                      {t(errorMessages.role)}
+                                      {t(errorMessages.document_type)}
                                   </motion.p>
                                 }
                               </div>
                             </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="document_id" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_document_id")}</label>
+                            <input name="document_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" value={selectedUser.document_id} onChange={(e)=>onChangeSelectedUser(e)} placeholder={t("user.user_document_id")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.document_id && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.document_id)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="nationality" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_nationality")}</label>
+                            <input name="nationality" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" value={selectedUser.nationality} onChange={(e)=>onChangeSelectedUser(e)} placeholder={t("user.user_nationality")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.nationality && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.nationality)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
                             <div className="flex flex-row justify-end gap-x-6 w-full mt-auto">
                                 <Button type="button" onClick={()=>setCurrentView("L")} size="sm" variant="dark" effect="default" isRound={true}>{t("common.cancel")}</Button>
                                 <Button type="submit" size="sm" variant="dark" effect="default" isRound={true} isLoading={loadingForm}>{t("user.save_changes")}</Button>

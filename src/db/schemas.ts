@@ -8,8 +8,6 @@ const signInSchema = z.object({
 
 const createUserSchema = z.object({
   firstName: z.string().nonempty({ message: 'user.validations.name_required' }),
-  lastName: z.string().nonempty({ message: 'user.validations.lastname_required' }),
-  phoneNumber: z.string().nonempty({ message: 'user.validations.cellphone_required' }),
   email: z.string().email({ message: 'user.validations.email_invalid' }),
   role: z.string().refine(
     (value) => value === 'SUPERVISOR' || value === 'CLIENT',

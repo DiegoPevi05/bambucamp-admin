@@ -12,6 +12,9 @@ export interface User {
   email?: string;
   role?: string; // Add role or other attributes as needed
   phoneNumber?: string;
+  document_id?:string;
+  document_type?:string;
+  nationality?:string;
   isDisabled?:boolean;
   lastLogin?:Date|null;
   lastPasswordChanged?:Date|null;
@@ -29,11 +32,14 @@ export interface UserFilters {
 
 export interface UserFormData {
   firstName: string;
-  lastName: string;
   password?: string;
   email: string;
   role: string;
-  phoneNumber:string;
+  lastName?: string;
+  phoneNumber?:string;
+  document_id?:string;
+  document_type?:string;
+  nationality?:string;
 }
 
 export interface ImageInterface {
