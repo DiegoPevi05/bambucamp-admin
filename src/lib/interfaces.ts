@@ -416,7 +416,13 @@ export interface ReserveFilters {
 
 
 export interface ReserveFormData {
-  userId:number;
+  user_email?:string,
+  user_firstname?:string;
+  user_lastname?:string;
+  user_phone_number?:string;
+  user_document_type?:string;
+  user_document_id?:string;
+  user_nationality?:string;
   tents:ReserveTentDto[];
   products:ReserveProductDto[];
   experiences:ReserveExperienceDto[];

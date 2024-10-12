@@ -379,7 +379,7 @@ export const serializePromotionToDB = (promotion: PromotionFormData, isEditable?
 export const serializeReserveOptions = (data:any):optionsReserve|null => {
   let options:optionsReserve|null = null;
 
-  const transformedTents = data.tents ? data.tents.map((item:any) => ( serializeTent(item) )) : [];
+  //const transformedTents = data.tents ? data.tents.map((item:any) => ( serializeTent(item) )) : [];
 
   const transformedProducts = data.products ? data.products.map((item:any) => ( serializeProduct(item) )) : [];
 
@@ -390,7 +390,7 @@ export const serializeReserveOptions = (data:any):optionsReserve|null => {
   const transformedDiscounts = data.discounts ? data.discounts.map((item:any) => (serializeDiscountCode(item) )) : [];
 
   options = {
-    tents: transformedTents,
+    tents: [], //transformedTents,
     products:transformedProducts,
     experiences: transformedExperiences,
     promotions: transformedPromotions, 
@@ -592,6 +592,25 @@ export const serializeFaq = (data:any): Faq | null => {
 
   return faq;
 }
+
+
+export const serializeCalendarDays = (data:any):{ date: Date, label: string, available: boolean }[] => {
+  let dates:{ date: Date, label: string, available: boolean }[] = [];
+
+  data.forEach((day:any)=> {
+    let day_item:{ date: Date, label: string, available: boolean } = {
+      date: new Date(day.date),
+      label: day.label,
+      available: day.available
+    };
+    dates.push(day_item);
+  })
+
+  return dates;
+}
+
+
+
 
 
 

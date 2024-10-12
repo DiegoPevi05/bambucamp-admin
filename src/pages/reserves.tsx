@@ -1,9 +1,9 @@
 import Dashboard from "../components/ui/Dashboard";
 import { useState, useEffect, FormEvent } from "react";
-import { Eye, Pen, X, ChevronLeft, ChevronRight, Calendar, CircleX,   FlameKindling, Tent, Pizza, Search, Plus, Disc, Receipt  } from "lucide-react";
+import { Eye, Pen, X, ChevronLeft, ChevronRight, Calendar, CircleX,   FlameKindling, Tent, Pizza, Search, Plus, Disc, Receipt, User as UserIcon, UserPlus  } from "lucide-react";
 import Button from "../components/ui/Button";
 import {  formatDate, getCurrentCustomPrice,  calculatePrice, formatPrice, getReserveDates, formatDateToYYYYMMDD, getNumberOfNights } from "../lib/utils";
-import { getAllReserveOptions, getAllReserves, createReserve, updateReserve, deleteReserve, downloadBillForReserve } from "../db/actions/reserves";
+import { getAllReserveOptions, getAllReserves, createReserve, updateReserve, deleteReserve, downloadBillForReserve, SearchAvailableTents } from "../db/actions/reserves";
 import { getAllUsers } from "../db/actions/users";
 import { useAuth } from "../contexts/AuthContext";
 import { UserFilters, Reserve, ReserveFilters, ReserveFormData, optionsReserve, ReserveTentDto, ReserveProductDto, ReserveExperienceDto, User, ReservePromotionDto } from "../lib/interfaces";
@@ -14,6 +14,8 @@ import { ReserveExperienceItemFormDataSchema, ReserveFormDataSchema, ReserveProd
 import Modal from "../components/Modal";
 import {InputRadio} from "../components/ui/Input";
 import {useTranslation} from "react-i18next";
+import DatePicker from "../components/DatePicker";
+import {toast} from "sonner";
 
 
 const DashboardAdminReserves = () => {
@@ -59,23 +61,74 @@ const DashboardAdminReserves = () => {
     const [loadingForm, setLoadingForm] = useState<boolean>(false);
     const [tentItemTotalPrice, setTentItemTotalPrice] = useState<number>(0);
 
+    const [searchGlampingDates, setSearchGlampingDates] = useState<{
+      date_from: Date;
+      date_to: Date;
+    }>({
+      date_from: new Date(),
+      date_to: new Date(new Date().setDate(new Date().getDate() + 1)),
+    });
+
+  const [openCalendar, setOpenCalendar] = useState<{date_from:boolean, date_to: boolean }>({ date_from: false, date_to: false });
+
+    const toggleBar = (type: "date_from" | "date_to" | null) => {
+      if(type === null){
+        setOpenCalendar({ date_from: false, date_to: false });
+      }else{
+        setOpenCalendar((prevOpenCalendar) => ({ date_from: false, date_to: false, guests: false, [type]: !prevOpenCalendar[type] }));
+      }
+    };
+
+    const updateDateFromHandler = (newDateFrom: Date) => {
+      setSearchGlampingDates(prevDates => ({
+        ...prevDates,
+        date_from: newDateFrom,
+      }));
+    };
+
+    const updateDateToHandler = (newDateTo: Date) => {
+      setSearchGlampingDates(prevDates => ({
+        ...prevDates,
+        date_to: newDateTo,
+      }));
+    };
+
+  const [loadingGlampings,setLoadingGlampings] = useState(false);
+
+  useEffect(()=>{
+
+    const searchAvailableTentsHandler = async() => {
+      if(searchGlampingDates.date_from > searchGlampingDates.date_to){
+        toast.error(t("validations.start_date_before_end_date"))
+        return;
+      }
+      setLoadingGlampings(true);
+      const tentsDB = await SearchAvailableTents({dateFrom:searchGlampingDates.date_from, dateTo:searchGlampingDates.date_to }, i18n.language);
+      if(tentsDB != null){
+        setDatasetReservesOptions((prevOptions =>  ({...prevOptions, tents:tentsDB })));
+        setLoadingGlampings(false);
+      }
+    }
+
+    searchAvailableTentsHandler();
+
+  },[searchGlampingDates, i18n.language])
+
     const getTentItemFormData = ():{idTent:number, aditionalPeople:number, aditionalPeoplePrice:number, dateFrom:Date, dateTo:Date, no_custom_price:boolean}|null => {
       const container = document.getElementById("modal_reserve_items") as HTMLFormElement;
 
       const idTentInput  = container.querySelector(`select[name="reserve_tent_option_id"]`) as HTMLSelectElement;
       const aditionalPeopleInput =  container.querySelector(`input[name="reserve_tent_option_aditional_people"]`) as HTMLInputElement;
-      const dateFromInput = container.querySelector(`input[name="reserve_tent_option_date_from"]`) as HTMLInputElement;
-      const dateToInput = container.querySelector(`input[name="reserve_tent_option_date_to"]`) as HTMLInputElement;
       const noCustomPriceInput = container.querySelector(`input[name="reserve_tent_option_no_special_price"]`) as HTMLInputElement;
 
-      if(idTentInput == undefined || aditionalPeopleInput == undefined || dateFromInput == undefined || dateToInput == undefined || noCustomPriceInput == undefined ){
+      if(idTentInput == undefined || aditionalPeopleInput == undefined || noCustomPriceInput == undefined ){
         return null;
       }
 
       const idTent = Number(idTentInput.value);
       const aditionalPeople = Number(aditionalPeopleInput.value);
-      const dateFrom = new Date(dateFromInput.value)
-      const dateTo = new Date(dateToInput.value)
+      const dateFrom = searchGlampingDates.date_from;
+      const dateTo = searchGlampingDates.date_to;
       const no_custom_price = noCustomPriceInput.checked;
 
       const tent_db  = datasetReservesOptions.tents.find((i)=> i.id == idTent);
@@ -504,8 +557,29 @@ const DashboardAdminReserves = () => {
 
 
     const validateFields = (formname:string): ReserveFormData |null => {
+
         const form = document.getElementById(formname) as HTMLFormElement;
-        const userId = Number((form.querySelector('input[name="userId"]') as HTMLInputElement).value);
+
+        let user_document_type = "";
+        let user_document_id = "";
+        let user_nationality = "";
+        let user_firstname = ""
+        let user_lastname = ""
+        let user_phone_number = ""
+        let user_email = ""
+
+        if(userType == "old"){
+          user_email = (form.querySelector('input[name="user_email"]') as HTMLInputElement).value
+        }else{
+          user_document_type = (form.querySelector('select[name="document_type"]') as HTMLInputElement).value;
+          user_document_id = (form.querySelector('input[name="document_id"]') as HTMLInputElement).value
+          user_nationality = (form.querySelector('input[name="nationality"]') as HTMLInputElement).value
+          user_firstname = (form.querySelector('input[name="firstName"]') as HTMLInputElement).value
+          user_lastname = (form.querySelector('input[name="lastName"]') as HTMLInputElement).value
+          user_phone_number = (form.querySelector('input[name="phoneNumber"]') as HTMLInputElement).value
+          user_email = (form.querySelector('input[name="user_email"]') as HTMLInputElement).value
+        };
+
         const payment_status = (form.querySelector('select[name="payment_status"]') as HTMLInputElement).value;
         const reserve_status = (form.querySelector('select[name="reserve_status"]') as HTMLInputElement).value;
         const canceled_status = (form.querySelector('input[name="canceled_status"]') as HTMLInputElement).checked;
@@ -516,7 +590,11 @@ const DashboardAdminReserves = () => {
         try {
 
           ReserveFormDataSchema.parse({
-            userId, 
+            userType,
+            name:user_firstname,
+            lastname:user_lastname,
+            cellphone:user_phone_number,
+            user_email,
             tents, 
             products,
             experiences ,
@@ -532,7 +610,13 @@ const DashboardAdminReserves = () => {
             reserve_status });
 
           return {
-            userId,
+            user_document_type,
+            user_document_id,
+            user_nationality,
+            user_firstname,
+            user_lastname,
+            user_phone_number,
+            user_email,
             tents,
             products,
             experiences,
@@ -685,11 +769,9 @@ const DashboardAdminReserves = () => {
     }
     const selectUserId = async(formname:string, user:User) => {
       const form = document.getElementById(formname) as HTMLFormElement;
-      const userIdInput = form.querySelector('input[name="userId"]') as HTMLInputElement;
-      const userIdNameInput = form.querySelector('input[name="userId_name"]') as HTMLInputElement;
+      const user_email = form.querySelector('input[name="user_email"]') as HTMLInputElement;
 
-      userIdInput.value = user.id.toString();
-      userIdNameInput.value = user.firstName ? user.firstName : "";
+      user_email.value = user.email ?? "";
       setUsers([]);
     }
 
@@ -749,6 +831,7 @@ const DashboardAdminReserves = () => {
       }
     }
 
+    const [userType,setUserType] = useState<'new'|'old'>('old');
 
     return (
     <Dashboard>
@@ -852,8 +935,8 @@ const DashboardAdminReserves = () => {
                                         <td className="h-full max-xl:hidden">{reserveItem.createdAt != undefined && reserveItem.createdAt != null ? formatDate(reserveItem.createdAt) : t("reserve.none")}</td>
                                         <td className="h-full flex flex-col items-center justify-center">
                                           <div className="w-full h-auto flex flex-row flex-wrap gap-x-2">
-                                            <button onClick={()=>{setSelectedReserve(reserveItem);  setTents(reserveItem.tents); setProducts(reserveItem.products); setExperiences(reserveItem.experiences); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
-                                            <button  onClick={()=>{setSelectedReserve(reserveItem); setTents(reserveItem.tents); setProducts(reserveItem.products); setExperiences(reserveItem.experiences); setCurrentView("E"); setErrorMessages({}) }} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Pen className="h-5 w-5"/></button>
+                                            <button onClick={()=>{setSelectedReserve(reserveItem);  setTents(reserveItem.tents); setProducts(reserveItem.products); setExperiences(reserveItem.experiences);setUserType('old'); setCurrentView("V")}} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Eye className="h-5 w-5"/></button>
+                                            <button  onClick={()=>{setSelectedReserve(reserveItem); setTents(reserveItem.tents); setProducts(reserveItem.products); setExperiences(reserveItem.experiences);setUserType('old'); setCurrentView("E"); setErrorMessages({}) }} className="border rounded-md hover:bg-primary hover:text-white duration-300 active:scale-75 p-1"><Pen className="h-5 w-5"/></button>
                                             <button onClick={()=>{setOpenDeleteModal(true),setSelectedReserve(reserveItem)}} className="border rounded-md hover:bg-red-400 hover:text-white duration-300 active:scale-75 p-1"><X className="h-5 w-5"/></button>
                                           </div>
                                         </td>
@@ -930,52 +1013,43 @@ const DashboardAdminReserves = () => {
                   </div>
                   {openReserveOption == "tent" && (
                     
-                    <div className="flex flex-col justify-start items-start w-full h-auto overflow-hidden mt-6 gap-y-2 sm:gap-y-2">
-                        <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6">
-                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="reserve_tent_option_date_from" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("reserve.from")}</label>
-                              <input onChange={()=>calculateTentItemPrice()} name="reserve_tent_option_date_from" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.from")}/>
+                    <div className="flex flex-col justify-start items-start w-full h-auto mt-6 gap-y-2 sm:gap-y-2">
+                        <div className="flex flex-row justify-start items-start w-full h-auto my-1  gap-x-6">
 
-                              <div className="w-full h-6">
-                                {errorMessages.reserve_tent_option_date_from && (
-                                  <motion.p 
-                                    initial="hidden"
-                                    animate="show"
-                                    exit="hidden"
-                                    variants={fadeIn("up","", 0, 1)}
-                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {t(errorMessages.reserve_tent_option_date_from)}
-                                  </motion.p>
-                                )}
+                            <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
+
+                              <label className="text-secondary">{t("reserve.from")}:</label>
+                              <div className="w-full  sm:p-2 border-b-2  border-b-secondary">
+                                <DatePicker openBar={openCalendar['date_from']} type="date_from" section="add_tent" toggleBar={toggleBar} date={searchGlampingDates.date_from} setDate={updateDateFromHandler} />
                               </div>
                             </div>
 
                             <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
-                              <label htmlFor="reserve_tent_option_date_to" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("reserve.to")}</label>
-                              <input onChange={()=>calculateTentItemPrice()} name="reserve_tent_option_date_to" type="date" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.to")}/>
-                              <div className="w-full h-6">
-                                {errorMessages.reserve_tent_option_date_to && (
-                                  <motion.p 
-                                    initial="hidden"
-                                    animate="show"
-                                    exit="hidden"
-                                    variants={fadeIn("up","", 0, 1)}
-                                    className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                                    {t(errorMessages.reserve_tent_option_date_to)}
-                                  </motion.p>
-                                )}
+                              <label className="text-secondary">{t("reserve.to")}:</label>
+                              <div className="w-full  sm:p-2 border-b-2  border-b-secondary">
+                                <DatePicker openBar={openCalendar['date_to']} type="date_to" section="add_tent" toggleBar={toggleBar} date={searchGlampingDates.date_from} setDate={updateDateToHandler} />
                               </div>
                             </div>
                         </div>
                       <div className="flex flex-col justify-start items-start gap-x-6 w-[100%] h-auto gap-y-2 sm:gap-y-1">
-                        <label htmlFor="reserve_tent_option_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Glamping"}</label>
-                          <select onChange={()=>calculateTentItemPrice()} name="reserve_tent_option_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
-                              { datasetReservesOptions.tents.map((tent,index) => {
-                                return(
-                                  <option key={index} value={tent.id}>{`${tent.title} | ${t("reserve.price")}: ${formatPrice(tent.price)} ${getCurrentCustomPrice(tent.custom_price) >0 ? `| ${t("reserve.price_of_day")} ${formatPrice(getCurrentCustomPrice(tent.custom_price))}`: " "} | ${t("reserve.price_aditional_people")} ${formatPrice(tent.aditional_people_price)} ` }</option>
-                                  )
-                              })}
-                          </select>
+                        <label htmlFor="reserve_tent_option_id" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{"Glampings"}</label>
+
+                            {datasetReservesOptions.tents.length == 0 || loadingGlampings ?
+                              <div className="h-auto w-full flex flex-col items-center justify-center">
+                                <div className="loader"></div>
+                                <h1 className="font-primary text-white mt-4">{t("common.loading")}</h1>
+                              </div>
+                            :
+                              <select onChange={()=>calculateTentItemPrice()} name="reserve_tent_option_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                                {
+                                  datasetReservesOptions.tents.map((tent,index) => {
+                                                                  return(
+                                                                    <option key={index} value={tent.id}>{`${tent.title} | ${t("reserve.price")}: ${formatPrice(tent.price)} ${getCurrentCustomPrice(tent.custom_price) >0 ? `| ${t("reserve.price_of_day")} ${formatPrice(getCurrentCustomPrice(tent.custom_price))}`: " "} | ${t("reserve.price_aditional_people")} ${formatPrice(tent.aditional_people_price)} ` }</option>
+                                                                    )
+                                  })
+                                }
+                                </select>
+                            }
                           <div className="w-full h-6">
                             {errorMessages.reserve_tent_option_id && (
                               <motion.p 
@@ -1244,9 +1318,8 @@ const DashboardAdminReserves = () => {
                 <div className="flex flex-col justify-start items-start w-full">
 
                       <div className="flex flex-col justify-start items-start w-full h-auto my-1 gap-y-2 sm:gap-y-1">
-                        <label htmlFor="userId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.user")}</label>
-                        <input name="userId" className="hidden"/>
-                        <input name="userId_name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.user_selected")} value={`${selectedReserve.user_name ?? selectedReserve.userId} | ${selectedReserve.user_email ?? selectedReserve.userId}` } readOnly/>
+                        <label htmlFor="user_email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_email")}</label>
+                        <input name="user_email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_emai")} value={`${selectedReserve.user_email ?? "" }` } readOnly/>
 
                       </div>
                       <div className="w-full h-auto flex flex-row justify-between my-4">
@@ -1389,42 +1462,182 @@ const DashboardAdminReserves = () => {
 
                       <div className="flex flex-col justify-start items-start w-full h-auto my-1 gap-y-2 sm:gap-y-1">
                         <label htmlFor="search_user_email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.search_user")}</label>
-                        <div className="w-full h-auto flex flex-row justify-between gap-x-4 relative">
-                          <input name="search_user_email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.search_user")}/>
-                          <AnimatePresence>
-                            {users && users.length > 0 && (
-                              <motion.div 
-                                initial="hidden"
-                                animate="show"
-                                variants={fadeIn("up","", 0, 0.3)}
-                                className="absolute left-0 top-8 sm:top-10 w-full max-h-[100px] min-h-[50px] overflow-y-scroll flex flex-col justify-start items-start bg-white py-2">
-                                {users.map((userItem,index)=>{
-                                  return(
-                                    <span onClick={()=>selectUserId('form_create_reserve', userItem) } className="w-full h-auto text-sm font-primary text-secondary hover:bg-secondary hover:text-white duration-300 hover:cursor-pointer p-2" key={"user"+index}>{`${t("reserve.user")}: ${userItem.firstName},${userItem.lastName} ${t("reserve.email")}: ${userItem.email}`}</span>
-                                  )
-                                })}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-
-                          <button type="button" onClick={()=>searchUsersByEmail('form_create_reserve')} className="w-auto h-auto border border-2 border-slate-200 p-2 rounded-xl active:scale-95 duration-300"><Search/></button>
+                        <div className="w-full flex flex-row justify-start items-center gap-x-4">
+                          <InputRadio  
+                            className="w-auto" 
+                            onClick={()=>{setUserType("old")}} 
+                            name="category" 
+                            placeholder={t("reserve.user_old")} 
+                            rightIcon={<UserIcon/>} 
+                            checked={userType === "old"}
+                            readOnly
+                          />
+                          <InputRadio  
+                            className="w-auto" 
+                            onClick={()=>{setUserType("new")}} 
+                            name="category" 
+                            placeholder={t("reserve.user_new")} 
+                            rightIcon={<UserPlus/>} 
+                            checked={userType === "new"}
+                            readOnly
+                          />
                         </div>
-                        <label htmlFor="userId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.user")}</label>
-                        <input name="userId" className="hidden"/>
-                        <input name="userId_name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.user_selected")}/>
+                        {userType == "old" ?
+                          <>
+                            <div className="w-full h-auto flex flex-row justify-between gap-x-4 relative">
+                              <input name="search_user_email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.search_user")}/>
+                              <AnimatePresence>
+                                {users && users.length > 0 && (
+                                  <motion.div 
+                                    initial="hidden"
+                                    animate="show"
+                                    variants={fadeIn("up","", 0, 0.3)}
+                                    className="absolute left-0 top-8 sm:top-10 w-full max-h-[100px] min-h-[50px] overflow-y-scroll flex flex-col justify-start items-start bg-white py-2">
+                                    {users.map((userItem,index)=>{
+                                      return(
+                                        <span onClick={()=>selectUserId('form_create_reserve', userItem) } className="w-full h-auto text-sm font-primary text-secondary hover:bg-secondary hover:text-white duration-300 hover:cursor-pointer p-2" key={"user"+index}>{`${t("reserve.user")}: ${userItem.firstName},${userItem.lastName} ${t("reserve.email")}: ${userItem.email}`}</span>
+                                      )
+                                    })}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
 
-                        <div className="w-full h-6">
-                          {errorMessages.userId && (
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.userId}
-                            </motion.p>
-                          )}
+                              <button type="button" onClick={()=>searchUsersByEmail('form_create_reserve')} className="w-auto h-auto border border-2 border-slate-200 p-2 rounded-xl active:scale-95 duration-300"><Search/></button>
+                            </div>
+                            <label htmlFor="user_email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.user")}</label>
+                            <input name="user_email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_email")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.user_email && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.user_email}
+                                </motion.p>
+                              )}
+                            </div>
+                        </>
+                        :
+                        <div className="w-full h-auto grid grid-cols-2 gap-4">
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="email" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_email")}</label>
+                            <input name="email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_email")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.user_email && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{t(errorMessages.user_email)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="firstName" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_firstname")}</label>
+                            <input name="firstName" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_firstname")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.name && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.name)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="lastName" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_lastname")}</label>
+                            <input name="lastName" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_lastname")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.lastname && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.lastname)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_cellphone")}</label>
+                            <input name="phoneNumber" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_cellphone")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.cellphone && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.cellphone)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="document_type" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_document_type")}</label>
+                            <select name="document_type" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                              <option value="DNI">{t("user.DNI")}</option>
+                              <option value="PASSPORT">{t("user.PASSPORT")}</option>
+                            </select>
+                            <div className="w-full h-6">
+                              {errorMessages.document_type && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.document_type)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="document_id" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_document_id")}</label>
+                            <input name="document_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_document_id")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.document_id && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.document_id)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="nationality" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_nationality")}</label>
+                            <input name="nationality" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_nationality")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.nationality && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.nationality)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
                         </div>
+                        }
+
                       </div>
                       <div className="w-full h-auto flex flex-row justify-between mb-4">
                         <div className="w-[60%] xl:w-[40%] h-auto flex flex-row">
@@ -1515,6 +1728,29 @@ const DashboardAdminReserves = () => {
                           </tbody>
                       </table>
                       <label className="text-secondary text-xs mt-2">{t("reserve.table_glosary")}</label>
+                      <div className="w-full h-auto flex flex-col items-start justify-start gap-y-2 pt-2">
+                        {errorMessages.gross_import &&
+                          <motion.p 
+                            initial="hidden"
+                            animate="show"
+                            exit="hidden"
+                            variants={fadeIn("up","", 0, 1)}
+                            className="h-auto text-[10px] sm:text-xs text-primary font-tertiary">
+                              {t(errorMessages.gross_import)}
+                          </motion.p>
+                        }
+                        {errorMessages.net_import &&
+                          <motion.p 
+                            initial="hidden"
+                            animate="show"
+                            exit="hidden"
+                            variants={fadeIn("up","", 0, 1)}
+                            className="h-auto text-[10px] sm:text-xs text-primary font-tertiary">
+                              {t(errorMessages.net_import)}
+                          </motion.p>
+                        }
+                      </div>
+
                     <div className="flex flex-row justify-start items-start w-full h-auto overflow-hidden my-1  gap-x-6 mt-12">
                       <div className="flex flex-col justify-start itemst-start gap-x-6 w-full h-auto gap-y-2 sm:gap-y-1">
                         <label htmlFor="payment_status" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.payment_status")}</label>
@@ -1625,42 +1861,182 @@ const DashboardAdminReserves = () => {
 
                       <div className="flex flex-col justify-start items-start w-full h-auto my-1 gap-y-2 sm:gap-y-1">
                         <label htmlFor="search_user_email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.search_user")}</label>
-                        <div className="w-full h-auto flex flex-row justify-between gap-x-4 relative">
-                          <input name="search_user_email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.search_user")}/>
-                          <AnimatePresence>
-                            {users && users.length > 0 && (
-                              <motion.div 
-                                initial="hidden"
-                                animate="show"
-                                variants={fadeIn("up","", 0, 0.3)}
-                                className="absolute left-0 top-8 sm:top-10 w-full max-h-[100px] min-h-[50px] overflow-y-scroll flex flex-col justify-start items-start bg-white py-2">
-                                {users.map((userItem,index)=>{
-                                  return(
-                                    <span onClick={()=>selectUserId('form_create_reserve', userItem) } className="w-full h-auto text-sm font-primary text-secondary hover:bg-secondary hover:text-white duration-300 hover:cursor-pointer p-2" key={"user"+index}>{`${t("reserve.user")}: ${userItem.firstName},${userItem.lastName} ${t("reserve.email")}: ${userItem.email}`}</span>
-                                  )
-                                })}
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-
-                          <button type="button" onClick={()=>searchUsersByEmail('form_update_reserve')} className="w-auto h-auto border border-2 border-slate-200 p-2 rounded-xl active:scale-95 duration-300"><Search/></button>
+                        <div className="w-full flex flex-row justify-start items-center gap-x-4">
+                          <InputRadio  
+                            className="w-auto" 
+                            onClick={()=>{setUserType("old")}} 
+                            name="category" 
+                            placeholder={t("reserve.user_old")} 
+                            rightIcon={<UserIcon/>} 
+                            checked={userType === "old"}
+                            readOnly
+                          />
+                          <InputRadio  
+                            className="w-auto" 
+                            onClick={()=>{setUserType("new")}} 
+                            name="category" 
+                            placeholder={t("reserve.user_new")} 
+                            rightIcon={<UserPlus/>} 
+                            checked={userType === "new"}
+                            readOnly
+                          />
                         </div>
-                        <label htmlFor="userId" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("reserve.user")}</label>
-                        <input name="userId" className="hidden" defaultValue={selectedReserve.userId}/>
-                        <input name="userId_name" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.user_selected")} value={`${selectedReserve.user_name ?? selectedReserve.userId} | ${selectedReserve.user_email ?? selectedReserve.userId}` } readOnly/>
+                        {userType == "old" ?
+                          <>
+                            <div className="w-full h-auto flex flex-row justify-between gap-x-4 relative">
+                              <input name="search_user_email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.search_user")}/>
+                              <AnimatePresence>
+                                {users && users.length > 0 && (
+                                  <motion.div 
+                                    initial="hidden"
+                                    animate="show"
+                                    variants={fadeIn("up","", 0, 0.3)}
+                                    className="absolute left-0 top-8 sm:top-10 w-full max-h-[100px] min-h-[50px] overflow-y-scroll flex flex-col justify-start items-start bg-white py-2">
+                                    {users.map((userItem,index)=>{
+                                      return(
+                                        <span onClick={()=>selectUserId('form_create_reserve', userItem) } className="w-full h-auto text-sm font-primary text-secondary hover:bg-secondary hover:text-white duration-300 hover:cursor-pointer p-2" key={"user"+index}>{`${t("reserve.user")}: ${userItem.firstName},${userItem.lastName} ${t("reserve.email")}: ${userItem.email}`}</span>
+                                      )
+                                    })}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
 
-                        <div className="w-full h-6">
-                          {errorMessages.userId && (
-                            <motion.p 
-                              initial="hidden"
-                              animate="show"
-                              exit="hidden"
-                              variants={fadeIn("up","", 0, 1)}
-                              className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
-                              {errorMessages.userId}
-                            </motion.p>
-                          )}
+                              <button type="button" onClick={()=>searchUsersByEmail('form_create_reserve')} className="w-auto h-auto border border-2 border-slate-200 p-2 rounded-xl active:scale-95 duration-300"><Search/></button>
+                            </div>
+                            <label htmlFor="user_email" className="font-primary text-secondary text-xs sm:text-lg h-3 sm:h-6">{t("user.user_email")}</label>
+                            <input name="user_email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("reserve.user_selected")} value={`${selectedReserve.user_email ?? "" }` } readOnly/>
+
+                            <div className="w-full h-6">
+                              {errorMessages.user_email && (
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                  {errorMessages.user_email}
+                                </motion.p>
+                              )}
+                            </div>
+                        </>
+                        :
+                        <div className="w-full h-auto grid grid-cols-2 gap-4">
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="user_email" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_email")}</label>
+                            <input name="user_email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_email")} value={selectedReserve?.user_email} onChange={(e)=>onChangeSelectedReserve(e)} />
+                            <div className="w-full h-6">
+                              {errorMessages.user_email && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">{t(errorMessages.user_email)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="firstName" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_firstname")}</label>
+                            <input name="firstName" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_firstname")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.name && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.name)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="lastName" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_lastname")}</label>
+                            <input name="lastName" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_lastname")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.lastname && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.lastname)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="phoneNumber" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_cellphone")}</label>
+                            <input name="phoneNumber" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_cellphone")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.cellphone && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.cellphone)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="document_type" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_document_type")}</label>
+                            <select name="document_type" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary">
+                              <option value="DNI">{t("user.DNI")}</option>
+                              <option value="PASSPORT">{t("user.PASSPORT")}</option>
+                            </select>
+                            <div className="w-full h-6">
+                              {errorMessages.document_type && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.document_type)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="document_id" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_document_id")}</label>
+                            <input name="document_id" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_document_id")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.document_id && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.document_id)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
+                          <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
+                            <label htmlFor="nationality" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_nationality")}</label>
+                            <input name="nationality" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_nationality")}/>
+                            <div className="w-full h-6">
+                              {errorMessages.nationality && 
+                                <motion.p 
+                                  initial="hidden"
+                                  animate="show"
+                                  exit="hidden"
+                                  variants={fadeIn("up","", 0, 1)}
+                                  className="h-6 text-[10px] sm:text-xs text-primary font-tertiary">
+                                    {t(errorMessages.nationality)}
+                                </motion.p>
+                              }
+                            </div>
+                          </div>
                         </div>
+                        }
                       </div>
                       <div className="w-full h-auto flex flex-row justify-between mb-4">
                         <div className="w-[60%] xl:w-[40%] h-auto flex flex-row">

@@ -3,6 +3,7 @@ import { Tooltip } from 'react-tooltip';
 export const generateCalendar = (
   currentDate: Date,
   reservedDates?: { reserveID: number; external_id: string; checkin: Date; checkout: Date }[],
+  notAvailableDates?:{ date: Date, label: string, available: boolean }[],
   handleSelectedDate?: (date: Date) => void
 ) => {
   const startOfCurrentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
@@ -36,6 +37,18 @@ export const generateCalendar = (
   for (let i = 1; i <= totalDaysInMonth; i++) {
     const currentIterationDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i, 12, 0, 0, 0);
 
+    if(notAvailableDates?.some((item) => (item.date.getDate() == i && item.available == false))){
+
+      calendarDays.push(
+        <span
+          key={`reserved-${i}`}
+          className="bg-gray-100 flex items-center justify-center h-10 text-gray-400 rounded-xl"
+        >
+          {i}
+        </span>
+      );
+      continue;
+    }
     // Find all reserves for the current day
     const reservesForDay = reservedDates?.filter(
       (reserve) => reserve.checkin <= currentIterationDate && reserve.checkout >= currentIterationDate

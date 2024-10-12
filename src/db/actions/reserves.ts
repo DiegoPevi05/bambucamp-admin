@@ -1,7 +1,107 @@
 import {toast} from 'sonner';
 import axios from 'axios';
-import { PublicExperience, PublicProduct, Reserve, ReserveExperienceDto, ReserveFilters, ReserveFormData, ReserveProductDto, optionsReserve } from '../../lib/interfaces';
-import { serializeMyReserves, serializeMyReservesCalendar, serializePublicExperience, serializePublicProduct, serializeReserve, serializeReserveOptions } from '../serializer';
+import { PublicExperience, PublicProduct, Reserve, ReserveExperienceDto, ReserveFilters, ReserveFormData, ReserveProductDto, Tent, optionsReserve } from '../../lib/interfaces';
+import { serializeCalendarDays, serializeMyReserves, serializeMyReservesCalendar, serializePublicExperience, serializePublicProduct, serializeReserve, serializeReserveOptions, serializeTent } from '../serializer';
+
+export const SearchAvailableTents = async (dates:{dateFrom:Date,dateTo:Date}, language:string): Promise<Tent[]|null> => {
+  let data: Tent[]|null = null  
+
+  try {
+    // Create a URLSearchParams object to construct the query string
+    const params = new URLSearchParams();
+    params.append('dateFrom', dates.dateFrom.toString());
+    params.append('dateTo', dates.dateTo.toString());
+
+    // Construct the URL with query parameters
+    const url = `${import.meta.env.VITE_BACKEND_URL}/reserves/tents?${params.toString()}`;
+
+
+    const SearchAvailableTentsResponse = await axios.get(url, {
+      headers: {
+        'Accept-Language':language,
+      }
+    });
+
+
+    data =  SearchAvailableTentsResponse.data.map((tent: any) => serializeTent(tent));
+
+    return data;
+
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
+
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
+      } else {
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error during Fetching the tents."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
+      }
+    } else {
+      toast.error("An unexpected error occurred.");
+    }
+    console.error(error);
+  }
+  return null;
+};
+
+export const getCalendarDates = async(page:Number, language:string):Promise<{ date: Date, label: string, available: boolean }[] | null> => {
+  let data:{ date: Date, label: string, available: boolean }[]|null = null;
+  try{
+
+    // Create a URLSearchParams object to construct the query string
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+
+    // Construct the URL with query parameters
+    const url = `${import.meta.env.VITE_BACKEND_URL}/reserves/calendar?${params.toString()}`;
+
+    const fetchedDays = await axios.get(url, {
+      headers: {
+        'Accept-Language':language
+      }
+    });
+
+    data = serializeCalendarDays(fetchedDays.data);
+
+
+  }catch(error){
+    console.log(error)
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status;
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.error;
+
+      if (Array.isArray(errorMessage)) {
+        // Handle validation errors (array of errors)
+        errorMessage.forEach((err) => {
+          toast.error(err.msg || 'Validation error occurred');
+        });
+      } else {
+        // Handle other types of errors
+        if (statusCode) {
+          toast.error(`${errorData?.error || "Error fetching the calendar dates."} (Code: ${statusCode})`);
+        } else {
+          toast.error(errorData?.error || "An error occurred.");
+        }
+      }
+    } else {
+      toast.error("An unexpected error occurred.");
+    }
+    console.error(error);
+  }
+
+  return data;
+}
 
 export const getAllMyReservesCalendar = async(token:string, page:Number, language:string):Promise<{reserves:{ id:number, external_id:string, dateFrom:Date, dateTo:Date }[]} |null> => {
   let data:{ reserves:{ id:number, external_id:string, dateFrom:Date, dateTo:Date }[]}  | null = null;

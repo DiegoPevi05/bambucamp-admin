@@ -74,6 +74,8 @@
 		}
 	},
 	"reserve": {
+		"user_old": "Existente",
+		"user_new": "Nuevo",
 		"user_log_in_experience": "El usuario debe estar autorizado para poder crear una experiencia",
 		"user_log_in_product": "El usuario debe estar autorizado para poder crear un producto",
 		"confirm": "Confirmar",
@@ -203,6 +205,7 @@
 		"go_back_reserves_list": "Volver a la lista de reservas",
 		"update_reserve": "Actualizar reserva",
 		"validations": {
+			"user_type_required": "Tipo de usuario debe ser seleccionado",
 			"id_required": "El ID es obligatorio",
 			"date_from_required": "La fecha desde es obligatoria",
 			"date_to_required": "La fecha hasta es obligatoria",

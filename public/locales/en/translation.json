@@ -74,6 +74,8 @@
 		}
 	},
 	"reserve": {
+		"user_old": "Existente",
+		"user_new": "New",
 		"user_log_in_experience": "User must be authorize to create the experience",
 		"user_log_in_product": "User must be authorize to create the product",
 		"confirm": "Confirm",
@@ -203,6 +205,7 @@
 		"go_back_reserves_list": "Go back to reserves list",
 		"update_reserve": "Update reserve",
 		"validations": {
+			"user_type_required": "User Type must be selected",
 			"id_required": "Id is required",
 			"date_from_required": "Date from is required",
 			"date_to_required": "Date to is required",

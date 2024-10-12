@@ -188,20 +188,45 @@ const ReservePromotionDtoSchema = z.object({
 });
 
 const ReserveFormDataSchema = z.object({
-  userId: z.number().positive({ message: "reserve.validations.userId_positive"}),
+  userType: z.string().nonempty({ message: "reserve.validations.user_type_required" }),
+  user_email: z.string().email({ message: "user.validations.email_invalid" }),
   tents: z.array(ReserveTentDtoSchema).default([]),
   products: z.array(ReserveProductDtoSchema).default([]),
   experiences: z.array(ReserveExperienceDtoSchema).default([]),
   promotions: z.array(ReservePromotionDtoSchema).default([]),
-  discount_code_id: z.number().nonnegative({ message: "reserve.validations.discount_code_id_nonnegative"}).optional(),
+  discount_code_id: z.number().nonnegative({ message: "reserve.validations.discount_code_id_nonnegative" }).optional(),
   discount_code_name: z.string().optional(),
-  gross_import: z.number().positive({ message: "reserve.validations.gross_import_positive"}),
-  discount: z.number().nonnegative({ message: "reserve.validations.discount_nonnegative"}),
-  net_import: z.number().positive({ message: "reserve.validations.net_import_positive"}),
+  gross_import: z.number().positive({ message: "reserve.validations.gross_import_positive" }),
+  discount: z.number().nonnegative({ message: "reserve.validations.discount_nonnegative" }),
+  net_import: z.number().positive({ message: "reserve.validations.net_import_positive" }),
   canceled_reason: z.string().optional(),
-  canceled_status: z.boolean({ message: "reserve.validations.canceled_status_boolean"}),
-  payment_status: z.string().nonempty({ message: "reserve.validations.payment_status_required"}),
-  reserve_status: z.string().nonempty({ message: "reserve.validations.reserve_status_required"})
+  canceled_status: z.boolean({ message: "reserve.validations.canceled_status_boolean" }),
+  payment_status: z.string().nonempty({ message: "reserve.validations.payment_status_required" }),
+  reserve_status: z.string().nonempty({ message: "reserve.validations.reserve_status_required" }),
+
+  // Add the optional fields that are conditionally required
+  name: z.string().optional(),
+  lastname: z.string().optional(),
+  cellphone: z.string().optional(),
+
+}).superRefine((data, ctx) => {
+  if (data.userType !== "old") {
+    const requiredFields = [
+      "name",
+      "lastname",
+      "cellphone"
+    ];
+    
+    requiredFields.forEach((field) => {
+      if (!(data as any)[field]) {
+        ctx.addIssue({
+          code: "custom",
+          path: [field],
+          message: `user.validations.${field}_required`,
+        });
+      }
+    });
+  }
 });
 
 
