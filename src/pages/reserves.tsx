@@ -99,15 +99,18 @@ const DashboardAdminReserves = () => {
 
     const searchAvailableTentsHandler = async() => {
       if(searchGlampingDates.date_from > searchGlampingDates.date_to){
-        toast.error(t("validations.start_date_before_end_date"))
+        toast.error(t("reserve.validations.start_date_before_end_date"))
         return;
       }
       setLoadingGlampings(true);
-      const tentsDB = await SearchAvailableTents({dateFrom:searchGlampingDates.date_from, dateTo:searchGlampingDates.date_to }, i18n.language);
-      if(tentsDB != null){
-        setDatasetReservesOptions((prevOptions =>  ({...prevOptions, tents:tentsDB })));
-        setLoadingGlampings(false);
+      if(user != null){
+        const tentsDB = await SearchAvailableTents(user.token,{dateFrom:searchGlampingDates.date_from, dateTo:searchGlampingDates.date_to }, i18n.language);
+        if(tentsDB != null){
+          setDatasetReservesOptions((prevOptions =>  ({...prevOptions, tents:tentsDB })));
+
+        }
       }
+      setLoadingGlampings(false);
     }
 
     searchAvailableTentsHandler();
@@ -1522,8 +1525,8 @@ const DashboardAdminReserves = () => {
                         :
                         <div className="w-full h-auto grid grid-cols-2 gap-4">
                           <div className="col-span-1 flex flex-col justify-start items-start w-full h-auto overflow-hidden my-1 gap-y-2 sm:gap-y-1">
-                            <label htmlFor="email" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_email")}</label>
-                            <input name="email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_email")}/>
+                            <label htmlFor="user_email" className="font-primary text-secondary text-xs xl:text-lg h-3 sm:h-6">{t("user.user_email")}</label>
+                            <input name="user_email" className="w-full h-8 sm:h-10 text-xs sm:text-md font-tertiary px-2 border-b-2 border-secondary focus:outline-none focus:border-b-2 focus:border-b-primary" placeholder={t("user.user_email")}/>
                             <div className="w-full h-6">
                               {errorMessages.user_email && 
                                 <motion.p 

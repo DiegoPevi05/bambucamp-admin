@@ -229,7 +229,8 @@
 			"net_import_positive": "El importe neto debe ser un número positivo",
 			"canceled_status_boolean": "Debe ser verdadero o falso",
 			"payment_status_required": "El estado del pago es requerido",
-			"reserve_status_required": "El estado de reserva es necesario"
+			"reserve_status_required": "El estado de reserva es necesario",
+			"start_date_before_end_date": "La fecha de Inicio debe ser antes que la de Fin"
 		}
 	},
 	"glamping": {

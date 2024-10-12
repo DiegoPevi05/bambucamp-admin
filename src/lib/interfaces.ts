@@ -83,6 +83,7 @@ export interface Tent {
   updatedAt:Date|null;
 }
 
+
 export interface TentFilters {
   title?: string;
   status?:string;

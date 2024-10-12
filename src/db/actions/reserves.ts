@@ -3,7 +3,7 @@ import axios from 'axios';
 import { PublicExperience, PublicProduct, Reserve, ReserveExperienceDto, ReserveFilters, ReserveFormData, ReserveProductDto, Tent, optionsReserve } from '../../lib/interfaces';
 import { serializeCalendarDays, serializeMyReserves, serializeMyReservesCalendar, serializePublicExperience, serializePublicProduct, serializeReserve, serializeReserveOptions, serializeTent } from '../serializer';
 
-export const SearchAvailableTents = async (dates:{dateFrom:Date,dateTo:Date}, language:string): Promise<Tent[]|null> => {
+export const SearchAvailableTents = async (token:string, dates:{dateFrom:Date,dateTo:Date}, language:string): Promise<Tent[]|null> => {
   let data: Tent[]|null = null  
 
   try {
@@ -13,11 +13,12 @@ export const SearchAvailableTents = async (dates:{dateFrom:Date,dateTo:Date}, la
     params.append('dateTo', dates.dateTo.toString());
 
     // Construct the URL with query parameters
-    const url = `${import.meta.env.VITE_BACKEND_URL}/reserves/tents?${params.toString()}`;
+    const url = `${import.meta.env.VITE_BACKEND_URL}/reserves/tents/admin?${params.toString()}`;
 
 
     const SearchAvailableTentsResponse = await axios.get(url, {
       headers: {
+        'Authorization': `Bearer ${token}`,
         'Accept-Language':language,
       }
     });

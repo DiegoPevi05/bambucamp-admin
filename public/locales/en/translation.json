@@ -229,7 +229,8 @@
 			"net_import_positive": "Net import must be a positive number",
 			"canceled_status_boolean": "Must be true or false",
 			"payment_status_required": "Payment status is required",
-			"reserve_status_required": "Reservation status is required"
+			"reserve_status_required": "Reservation status is required",
+			"start_date_before_end_date": "Start date should be earlier than end date"
 		}
 	},
 	"glamping": {
