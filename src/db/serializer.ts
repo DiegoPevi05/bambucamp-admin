@@ -609,6 +609,34 @@ export const serializeCalendarDays = (data:any):{ date: Date, label: string, ava
   return dates;
 }
 
+export const serializeStatisticsReserves = (data:any):{date:string, quantity:number}[] => {
+  let dates:{ date: string, quantity:number  }[] = [];
+
+  data.forEach((day:any)=> {
+    let day_item:{ date: string, quantity: number } = {
+      date: day.date,
+      quantity: day.quantity || 0,
+    };
+    dates.push(day_item);
+  })
+
+  return dates;
+}
+
+export const serializeStatisticsNetSales = (data:any):{date:string, amount:number}[] => {
+  let dates:{ date: string, amount:number  }[] = [];
+
+  data.forEach((day:any)=> {
+    let day_item:{ date: string, amount: number } = {
+      date: day.date,
+      amount: day.amount || 0,
+    };
+    dates.push(day_item);
+  })
+
+  return dates;
+}
+
 
 
 

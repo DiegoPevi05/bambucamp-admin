@@ -17,6 +17,19 @@
 			"custom_price_price": "Custom price must be positive"
 		}
 	},
+	"statistic": {
+		"net_amount_chart_header": "Net Import by period",
+		"reserves_chart_header": "Reserves by period",
+		"plural": "Statistics",
+		"select_time": "Select the scale time",
+		"net_amount": "Net Amount",
+		"reserves": "Reserves",
+		"weekly": "Weekly",
+		"monthly": "Monthly",
+		"yearly": "Yearly",
+		"acumulative": "Actumulative",
+		"period": "Period"
+	},
 	"user": {
 		"DNI": "DNI",
 		"PASSPORT": "Passport",

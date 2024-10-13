@@ -14,6 +14,7 @@
     "@hookform/resolvers": "^3.9.0",
     "@types/socket.io-client": "^3.0.0",
     "axios": "^1.7.2",
+    "chart.js": "^4.4.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "framer-motion": "^11.3.8",

@@ -17,6 +17,19 @@
 			"custom_price_price": "Precio personalizado debe ser positivo"
 		}
 	},
+	"statistic": {
+		"net_amount_chart_header": "Importe total por periodo",
+		"reserves_chart_header": "Reservas por periodo",
+		"plural": "Estadisticas",
+		"select_time": "Selecciona la escala de tiempo",
+		"net_amount": "Importe Total",
+		"reserves": "Reservas",
+		"weekly": "Semanal",
+		"monthly": "Mensual",
+		"yearly": "Anual",
+		"acumulative": "Acumulativo",
+		"period": "Periodo"
+	},
 	"user": {
 		"DNI": "DNI",
 		"PASSPORT": "Pasaporte",
