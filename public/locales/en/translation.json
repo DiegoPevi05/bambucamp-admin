@@ -18,8 +18,11 @@
 		}
 	},
 	"statistic": {
+		"download_report": "Download Report",
 		"net_amount_chart_header": "Net Import by period",
+		"net_amount_chart_title": "Net Import in the selected period",
 		"reserves_chart_header": "Reserves by period",
+		"reserves_chart_title": "Reserves in the selected period",
 		"plural": "Statistics",
 		"select_time": "Select the scale time",
 		"net_amount": "Net Amount",
