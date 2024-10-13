@@ -2,7 +2,7 @@ import {AnimatePresence} from "framer-motion"
 import Dashboard from "../components/ui/Dashboard"
 import {fadeIn, fadeOnly} from "../lib/motions";
 import { motion } from "framer-motion";
-import {BarChart, BarChartHorizontal, ChevronDownIcon, ChevronUpIcon, FileBarChart, LineChart} from "lucide-react";
+import {BarChart, ChevronDownIcon, ChevronUpIcon, FileBarChart, LineChart} from "lucide-react";
 import {useTranslation} from "react-i18next";
 import {useCallback, useEffect, useState} from "react";
 import {useAuth} from "../contexts/AuthContext";
