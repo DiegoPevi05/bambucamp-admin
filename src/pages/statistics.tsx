@@ -56,19 +56,6 @@ const DashboardAdminStatistics = () => {
   const {t,i18n} = useTranslation();
   const {user} = useAuth();
 
-  const [loadingState, setLoadingState] = useState({
-    net_amount: false,
-    reserves: false,
-  });
-
-  // Updating a specific loading state
-  const updateLoadingState = (key: string, value: boolean) => {
-    setLoadingState(prevState => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
-
   const [selectedOptions, setSelectedOptions ] = useState({
     net_amount:{
       step:"W",
@@ -97,7 +84,6 @@ const DashboardAdminStatistics = () => {
   };
 
   const getNetSalesStatisticsHandler =  useCallback( async() => {
-    updateLoadingState('net_amount', true);
 
     if(user != null){
         const netSales  = await getNetSalesStatistics(user.token,selectedOptions.net_amount, i18n.language);
@@ -110,11 +96,9 @@ const DashboardAdminStatistics = () => {
           await generateNetSalesBarChart(t("statistic.net_amount_chart_header"),netSales);
         }
     }
-    updateLoadingState('net_amount', false);
   },[selectedOptions.net_amount])
 
   const getReserveQuantityStatisticsHandler = useCallback(async() => {
-    updateLoadingState('reserves', true);
 
     if(user != null){
         const reservesQuantities  = await getReserveQuantityStatistics(user.token,selectedOptions.reserves, i18n.language);
@@ -128,7 +112,6 @@ const DashboardAdminStatistics = () => {
           await generateReservesQuantities(t("statistic.reserves_chart_header"),reservesQuantities);
         }
     }
-    updateLoadingState('reserves', false);
   },[selectedOptions.reserves])
 
 
